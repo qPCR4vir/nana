@@ -15,9 +15,8 @@ class EditLayot_Form : public nana::gui::form
  private:
 	nana::string		_Titel/*, _DefLayFile*/;
 	nana::gui::place	_place, &_OriPlace;
-	nana::gui::button	_butOpenProject, _butSaveProject, _pickProjectName, _ReCollcate, _ReLayot;
-	nana::gui::combox	_cbProject;
-	nana::gui::label	_lProject;
+	OpenSaveBox			_OSbx;
+	nana::gui::button	_ReCollocate;
 	nana::gui::textbox	_textBox;
 	nana::gui::menubar	_menu;
 	nana::gui::menu	    &_menuFile,&_menuProgram/*,&_menuLayot*/;

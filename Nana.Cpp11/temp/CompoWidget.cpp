@@ -28,7 +28,8 @@ OpenSaveBox::OpenSaveBox     (	nana::gui::form &fm,
 								const nana::string   &label,
 								const nana::string   &DefFileName )
 							:	CompoWidget(	label  ),
-								Open(fm), Save(fm), Pick(fm),_fileName(fm),_label(fm)
+								Open(fm), Save(fm), Pick(fm),_fileName(fm),_label(fm),
+								fb_o(fm,true ),fb_s(fm,false ),fb_p(fm,true )
 {
 	//caption(label);  // or def as FileName  ??
 	_label.caption (caption()  ); 
@@ -61,7 +62,6 @@ OpenSaveBox::OpenSaveBox     (	nana::gui::form &fm,
 	{	_fileName.push_back	(DefFileName);
 		_fileName.option(0);
 	}
-			fb.add_filter(STR("Text File"), STR("*.txt;*.doc"));
 
 }
 	
@@ -70,16 +70,25 @@ void OpenSaveBox::open()
 		nana::string file;
 		if(fb_o())  
 		{ 
-			file = fb.file();
+			file = fb_o.file();
 		_fileName.push_back(file).option(_fileName.the_number_of_options());
 		}
 }
 void OpenSaveBox::save()
 {
 		nana::string file;
-		if(fb_o())  
+		if(fb_s())  
 		{ 
-			file = fb.file();
+			file = fb_s.file();
+		_fileName.push_back(file).option(_fileName.the_number_of_options());
+		}
+}
+void OpenSaveBox::pick()
+{
+		nana::string file;
+		if(fb_p())  
+		{ 
+			file = fb_p.file();
 		_fileName.push_back(file).option(_fileName.the_number_of_options());
 		}
 }

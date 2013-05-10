@@ -8,6 +8,8 @@ int main()
 	nana::gui::menubar	menub(form);
 	nana::gui::button	but1(form), but2(form), but3(form), but4(form);
 	OpenSaveBox osb(form,STR("Layot:") ), osb2(form,STR("Layot2:") );
+				fb.add_filter(STR("Text File"), STR("*.txt;*.doc"));
+
 	osb.ly ( "<<weight=2>gap=2 <Layot gap=2> weight=19 <weight=2>>" );
 	but1.caption (STR("But1"));
 	but2.caption (STR("But2"));

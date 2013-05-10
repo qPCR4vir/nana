@@ -9,14 +9,9 @@
 		:nana::gui::form ( nana::rectangle( nana::point(500,200), nana::size(400,170) )),
 					_OriPlace		(pl),
 					//_DefLayFile		(DefLayotFileName),
-				    _butOpenProject	(*this),      
-					_butSaveProject	(*this),
-					_pickProjectName(*this),
-					_ReCollcate		(*this),
+				    _OSbx			(*this, STR("Layot:"), STR("Layot.txt")),      
+					_ReCollocate	(*this),
 					_textBox		(*this),
-					_ReLayot		(*this),
-					_cbProject		(*this),
-					_lProject		(*this),
 				    _place			(*this),
 					_save			(true),
 					_menu			(*this),
@@ -28,7 +23,6 @@
 		InitCaptions();
 		InitMyLayot();
 
-		_cbProject.editable(true);
 		_textBox.editable(true);
 
 		if (lay!="") 
@@ -38,22 +32,16 @@
 		{	if (lay=="") 
 				OpenFileN(DefLayotFileName);
 		    else
-			{	_cbProject.push_back	(DefLayotFileName);
-				_cbProject.option(0);
-			}
+				_OSbx.FileName	(DefLayotFileName);
 		}
+			_OSbx.add_filter(STR("Layot File"), STR("*.lay.txt"));
 
 	}
 
 void EditLayot_Form::InitCaptions()
 	{
 		 caption				(_Titel);
-		_lProject.caption		(STR("Project:"	));
-		_butOpenProject.caption	(STR("Open"		));
-		_butSaveProject.caption	(STR("Save"		));
-		_pickProjectName.caption(STR("..."		));
-		_ReCollcate.caption		(STR("@"		));
-		_ReLayot.caption		(STR("lay"		));
+		_ReCollocate.caption	(STR("@"		));
 		_textBox.tip_string		(STR("type or load a layot to be applied to the calling window..."		));
 	}
 void EditLayot_Form::MakeResponsive()
@@ -61,18 +49,18 @@ void EditLayot_Form::MakeResponsive()
 		_menuFile.append  (STR("&Open..."),[&](nana::gui::menu::item_proxy& ip){OpenFile();});
 		_menuFile.append  (STR("&Save..."),[&](nana::gui::menu::item_proxy& ip){SaveFile();});
 		_menuProgram.append (STR("&Apply Layot to calling windows"),[&](nana::gui::menu::item_proxy& ip){ReLayot();});
-		_menuProgram.append (STR("&Edit this windows Layot"),[&](nana::gui::menu::item_proxy& ip){EditMyLayot();});
+		_menuProgram.append (STR("&Edit this windows Layot"       ),[&](nana::gui::menu::item_proxy& ip){EditMyLayot();});
 
-		_butOpenProject.make_event	<nana::gui::events::click> (*this , &EditLayot_Form::OpenFile		);
-		_butSaveProject.make_event	<nana::gui::events::click> (*this , &EditLayot_Form::SaveFile		);
-		_ReCollcate.make_event		<nana::gui::events::click> (_place, &nana::gui::place::collocate	);
-		_ReLayot.make_event			<nana::gui::events::click> (*this , &EditLayot_Form::ReLayot		);
-		_cbProject.ext_event().selected = [&](nana::gui::combox&cb)
+		_OSbx.Open.make_event	<nana::gui::events::click> (*this , &EditLayot_Form::OpenFile		);
+		_OSbx.Save.make_event	<nana::gui::events::click> (*this , &EditLayot_Form::SaveFile		);
+		//_OSbx.Pick.make_event	<nana::gui::events::click> (*this , &EditLayot_Form::OpenFile		);
+		_ReCollocate.make_event		<nana::gui::events::click> (_place, &nana::gui::place::collocate	);
+		_OSbx._fileName.ext_event().selected = [&](nana::gui::combox&cb)
 		{
 			SaveFile();  // save only is edited, changed ??? but how to know??	;
 			_save =false;
-			if(_cbProject.the_number_of_options()>0)
-				_textBox.load(_cbProject.text(_cbProject.option()).c_str() );
+			if( ! _OSbx.FileName().empty() )
+				_textBox.load(_OSbx.FileName().c_str() );
 			_save=true;
 		};
 
@@ -80,13 +68,10 @@ void EditLayot_Form::MakeResponsive()
 void EditLayot_Form::InitMyLayot()
 	{
 		std::string layot;
-        _place.div( readLayot(STR("layot.txt"), layot ="") );
-		_place.field("proj_buttons")<< _butOpenProject<< _butSaveProject;
-		_place.field("label"       )<< _lProject ;
-		_place.field("proj_txt"    )<< _cbProject;
-		_place.field("pick"		   )<< _pickProjectName;
+        _place.div( readLayot(_OSbx.FileName(), layot ="") );
+		_place						<< _OSbx;
 		_place.field("textBox"	   )<< _textBox;
-		_place.field("re"		   )<<_ReLayot<< _ReCollcate ;
+		_place.field("re"		   )<< _ReCollocate ;
 		_place.collocate ();
 	}
 void EditLayot_Form::ReLayot()
