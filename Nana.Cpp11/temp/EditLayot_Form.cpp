@@ -9,7 +9,7 @@
 		:nana::gui::form ( nana::rectangle( nana::point(500,200), nana::size(400,170) )),
 					_OriPlace		(pl),
 					//_DefLayFile		(DefLayotFileName),
-				    _OSbx			(*this, STR("Layot:"), STR("Layot.txt")),      
+				    _OSbx			(*this, STR("Layot:")),      
 					_ReCollocate	(*this),
 					_textBox		(*this),
 				    _place			(*this),
@@ -24,24 +24,26 @@
 		InitMyLayot();
 
 		_textBox.editable(true);
+		_OSbx.add_filter(STR("Layot File"), STR("*.lay.txt"));
 
-		if (lay!="") 
-			_textBox.append(nana::string(nana::charset(lay)),false );
+	    if   (lay.empty())    
+        {    if (! DefLayotFileName.empty())
+             {   _OSbx.FileName	(   DefLayotFileName  );
+                 OpenFile();
+             }
+        } else   		          
+        {    _textBox.append(nana::string(nana::charset(lay)),false );
+             if (! DefLayotFileName.empty())
+                _OSbx.FileName	(   DefLayotFileName  );
+        }
+
 		MakeResponsive();
-		if(DefLayotFileName!=STR(""))
-		{	if (lay=="") 
-				OpenFileN(DefLayotFileName);
-		    else
-				_OSbx.FileName	(DefLayotFileName);
-		}
-			_OSbx.add_filter(STR("Layot File"), STR("*.lay.txt"));
-
 	}
 
 void EditLayot_Form::InitCaptions()
 	{
 		 caption				(_Titel);
-		_ReCollocate.caption	(STR("@"		));
+		_ReCollocate.caption	(STR("Apply"		));
 		_textBox.tip_string		(STR("type or load a layot to be applied to the calling window..."		));
 	}
 void EditLayot_Form::MakeResponsive()
@@ -53,8 +55,8 @@ void EditLayot_Form::MakeResponsive()
 
 		_OSbx.Open.make_event	<nana::gui::events::click> (*this , &EditLayot_Form::OpenFile		);
 		_OSbx.Save.make_event	<nana::gui::events::click> (*this , &EditLayot_Form::SaveFile		);
-		//_OSbx.Pick.make_event	<nana::gui::events::click> (*this , &EditLayot_Form::OpenFile		);
-		_ReCollocate.make_event		<nana::gui::events::click> (_place, &nana::gui::place::collocate	);
+		_OSbx.Pick.make_event	<nana::gui::events::click> (*this , &EditLayot_Form::OpenFile		);
+		_ReCollocate.make_event		<nana::gui::events::click> ([&](){ReLayot();});
 		_OSbx._fileName.ext_event().selected = [&](nana::gui::combox&cb)
 		{
 			SaveFile();  // save only is edited, changed ??? but how to know??	;
@@ -68,7 +70,7 @@ void EditLayot_Form::MakeResponsive()
 void EditLayot_Form::InitMyLayot()
 	{
 		std::string layot;
-        _place.div( readLayot(_OSbx.FileName(), layot ="") );
+        _place.div( readLayot( STR("Layot_Form.lay.txt"), layot ="") );
 		_place						<< _OSbx;
 		_place.field("textBox"	   )<< _textBox;
 		_place.field("re"		   )<< _ReCollocate ;
@@ -82,63 +84,40 @@ void EditLayot_Form::ReLayot()
 		_OriPlace.collocate ();
 	}
 void EditLayot_Form::OpenFile()
-	{	  if(!_save) return; 
-		 nana::gui::filebox fb(0, true);
-		 fb.add_filter(STR("Text File"), STR("*.txt;*.doc"));
-		 fb.add_filter(STR("All Files"), STR("*.*"));
-		 nana::string file;
-		 if(fb())  
-		 { 
-			 file = fb.file();
-			 OpenFileN(file);
-
-		 }
+	{	 
+       if(_save) 
+	        OpenFileN(_OSbx.FileName());
 	}
 void EditLayot_Form::OpenFileN(const nana::string   &file)
 	{	  if(!_save) return; 
-			std::wcout<<std::endl<<STR("caption: ")<<_cbProject.caption()<<std::endl;
-			std::wcout<<std::endl<<STR("Option: ")<<_cbProject.option()<<std::endl;
-			//std::wcout<<std::endl<<STR("Option text: ")<<_cbProject.text(_cbProject.option())<<std::endl;
-			std::wcout<<std::endl<<STR("Option Last: ")<<_cbProject.the_number_of_options()<<std::endl;
-			//std::wcout<<std::endl<<STR("text Last-1: ")<<_cbProject.text(_cbProject.the_number_of_options()-1)<<std::endl;
+            std::wcout<<std::endl<<STR("Opening file: ")<<_OSbx.FileName()<<std::endl;
 			 _save=false;
-			_cbProject.push_back(file).option(_cbProject.the_number_of_options());
 			caption	(_Titel+STR(" <")+ file+STR(">"));
 			_textBox.load(file.c_str() );
-			 _save=true;
+			_save=true;
 
-			std::wcout<<std::endl<<STR("OpenFIle: ")<<file<<std::endl;
-			std::wcout<<std::endl<<STR("text 0 pos: ")<<_cbProject.text(0)<<std::endl;
-			std::wcout<<std::endl<<STR("Option: ")<<_cbProject.option()<<std::endl;
-			std::wcout<<std::endl<<STR("Option text: ")<<_cbProject.text(_cbProject.option())<<std::endl;
-			std::wcout<<std::endl<<STR("Option Last: ")<<_cbProject.the_number_of_options()<<std::endl;
-			std::wcout<<std::endl<<STR("text Last-1: ")<<_cbProject.text(_cbProject.the_number_of_options()-1)<<std::endl;
+			//std::wcout<<std::endl<<STR("OpenFIle: ")<<file<<std::endl;
+			//std::wcout<<std::endl<<STR("text 0 pos: ")<<_cbProject.text(0)<<std::endl;
+			//std::wcout<<std::endl<<STR("Option: ")<<_cbProject.option()<<std::endl;
+			//std::wcout<<std::endl<<STR("Option text: ")<<_cbProject.text(_cbProject.option())<<std::endl;
+			//std::wcout<<std::endl<<STR("Option Last: ")<<_cbProject.the_number_of_options()<<std::endl;
+			//std::wcout<<std::endl<<STR("text Last-1: ")<<_cbProject.text(_cbProject.the_number_of_options()-1)<<std::endl;
 	}
 void EditLayot_Form::SaveFile()
-	{	 if(!_save) return;
-	   
-		 nana::gui::filebox fb(0, false);
-		 fb.add_filter(STR("Text File"), STR("*.txt;*.doc"));
-		 fb.add_filter(STR("All Files"), STR("*.*"));
-		 nana::string file;
-		 if(fb())  
-		 { 
-			 file = fb.file();
-			_textBox.store(file.c_str() );
-			caption	(_Titel+STR(" <")+ file+STR(">"));
-			size_t op=_cbProject.the_number_of_options();
-			 _save=false;
-			_cbProject.push_back(file);
-			_cbProject.option(op);
-			 _save=true;
+	{	if(!_save) return;
 
-			std::wcout<<std::endl<<STR("OpenFIle: ")<<file<<std::endl;
-		 }
+        std::wcout<<std::endl<<STR("Seaving file: ")<<_OSbx.FileName()<<std::endl;
+
+		_textBox.store(_OSbx.FileName().c_str() );
+		caption	(_Titel+STR(" <")+ _OSbx.FileName()+STR(">"));
+		_save=true;
+
+		std::wcout<<std::endl<<STR("SavedFIle: ")<<_OSbx.FileName()<<std::endl;
 	}
 void EditLayot_Form::EditMyLayot()
 		{
 			if (!_myEdLayForm) 
-				_myEdLayForm.reset (new EditLayot_Form (_place,"", STR("layot.txt") , this ));
+				_myEdLayForm.reset (new EditLayot_Form (_place,"",  STR("Layot_Form.lay.txt") , this ));
 			_myEdLayForm->show ();
 		}
 const char* EditLayot_Form::readLayot(const nana::string& FileName, std::string& layot)

@@ -36,8 +36,8 @@ OpenSaveBox::OpenSaveBox     (	nana::gui::form &fm,
 	Open.caption	(STR("Open"		));
 	Save.caption	(STR("Save"		));
 	Pick.caption	(STR("..."		));
-	std::string lay;
-	lay+=;
+    ly ( "<weight=2>\n\t<"); 
+    ly ( (std::string(ly())+ fn()) + " gap=2 weight=19>\n\t<weight=2>");
 
 //		ly( "        <weight=2>\n"
 //"        < weight=25 <weight=5><   vertical weight=45 <><label weight=15><>     >\n"
@@ -47,6 +47,7 @@ OpenSaveBox::OpenSaveBox     (	nana::gui::form &fm,
 //"									 <weight=4> 	>" );  // an interesante idea, but allow only one instantition of a CompoWidwet of this type 
 
 	Open.make_event	<nana::gui::events::click> (*this , &OpenSaveBox::open	);
+	Pick.make_event	<nana::gui::events::click> (*this , &OpenSaveBox::pick	);
 	Save.make_event	<nana::gui::events::click> (*this , &OpenSaveBox::save	);
 	//_fileName.ext_event().selected = [&](nana::gui::combox&cb)
 	//{
@@ -67,30 +68,18 @@ OpenSaveBox::OpenSaveBox     (	nana::gui::form &fm,
 	
 void OpenSaveBox::open()
 {
-		nana::string file;
-		if(fb_o())  
-		{ 
-			file = fb_o.file();
-		_fileName.push_back(file).option(_fileName.the_number_of_options());
-		}
+	if(fb_o())  
+	    _fileName.push_back(fb_o.file()).option(_fileName.the_number_of_options());
 }
 void OpenSaveBox::save()
 {
-		nana::string file;
-		if(fb_s())  
-		{ 
-			file = fb_s.file();
-		_fileName.push_back(file).option(_fileName.the_number_of_options());
-		}
+	if(fb_s())  
+		_fileName.push_back(fb_s.file()).option(_fileName.the_number_of_options());
 }
 void OpenSaveBox::pick()
 {
-		nana::string file;
-		if(fb_p())  
-		{ 
-			file = fb_p.file();
-		_fileName.push_back(file).option(_fileName.the_number_of_options());
-		}
+	if(fb_p())  
+		_fileName.push_back(fb_p.file()).option(_fileName.the_number_of_options());
 }
 OpenSaveBox::p::field_reference	OpenSaveBox::put(p::field_reference f)
 {

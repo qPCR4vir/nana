@@ -44,6 +44,7 @@ class OpenSaveBox : public  CompoWidget
 {public:
 	nana::gui::button	Open, Save, Pick;
 	nana::gui::combox	_fileName;
+	nana::gui::filebox  fb_o, fb_s, fb_p;
 	OpenSaveBox     (	nana::gui::form &fm, 
 						const nana::string   &label,
 						const nana::string   &DefFileName=STR("") );
@@ -67,7 +68,6 @@ class OpenSaveBox : public  CompoWidget
 
  private:
 	nana::gui::label	_label;
-	nana::gui::filebox  fb_o, fb_s, fb_p;
 };
 
 #endif 
