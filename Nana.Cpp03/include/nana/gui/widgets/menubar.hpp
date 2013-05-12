@@ -29,8 +29,6 @@ namespace gui
 			{
 				class itembase;
 			public:
-				static const std::size_t npos = static_cast<size_t>(-1);
-
 				trigger();
 				~trigger();
 				nana::gui::menu* push_back(const nana::string&);

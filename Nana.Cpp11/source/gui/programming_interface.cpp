@@ -250,6 +250,11 @@ namespace API
 		return restrict::interface_type::screen_size();
 	}
 
+	rectangle screen_area_from_point(const point& pos)
+	{
+		return restrict::interface_type::screen_area_from_point(pos);
+	}
+
 	nana::point	cursor_position()
 	{
 		return restrict::interface_type::cursor_position();

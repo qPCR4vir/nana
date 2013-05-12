@@ -77,6 +77,7 @@ namespace API
 	void unregister_shortkey(window);
 
 	nana::size	screen_size();
+	rectangle	screen_area_from_point(const point&);
 	nana::point	cursor_position();
 	rectangle make_center(unsigned width, unsigned height);
 	rectangle make_center(window, unsigned width, unsigned height);
@@ -89,7 +90,7 @@ namespace API
 
 	void fullscreen(window, bool);
 	bool enabled_double_click(window, bool);
-	bool insert_frame(window frame, native_window_type native_window);
+	bool insert_frame(window frame, native_window_type);
 	native_window_type frame_container(window frame);
 	native_window_type frame_element(window frame, unsigned index);
 	void close_window(window);

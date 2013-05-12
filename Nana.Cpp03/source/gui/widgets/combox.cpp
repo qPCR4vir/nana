@@ -87,16 +87,15 @@ namespace nana{ namespace gui{
 					return state_.pointer_where;
 				}
 
-				nana::any * anyobj(std::size_t i, bool allocate_if_empty) const
+				nana::any * anyobj(std::size_t pos, bool allocate_if_empty) const
 				{
-					if(i < anyobj_.size())
-					{
-						nana::any * p = anyobj_[i];
-						if(allocate_if_empty && (0 == p))
-							anyobj_[i] = p = new nana::any;
-						return p;
-					}
-					return 0;
+					if(anyobj_.size() <= pos)
+						return 0;
+					
+					nana::any * p = anyobj_[pos];
+					if(allocate_if_empty && (0 == p))
+						anyobj_[pos] = p = new nana::any;
+					return p;
 				}
 
 				void text_area(const nana::size& s)
@@ -127,6 +126,7 @@ namespace nana{ namespace gui{
 						delete (*i);
 					anyobj_.clear();
 					module_.items.clear();
+					module_.index = npos;
 				}
 
 				void editable(bool enb)
@@ -218,23 +218,23 @@ namespace nana{ namespace gui{
 						state_.lister->scroll_items(upwards);
 				}
 
-				void move_items(bool upwards, bool recycle)
+				void move_items(bool upwards, bool circle)
 				{
 					if(0 == state_.lister)
 					{
 						std::size_t orig_i = module_.index;
 						if(upwards)
 						{
-							if(module_.index)
-								--(module_.index);
-							else if(recycle)
+							if(module_.index && (module_.index < module_.items.size()))
+								-- module_.index;
+							else if(circle)
 								module_.index = static_cast<unsigned>(module_.items.size() - 1);
 						}
 						else
 						{
-							if(module_.index != module_.items.size() - 1)
-								++(module_.index);
-							else if(recycle)
+							if((module_.index + 1) < module_.items.size())
+								++ module_.index;
+							else if(circle)
 								module_.index = 0;
 						}
 
@@ -242,7 +242,7 @@ namespace nana{ namespace gui{
 							option(module_.index, false);
 					}
 					else
-						state_.lister->move_items(upwards, recycle);
+						state_.lister->move_items(upwards, circle);
 				}
 
 				void draw()
@@ -270,34 +270,34 @@ namespace nana{ namespace gui{
 
 				std::size_t option() const
 				{
-					return module_.index;
+					return (module_.index < module_.items.size() ? module_.index : npos);
 				}
 
 				void option(std::size_t index, bool ignore_condition)
 				{
-					if(index < module_.items.size())
+					if(module_.items.size() <= index)
+						return;
+
+					std::size_t old_index = module_.index;
+					module_.index = index;
+					if(0 == widget_)
+						return;
+
+					//Test if the current item or text is different from selected.
+					if(ignore_condition || (old_index != index) || (module_.items[index].text != widget_->caption()))
 					{
-						std::size_t old_index = module_.index;
-						module_.index = index;
-						if(widget_)
-						{
-							//Test if the current item or text is different from selected.
-							if(ignore_condition || (old_index != index) || (module_.items[index].text != widget_->caption()))
-							{
-								nana::point pos = API::cursor_position();
-								API::calc_window_point(widget_->handle(), pos);
-								if(this->calc_where(*graph_, pos.x, pos.y))
-									state_.state = StateNone;
+						nana::point pos = API::cursor_position();
+						API::calc_window_point(widget_->handle(), pos);
+						if(this->calc_where(*graph_, pos.x, pos.y))
+							state_.state = StateNone;
 
-								editor_->text(module_.items[index].text);
-								bool enb = widget_->enabled();
-								_m_draw_push_button(enb);
-								_m_draw_image();
+						editor_->text(module_.items[index].text);
+						bool enb = widget_->enabled();
+						_m_draw_push_button(enb);
+						_m_draw_image();
 
-								//Yes, it's safe to static_cast here!
-								ext_event.selected(*static_cast<nana::gui::combox*>(widget_));
-							}
-						}
+						//Yes, it's safe to static_cast here!
+						ext_event.selected(*static_cast<nana::gui::combox*>(widget_));
 					}
 				}
 
@@ -338,7 +338,7 @@ namespace nana{ namespace gui{
 				void _m_lister_close_sig()
 				{
 					state_.lister = 0;	//The lister closes by itself.
-					if(module_.index != module_.npos && module_.index != state_.item_index_before_selection)
+					if(module_.index != npos && module_.index != state_.item_index_before_selection)
 					{
 						option(module_.index, true);
 						API::update_window(*widget_);
@@ -396,49 +396,49 @@ namespace nana{ namespace gui{
 
 				void _m_draw_image()
 				{
-					if(module_.index != module_.npos)
+					if(module_.items.size() <= module_.index)
+						return;
+					
+					nana::paint::image img = module_.items[module_.index].img;
+					if(img.empty())
+						return;
+					
+					unsigned vpix = editor_->line_height();
+					nana::size imgsz = img.size();
+					if(imgsz.width > image_pixels_)
 					{
-						nana::paint::image img = module_.items[module_.index].img;
-						if(img)
+						unsigned new_h = image_pixels_ * imgsz.height / imgsz.width;
+						if(new_h > vpix)
 						{
-							unsigned vpix = editor_->line_height();
-							nana::size imgsz = img.size();
-							if(imgsz.width > image_pixels_)
-							{
-								unsigned new_h = image_pixels_ * imgsz.height / imgsz.width;
-								if(new_h > vpix)
-								{
-									imgsz.width = vpix * imgsz.width / imgsz.height;
-									imgsz.height = vpix;
-								}
-								else
-								{
-									imgsz.width = image_pixels_;
-									imgsz.height = new_h;
-								}
-							}
-							else if(imgsz.height > vpix)
-							{
-								unsigned new_w = vpix * imgsz.width / imgsz.height;
-								if(new_w > image_pixels_)
-								{
-									imgsz.height = image_pixels_ * imgsz.height / imgsz.width;
-									imgsz.width = image_pixels_;
-								}
-								else
-								{
-									imgsz.height = vpix;
-									imgsz.width = new_w;
-								}
-							}
-
-							nana::point pos(2, 2);
-							pos.x += (image_pixels_ - imgsz.width) / 2;
-							pos.y += (vpix - imgsz.height) / 2;
-
-							img.stretch(img.size(), *graph_, nana::rectangle(pos, imgsz));
+							imgsz.width = vpix * imgsz.width / imgsz.height;
+							imgsz.height = vpix;
+						}
+						else
+						{
+							imgsz.width = image_pixels_;
+							imgsz.height = new_h;
 						}
 					}
+					else if(imgsz.height > vpix)
+					{
+						unsigned new_w = vpix * imgsz.width / imgsz.height;
+						if(new_w > image_pixels_)
+						{
+							imgsz.height = image_pixels_ * imgsz.height / imgsz.width;
+							imgsz.width = image_pixels_;
+						}
+						else
+						{
+							imgsz.height = vpix;
+							imgsz.width = new_w;
+						}
+					}
+
+					nana::point pos(2, 2);
+					pos.x += (image_pixels_ - imgsz.width) / 2;
+					pos.y += (vpix - imgsz.height) / 2;
+
+					img.stretch(img.size(), *graph_, nana::rectangle(pos, imgsz));
 				}
 			private:
 				nana::gui::float_listbox::module_type module_;
@@ -616,21 +616,41 @@ namespace nana{ namespace gui{
 
 				void trigger::key_down(graph_reference, const eventinfo& ei)
 				{
-					if(drawer_->widget_ptr()->enabled())
+					if(false == drawer_->widget_ptr()->enabled())
+						return;
+
+					if(drawer_->editable())
 					{
-						using namespace nana::gui;
+						bool is_move_up = false;
 						switch(ei.keyboard.key)
 						{
-						case keyboard::up:
-						case keyboard::left:
-							drawer_->move_items(true, true);
+						case keyboard::os_arrow_left:
+						case keyboard::os_arrow_right:
+							drawer_->editor()->move(ei.keyboard.key);
+							drawer_->editor()->reset_caret();
 							break;
-						case keyboard::down:
-						case keyboard::right:
-							drawer_->move_items(false, true);
+						case keyboard::os_arrow_up:
+							is_move_up = true;
+						case keyboard::os_arrow_down:
+							drawer_->move_items(is_move_up, true);
 							break;
 						}
 					}
+					else
+					{
+						bool is_move_up = false;
+						switch(ei.keyboard.key)
+						{
+						case keyboard::os_arrow_left:
+						case keyboard::os_arrow_up:
+							is_move_up = true;
+						case keyboard::os_arrow_right:
+						case keyboard::os_arrow_down:
+							drawer_->move_items(is_move_up, true);
+							break;
+						}
+					}
+					API::lazy_refresh();
 				}
 
 				void trigger::key_char(graph_reference graph, const eventinfo& ei)
@@ -641,15 +661,19 @@ namespace nana{ namespace gui{
 						switch(ei.keyboard.key)
 						{
 						case '\b':
-							editor->backspace();	break;
+							editor->backspace();break;
 						case '\n': case '\r':
 							editor->enter();	break;
-						case keyboard::cancel:
-							editor->copy();	break;
-						case keyboard::sync:
+						case keyboard::copy:
+							editor->copy();		break;
+						case keyboard::paste:
 							editor->paste();	break;
 						case keyboard::tab:
 							editor->put(keyboard::tab); break;
+						case keyboard::cut:
+							editor->copy();
+							editor->del();
+							break;
 						default:
 							if(ei.keyboard.key >= 0xFF || (32 <= ei.keyboard.key && ei.keyboard.key <= 126))
 								editor->put(ei.keyboard.key);
@@ -666,9 +690,9 @@ namespace nana{ namespace gui{
 					{
 						switch(ei.keyboard.key)
 						{
-						case keyboard::cancel:
-							editor->copy();	break;
-						case keyboard::sync:
+						case keyboard::copy:
+							editor->copy();		break;
+						case keyboard::paste:
 							editor->paste();	break;
 						}
 					}

@@ -34,16 +34,21 @@ namespace gui
 
 	struct keyboard
 	{
-		enum keys
-		{
-			select_all = 0x1,
-			alt = 18,
-			backspace = 0x8, tab = 0x9,
-			esc = 0x1B, enter = 0xD,
-			cancel = 0x3, sync = 0x16,
-			pageup = 33, pagedown,
-			left = 37, up, right, down,
-			insert = 45, del,
+		enum t{
+			//Control Code for ASCII
+			select_all	= 0x1,
+			copy		= 0x3,		//Ctrl+C
+			backspace	= 0x8,	tab		= 0x9,
+			enter_n		= 0xA,	enter	= 0xD,	enter_r = 0xD,
+			alt			= 0x12,
+			paste		= 0x16,		//Ctrl+V
+			cut			= 0x18,		//Ctrl+X
+			escape		= 0x1B,
+
+			//System Code for OS
+			os_pageup		= 0x21,	os_pagedown,
+			os_arrow_left	= 0x25, os_arrow_up, os_arrow_right, os_arrow_down,
+			os_insert		= 0x2D, os_del
 		};
 	};
 

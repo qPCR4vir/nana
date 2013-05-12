@@ -124,8 +124,6 @@ namespace nana{ namespace gui{
 				typedef widget& widget_reference;
 				typedef nana::paint::graphics& graph_reference;
 
-				static const unsigned npos = static_cast<unsigned>(-1);
-
 				drawer_impl()
 					:	widget_(nullptr), graph_(nullptr), image_pixels_(16), module_(nullptr){}
 
@@ -175,7 +173,7 @@ namespace nana{ namespace gui{
 					if(module_ && module_->items.size())
 					{
 						unsigned init_index = state_.index;
-						if(state_.index != module_->npos)
+						if(state_.index != npos)
 						{
 							unsigned last_offset_y = 0;
 							if(module_->items.size() > module_->max_items)
@@ -259,7 +257,7 @@ namespace nana{ namespace gui{
 				{
 					module_ = &md;
 					if(md.index >= md.items.size())
-						md.index = md.npos;
+						md.index = npos;
 					image_pixels_ = pixels;
 				}
 
@@ -380,8 +378,8 @@ namespace nana{ namespace gui{
 
 				struct state_type
 				{
-					unsigned offset_y;
-					unsigned index;			//The index of the selected item.
+					std::size_t offset_y;
+					std::size_t index;			//The index of the selected item.
 
 					item_renderer * const orig_renderer;
 					item_renderer * renderer;
@@ -490,9 +488,9 @@ namespace nana{ namespace gui{
 			get_drawer_trigger().get_drawer_impl().scroll_items(upwards);
 		}
 
-		void float_listbox::move_items(bool upwards, bool recycle)
+		void float_listbox::move_items(bool upwards, bool circle)
 		{
-			get_drawer_trigger().get_drawer_impl().move_items(upwards, recycle);
+			get_drawer_trigger().get_drawer_impl().move_items(upwards, circle);
 		}
 
 		void float_listbox::renderer(item_renderer* ir)

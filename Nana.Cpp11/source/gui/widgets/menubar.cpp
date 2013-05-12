@@ -26,7 +26,6 @@ namespace gui
 			{
 			public:
 				typedef std::vector<item_type*> container;
-				static const unsigned npos = static_cast<unsigned>(-1);
 
 				~itembase()
 				{
@@ -280,20 +279,20 @@ namespace gui
 					{
 						switch(ei.keyboard.key)
 						{
-						case keyboard::down:
+						case keyboard::os_arrow_down:
 							state_.menu->goto_next(true);  break;
 						case keyboard::backspace:
-						case keyboard::up:
+						case keyboard::os_arrow_up:
 							state_.menu->goto_next(false); break;
-						case keyboard::right:
+						case keyboard::os_arrow_right:
 							if(state_.menu->goto_submen() == false)
 								_m_move(false);
 							break;
-						case keyboard::left:
+						case keyboard::os_arrow_left:
 							if(state_.menu->exit_submenu() == false)
 								_m_move(true);
 							break;
-						case keyboard::esc:
+						case keyboard::escape:
 							if(state_.menu->exit_submenu() == false)
 							{
 								_m_close_menu();
@@ -321,14 +320,14 @@ namespace gui
 					{
 						switch(ei.keyboard.key)
 						{
-						case keyboard::right:
+						case keyboard::os_arrow_right:
 							_m_move(false);
 							break;
 						case keyboard::backspace:
-						case keyboard::left:
+						case keyboard::os_arrow_left:
 							_m_move(true);
 							break;
-						case keyboard::esc:
+						case keyboard::escape:
 							if(state_.behavior == state_.behavior_focus)
 							{
 								state_.active= npos;

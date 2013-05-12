@@ -24,8 +24,6 @@ namespace nana{ namespace gui{
 	{
 		namespace listbox
 		{
-			const std::size_t npos = static_cast<size_t>(-1);
-
 			class es_header
 			{
 			public:
@@ -2328,9 +2326,9 @@ namespace nana{ namespace gui{
 				{
 					switch(ei.keyboard.key)
 					{
-					case keyboard::up:
-					case keyboard::down:
-						essence_->lister.move_select(ei.keyboard.key == static_cast<char_t>(keyboard::up));
+					case keyboard::os_arrow_up:
+					case keyboard::os_arrow_down:
+						essence_->lister.move_select(ei.keyboard.key == static_cast<char_t>(keyboard::os_arrow_up));
 						essence_->trace_selected_item();
 						draw();
 						API::lazy_refresh();
@@ -2456,7 +2454,7 @@ namespace nana{ namespace gui{
 			nana::upoint pos = es.scroll_y();
 			if(pos.x == cat)
 			{
-				pos.y = (pos.x > 0 ? drawerbase::listbox::npos : 0);
+				pos.y = (pos.x > 0 ? npos : 0);
 				es.scroll_y(pos);
 			}
 			get_drawer_trigger().update();
@@ -2467,7 +2465,7 @@ namespace nana{ namespace gui{
 			auto & es = get_drawer_trigger().essence();
 			es.lister.clear();
 			nana::upoint pos = es.scroll_y();
-			pos.y = (pos.x > 0 ? drawerbase::listbox::npos : 0);
+			pos.y = (pos.x > 0 ? npos : 0);
 			es.scroll_y(pos);
 			get_drawer_trigger().update();
 		}
@@ -2482,7 +2480,7 @@ namespace nana{ namespace gui{
 				if(pos.y == 0)
 				{
 					if(es.lister.size_item(categ) == 0)
-						pos.y = (pos.x > 0 ? drawerbase::listbox::npos : 0);
+						pos.y = (pos.x > 0 ? npos : 0);
 				}
 				else
 					--pos.y;
@@ -2502,7 +2500,7 @@ namespace nana{ namespace gui{
 				{
 					if(pos.x == es.lister.size_categ())
 						--pos.x;
-					pos.y = drawerbase::listbox::npos;
+					pos.y = npos;
 					es.scroll_y(pos);
 				}
 			}

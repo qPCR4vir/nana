@@ -476,7 +476,7 @@ namespace nana{	namespace gui{
 
 				bool erase_locate()
 				{
-					ui_el_.index = ui_el_.npos;
+					ui_el_.index = npos;
 					if(ui_el_.what != ui_el_.none)
 					{
 						ui_el_.what = ui_el_.none;
@@ -583,7 +583,7 @@ namespace nana{	namespace gui{
 					style_.state = mouse_action::normal;
 
 					bool is_draw = false;
-					if(style_.module.index != style_.module.npos)
+					if(style_.module.index != npos)
 					{
 						switch(style_.list_trigger)
 						{

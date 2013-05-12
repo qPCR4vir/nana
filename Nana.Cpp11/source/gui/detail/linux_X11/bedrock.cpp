@@ -2,7 +2,7 @@
  *	A Bedrock Implementation
  *	Copyright(C) 2003-2012 Jinhao(cnjinhao@hotmail.com)
  *
- *	Distributed under the Nana Software License, Version 1.0.
+ *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
  *	http://nanapro.sourceforge.net/LICENSE_1_0.txt)
  *
@@ -837,25 +837,25 @@ namespace detail
 							case XK_Alt_L: case XK_Alt_R:
 								keychar = keyboard::alt; break;
 							case XK_BackSpace:
-								keychar = keyboard::backspace; break;
+								keychar = keyboard::backspace;	break;
 							case XK_Tab:
-								keychar = keyboard::tab; break;
+								keychar = keyboard::tab;		break;
 							case XK_Escape:
-								keychar = keyboard::esc; break;
+								keychar = keyboard::escape;		break;
 							case XK_Return:
-								keychar = keyboard::enter; break;
+								keychar = keyboard::enter;		break;
 							case XK_Cancel:
-								keychar = keyboard::cancel; break;	//Ctrl+C
+								keychar = keyboard::copy;		break;	//Ctrl+C
 							case XK_Page_Up:
-								keychar = keyboard::pageup; break;
+								keychar = keyboard::os_pageup;	break;
 							case XK_Page_Down:
-								keychar = keyboard::pagedown; break;
+								keychar = keyboard::os_pagedown; break;
 							case XK_Left: case XK_Up: case XK_Right: case XK_Down:
-								keychar = keyboard::left + (keysym - XK_Left); break;
+								keychar = keyboard::os_arrow_left + (keysym - XK_Left); break;
 							case XK_Insert:
-								keychar = keyboard::insert; break;
+								keychar = keyboard::os_insert; break;
 							case XK_Delete:
-								keychar = keyboard::del; break;
+								keychar = keyboard::os_del; break;
 							default:
 								keychar = 0xFF;
 							}

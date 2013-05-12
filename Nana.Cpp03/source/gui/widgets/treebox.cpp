@@ -466,7 +466,7 @@ namespace gui
 
 					switch(ei.keyboard.key)
 					{
-					case nana::gui::keyboard::up:
+					case keyboard::os_arrow_up:
 						if(node_state_.selected && node_state_.selected != attr_.tree_cont.get_root()->child)
 						{
 							node_type * prev = node_state_.selected->owner;
@@ -492,7 +492,7 @@ namespace gui
 							redraw = true;
 						}
 						break;
-					case nana::gui::keyboard::down:
+					case keyboard::os_arrow_down:
 						if(node_state_.selected)
 						{
 							node_type * node = node_state_.selected;
@@ -523,7 +523,7 @@ namespace gui
 							}
 						}
 						break;
-					case nana::gui::keyboard::left:
+					case keyboard::os_arrow_left:
 						if(node_state_.selected)
 						{
 							if(node_state_.selected->value.second.expanded == false)
@@ -541,7 +541,7 @@ namespace gui
 							scroll = true;
 						}
 						break;
-					case nana::gui::keyboard::right:
+					case keyboard::os_arrow_right:
 						if(node_state_.selected)
 						{
 							if(node_state_.selected->value.second.expanded == false)

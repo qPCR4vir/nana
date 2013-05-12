@@ -125,6 +125,25 @@ namespace nana{
 #endif
 		}
 
+		rectangle native_interface::screen_area_from_point(const point& pos)
+		{
+#if defined(NANA_WINDOWS)
+			POINT native_pos = {pos.x, pos.y};
+			HMONITOR monitor = ::MonitorFromPoint(native_pos, MONITOR_DEFAULTTONEAREST);
+
+			MONITORINFO mi;
+			mi.cbSize = sizeof mi;
+			if(::GetMonitorInfo(monitor, &mi))
+			{
+				return rectangle(mi.rcWork.left, mi.rcWork.top,
+								mi.rcWork.right - mi.rcWork.left, mi.rcWork.bottom - mi.rcWork.top);
+			}
+
+#elif defined(NANA_X11)
+#endif
+			return screen_size();
+		}
+
 		//platform-dependent
 		native_interface::window_result native_interface::create_window(native_window_type owner, bool nested, const rectangle& r, const appearance& app)
 		{
@@ -975,9 +994,10 @@ namespace nana{
 			if(length > 0)
 			{
 				//One for NULL terminator which will written by GetWindowText.
-				nana::string str(length + 1, nana::char_t());
+				nana::string str;
+				str.resize(length + 1);
 
-				::GetWindowText(reinterpret_cast<HWND>(wd), &(str[0]), length + 1);
+				::GetWindowText(reinterpret_cast<HWND>(wd), &(str[0]), static_cast<int>(str.size()));
 
 				//Remove the null terminator that writtien by GetWindowText
 				str.resize(length);

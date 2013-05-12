@@ -203,7 +203,6 @@ namespace nana{ namespace gui{ namespace drawerbase{ namespace login
 	class trigger::drawer
 	{
 	public:
-		static const std::size_t npos = static_cast<size_t>(-1);
 		struct component
 		{
 			enum type{none, item, up, down};

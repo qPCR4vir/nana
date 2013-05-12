@@ -154,14 +154,16 @@ namespace nana{ namespace gui{ namespace drawerbase {
 					editor_->backspace();	break;
 				case '\n': case '\r':
 					editor_->enter();	break;
-				case keyboard::cancel:
+				case keyboard::copy:
 					editor_->copy();	break;
-				case keyboard::ctr_x:
-					editor_->copy(); editor_->del();	break;
-				case keyboard::sync:
+				case keyboard::paste:
 					editor_->paste();	break;
 				case keyboard::tab:
 					editor_->put(static_cast<char_t>(keyboard::tab)); break;
+				case keyboard::cut:
+					editor_->copy();
+					editor_->del();
+					break;
 				default:
 					if(ei.keyboard.key >= 0xFF || (32 <= ei.keyboard.key && ei.keyboard.key <= 126))
 						editor_->put(ei.keyboard.key);
@@ -174,7 +176,7 @@ namespace nana{ namespace gui{ namespace drawerbase {
 				editor_->reset_caret();
 				API::lazy_refresh();
 			}
-			else if(ei.keyboard.key == static_cast<char_t>(keyboard::cancel))
+			else if(ei.keyboard.key == static_cast<char_t>(keyboard::copy))
 				editor_->copy();
 		}
 

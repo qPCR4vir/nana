@@ -300,10 +300,10 @@ namespace drawerbase
 			bool ch_tabstop_next;
 			switch(ei.keyboard.key)
 			{
-			case keyboard::left: case keyboard::up:
+			case keyboard::os_arrow_left: case keyboard::os_arrow_up:
 				ch_tabstop_next = false;
 				break;
-			case keyboard::right: case keyboard::down:
+			case keyboard::os_arrow_right: case keyboard::os_arrow_down:
 				ch_tabstop_next = true;
 				break;
 			default:

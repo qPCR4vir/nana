@@ -399,6 +399,21 @@ namespace nana{	namespace gui
 				}
 			};
 
+			struct clean_when_destroy
+			{
+				struct impl * imp_ptr;
+
+				clean_when_destroy(animation::impl * p)
+					: imp_ptr(p)
+				{}
+
+				void operator()(const eventinfo& ei)
+				{
+					nana::threads::lock_guard<nana::threads::mutex> lock(imp_ptr->thr_variable->mutex);
+					imp_ptr->outputs.erase(ei.window);
+				}
+			};
+
 			impl()
 				: looped(false), paused(true)
 			{
@@ -629,6 +644,7 @@ namespace nana{	namespace gui
 			{
 				drawing dw(wd);
 				output.diehard = dw.draw_diehard(impl::renderer(impl_, pos));
+				API::make_event<events::destroy>(wd, impl::clean_when_destroy(impl_));
 			}
 			output.points.push_back(pos);
 		}

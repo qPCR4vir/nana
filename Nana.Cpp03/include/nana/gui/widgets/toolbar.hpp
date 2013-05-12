@@ -38,7 +38,6 @@ namespace nana{ namespace gui{
 
 			public:
 				typedef std::size_t size_type;
-				const static size_type npos = static_cast<size_type>(-1);
 
 				mutable extra_events ext_event;
 

@@ -145,8 +145,10 @@ namespace nana{	namespace gui
 
 					sp_ = _m_eat_whitespace(sp_);
 					char ch = *sp_++;
+
 					if(ch == ']')
 						break;
+
 					if(ch != ',')
 						_m_throw_error("invalid array");
 				}
@@ -182,13 +184,13 @@ namespace nana{	namespace gui
 				break;
 			}
 
-			char ch = *sp_;
-			if('_' == ch || isalpha(ch) )
+
+			if('_' == *sp_ || isalpha(*sp_))
 			{
 				const char * idstart = sp_++;
-				ch = *sp_;
-				while('_' == ch || isalnum(ch) )
-					ch = *++sp_;
+
+				while('_' == *sp_ || isalnum(*sp_))
+					++sp_;
 
 				idstr_.assign(idstart, sp_);
 

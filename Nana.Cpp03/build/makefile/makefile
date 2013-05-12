@@ -34,7 +34,7 @@ $(BIN): $(LINKOBJ)
 	ranlib ../bin/$(BIN)
 
 .cpp.o:
-	$(GCC) -g -c $< -o $@ $(INCS)
+	$(GCC) -g -c $< -o $@ $(INCS) -Wall
 
 clean:
 	rm -f $(LINKOBJ)

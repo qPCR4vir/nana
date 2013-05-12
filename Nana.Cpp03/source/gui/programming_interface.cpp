@@ -253,12 +253,17 @@ namespace API
 		return restrict::interface_type::screen_size();
 	}
 
-	nana::point	cursor_position()
+	rectangle screen_area_from_point(const point& pos)
+	{
+		return restrict::interface_type::screen_area_from_point(pos);
+	}
+
+	point	cursor_position()
 	{
 		return restrict::interface_type::cursor_position();
 	}
 
-	nana::rectangle make_center(unsigned width, unsigned height)
+	rectangle make_center(unsigned width, unsigned height)
 	{
 		nana::size screen = restrict::interface_type::screen_size();
 		nana::rectangle result(

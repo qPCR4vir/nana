@@ -339,8 +339,6 @@ namespace nana{ namespace gui{
 			class layouter
 			{
 			public:
-				static const std::size_t npos = static_cast<size_t>(-1);
-
 				typedef std::list<item_t>::iterator iterator;
 				typedef std::list<item_t>::const_iterator const_iterator;
 

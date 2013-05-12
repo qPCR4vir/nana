@@ -77,8 +77,6 @@ namespace nana{ namespace gui{
 				typedef DrawerTrigger drawer_trigger;
 				typedef typename tabbar::value_type value_type;
 
-				const static std::size_t npos = static_cast<size_t>(-1);
-
 				mutable extra_events<tabbar> ext_event;
 
 				event_adapter(tabbar& tb, drawer_trigger & dtr)
@@ -184,8 +182,6 @@ namespace nana{ namespace gui{
 				: pat::cloneable<ItemRenderer, item_renderer>(u)
 			{}
 		};
-
-		static const std::size_t npos = static_cast<size_t>(-1);
 
 		template<typename ButtonAdd = nana::null_type, typename ButtonScroll = nana::null_type, typename ButtonList = nana::null_type, typename ButtonClose = nana::null_type>
 		struct button_container

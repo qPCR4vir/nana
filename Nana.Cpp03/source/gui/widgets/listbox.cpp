@@ -24,8 +24,6 @@ namespace nana{ namespace gui{
 	{
 		namespace listbox
 		{
-			const std::size_t npos = static_cast<size_t>(-1);
-
 			class es_header
 			{
 			public:
@@ -2364,9 +2362,9 @@ namespace nana{ namespace gui{
 				{
 					switch(ei.keyboard.key)
 					{
-					case keyboard::up:
-					case keyboard::down:
-						essence_->lister.move_select(ei.keyboard.key == keyboard::up);
+					case keyboard::os_arrow_up:
+					case keyboard::os_arrow_down:
+						essence_->lister.move_select(ei.keyboard.key == keyboard::os_arrow_up);
 						essence_->trace_selected_item();
 						draw();
 						API::lazy_refresh();

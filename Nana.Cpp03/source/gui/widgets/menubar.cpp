@@ -26,7 +26,6 @@ namespace gui
 			{
 			public:
 				typedef std::vector<item_type*> container;
-				static const unsigned npos = static_cast<unsigned>(-1);
 
 				~itembase()
 				{
@@ -279,20 +278,20 @@ namespace gui
 					{
 						switch(ei.keyboard.key)
 						{
-						case nana::gui::keyboard::down:
+						case keyboard::os_arrow_down:
 							state_.menu->goto_next(true);  break;
-						case nana::gui::keyboard::backspace:
-						case nana::gui::keyboard::up:
+						case keyboard::backspace:
+						case keyboard::os_arrow_up:
 							state_.menu->goto_next(false); break;
-						case nana::gui::keyboard::right:
+						case keyboard::os_arrow_right:
 							if(state_.menu->goto_submen() == false)
 								_m_move(false);
 							break;
-						case nana::gui::keyboard::left:
+						case keyboard::os_arrow_left:
 							if(state_.menu->exit_submenu() == false)
 								_m_move(true);
 							break;
-						case nana::gui::keyboard::esc:
+						case keyboard::escape:
 							if(state_.menu->exit_submenu() == false)
 							{
 								_m_close_menu();
@@ -320,19 +319,19 @@ namespace gui
 					{
 						switch(ei.keyboard.key)
 						{
-						case nana::gui::keyboard::right:
+						case keyboard::os_arrow_right:
 							_m_move(false);
 							break;
-						case nana::gui::keyboard::backspace:
-						case nana::gui::keyboard::left:
+						case keyboard::backspace:
+						case keyboard::os_arrow_left:
 							_m_move(true);
 							break;
-						case nana::gui::keyboard::esc:
+						case keyboard::escape:
 							if(state_.behavior == state_.behavior_focus)
 							{
 								state_.active= npos;
 								state_.behavior = state_.behavior_none;
-								nana::gui::API::restore_menubar_taken_window();
+								API::restore_menubar_taken_window();
 							}
 						}
 					}

@@ -625,6 +625,13 @@ namespace nana{	namespace gui
 				{
 					impl_->render_this_specifically(tar, pos);
 				});
+
+				API::make_event<events::destroy>(wd, [this](const eventinfo& ei)
+				{
+					std::lock_guard<decltype(impl_->thr_variable->mutex)> lock(impl_->thr_variable->mutex);
+					impl_->outputs.erase(ei.window);
+	
+				});
 			}
 			output.points.push_back(pos);
 		}

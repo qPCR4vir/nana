@@ -124,8 +124,6 @@ namespace nana{ namespace gui{
 				typedef nana::gui::widget& widget_reference;
 				typedef nana::paint::graphics& graph_reference;
 
-				static const unsigned npos = static_cast<unsigned>(-1);
-
 				drawer_impl()
 					:	widget_(0), graph_(0), image_pixels_(16), module_(0)
 				{}
@@ -171,12 +169,12 @@ namespace nana{ namespace gui{
 					}
 				}
 
-				void move_items(bool upwards, bool recycle)
+				void move_items(bool upwards, bool circle)
 				{
 					if(module_ && module_->items.size())
 					{
-						unsigned init_index = state_.index;
-						if(state_.index != module_->npos)
+						std::size_t init_index = state_.index;
+						if(state_.index != npos)
 						{
 							unsigned last_offset_y = 0;
 							if(module_->items.size() > module_->max_items)
@@ -186,7 +184,7 @@ namespace nana{ namespace gui{
 							{
 								if(state_.index)
 									--(state_.index);
-								else if(recycle)
+								else if(circle)
 								{
 									state_.index = static_cast<unsigned>(module_->items.size() - 1);
 									state_.offset_y = last_offset_y;
@@ -199,7 +197,7 @@ namespace nana{ namespace gui{
 							{
 								if(state_.index < module_->items.size() - 1)
 									++(state_.index);
-								else if(recycle)
+								else if(circle)
 								{
 									state_.index = 0;
 									state_.offset_y = 0;
@@ -260,7 +258,7 @@ namespace nana{ namespace gui{
 				{
 					module_ = &md;
 					if(md.index >= md.items.size())
-						md.index = md.npos;
+						md.index = npos;
 					image_pixels_ = pixels;
 				}
 
@@ -301,7 +299,7 @@ namespace nana{ namespace gui{
 						if(graph_->width() > outter_w && graph_->height() > 4 )
 						{
 							//Draw items
-							unsigned items = static_cast<unsigned>(pages ? module_->max_items : module_->items.size());							
+							std::size_t items = pages ? module_->max_items : module_->items.size();							
 							items += state_.offset_y;
 
 							const unsigned item_pixels = state_.renderer->item_pixels(*graph_);
@@ -309,7 +307,7 @@ namespace nana{ namespace gui{
 							nana::rectangle item_r(2, 2, graph_->width() - outter_w, item_pixels);
 
 							state_.renderer->image(_m_image_enabled(), image_pixels_);
-							for(unsigned i = state_.offset_y; i < items; ++i)
+							for(std::size_t i = state_.offset_y; i < items; ++i)
 							{
 								item_renderer::state_t state = item_renderer::StateNone;
 								if(i == state_.index) state = item_renderer::StateHighlighted;
@@ -384,8 +382,8 @@ namespace nana{ namespace gui{
 
 				struct state_type
 				{
-					unsigned offset_y;
-					unsigned index;			//The index of the selected item.
+					std::size_t offset_y;
+					std::size_t index;			//The index of the selected item.
 
 					item_renderer * const orig_renderer;
 					item_renderer * renderer;
@@ -494,9 +492,9 @@ namespace nana{ namespace gui{
 			get_drawer_trigger().get_drawer_impl().scroll_items(upwards);
 		}
 
-		void float_listbox::move_items(bool upwards, bool recycle)
+		void float_listbox::move_items(bool upwards, bool circle)
 		{
-			get_drawer_trigger().get_drawer_impl().move_items(upwards, recycle);
+			get_drawer_trigger().get_drawer_impl().move_items(upwards, circle);
 		}
 
 		void float_listbox::renderer(item_renderer* ir)

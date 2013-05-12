@@ -81,7 +81,6 @@ namespace nana{	namespace gui
 						somewhere, item_root, item_name, item_arrow
 					};
 
-					static const std::size_t npos = static_cast<std::size_t>(-1);
 					t what;
 					std::size_t index;
 

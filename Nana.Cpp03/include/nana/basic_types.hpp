@@ -16,6 +16,9 @@
 
 namespace nana
 {
+	//A constant value for the invalid position.
+	const std::size_t npos = static_cast<std::size_t>(-1);
+
 	namespace detail
 	{
 		struct drawable_impl_type;	//declearation, defined in platform_spec.hpp
