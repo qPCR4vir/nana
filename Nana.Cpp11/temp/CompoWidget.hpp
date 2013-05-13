@@ -60,6 +60,8 @@ class OpenSaveBox : public  CompoWidget
 	void		open();
 	void		save();
 	void		pick();
+    bool        UserSelected() const {return _user_selected ;}
+    bool        Canceled()     const {return _canceled;}
 
 
  protected:
@@ -68,6 +70,7 @@ class OpenSaveBox : public  CompoWidget
 
  private:
 	nana::gui::label	_label;
+    bool _user_selected, _canceled;
 };
 
 #endif 

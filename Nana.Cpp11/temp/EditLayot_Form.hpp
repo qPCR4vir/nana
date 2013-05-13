@@ -13,7 +13,7 @@ class EditLayot_Form : public nana::gui::form
 						const nana::string   &DefLayotFileName=STR(""),
 						nana::gui::form      *fm=nullptr  );
  private:
-	nana::string		_Titel/*, _DefLayFile*/;
+	nana::string		_Titel, _Loaded/*, _DefLayFile*/;
 	nana::gui::place	_place, &_OriPlace;
 	OpenSaveBox			_OSbx;
 	nana::gui::button	_ReCollocate;
@@ -21,7 +21,6 @@ class EditLayot_Form : public nana::gui::form
 	nana::gui::menubar	_menu;
 	nana::gui::menu	    &_menuFile,&_menuProgram/*,&_menuLayot*/;
 	std::unique_ptr <EditLayot_Form> _myEdLayForm;
-	bool				_save;
 
 	void InitCaptions();
     void MakeResponsive();
@@ -30,6 +29,7 @@ class EditLayot_Form : public nana::gui::form
 	void OpenFile();
 	void OpenFileN(const nana::string   &file=STR(""));
 	void SaveFile();
+	void SaveFileN(const nana::string   &fileTip=STR(""));
 	void EditMyLayot();
     static const char* readLayot(const nana::string& FileName, std::string& layot);
 

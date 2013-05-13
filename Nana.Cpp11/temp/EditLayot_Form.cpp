@@ -13,7 +13,6 @@
 					_ReCollocate	(*this),
 					_textBox		(*this),
 				    _place			(*this),
-					_save			(true),
 					_menu			(*this),
 					_menuFile		(_menu.push_back(STR("&File"))),
 					_menuProgram	(_menu.push_back(STR("&Programm"))),
@@ -59,11 +58,12 @@ void EditLayot_Form::MakeResponsive()
 		_ReCollocate.make_event		<nana::gui::events::click> ([&](){ReLayot();});
 		_OSbx._fileName.ext_event().selected = [&](nana::gui::combox&cb)
 		{
-			SaveFile();  // save only is edited, changed ??? but how to know??	;
-			_save =false;
-			if( ! _OSbx.FileName().empty() )
-				_textBox.load(_OSbx.FileName().c_str() );
-			_save=true;
+		    if(! _OSbx.UserSelected()) return;
+
+            nana::string   fileN=_OSbx.FileName();  // The newly selected name
+            std::wcout<<std::endl<<STR("Selected: ")<<fileN<<std::endl;
+            SaveFileN(_Loaded);  // save only is edited?, changed ??? but how to know??	;
+			OpenFileN(fileN );
 		};
 
 	}
@@ -85,33 +85,36 @@ void EditLayot_Form::ReLayot()
 	}
 void EditLayot_Form::OpenFile()
 	{	 
-       if(_save) 
-	        OpenFileN(_OSbx.FileName());
+      if(_OSbx.Canceled () ) return;
+      std::wcout<<std::endl<<STR("OpenFile: ")<<std::endl;
+	  OpenFileN(_OSbx.FileName());
 	}
 void EditLayot_Form::OpenFileN(const nana::string   &file)
-	{	  if(!_save) return; 
-            std::wcout<<std::endl<<STR("Opening file: ")<<_OSbx.FileName()<<std::endl;
-			 _save=false;
-			caption	(_Titel+STR(" <")+ file+STR(">"));
-			_textBox.load(file.c_str() );
-			_save=true;
-
-			//std::wcout<<std::endl<<STR("OpenFIle: ")<<file<<std::endl;
-			//std::wcout<<std::endl<<STR("text 0 pos: ")<<_cbProject.text(0)<<std::endl;
-			//std::wcout<<std::endl<<STR("Option: ")<<_cbProject.option()<<std::endl;
-			//std::wcout<<std::endl<<STR("Option text: ")<<_cbProject.text(_cbProject.option())<<std::endl;
-			//std::wcout<<std::endl<<STR("Option Last: ")<<_cbProject.the_number_of_options()<<std::endl;
-			//std::wcout<<std::endl<<STR("text Last-1: ")<<_cbProject.text(_cbProject.the_number_of_options()-1)<<std::endl;
+	{	  
+		if( file.empty() ) return;
+        std::wcout<<std::endl<<STR("OpenFileN: ")<<file<<std::endl;
+		caption	(_Titel+STR(" <")+ file+STR(">"));
+		_textBox.load(file.c_str() );
+        _textBox.select(true);
+            _textBox.show();
+        _Loaded=file;
+       std::wcout<<std::endl<<STR("OpenedFileN: ")<<file<<std::endl;
+	}
+void EditLayot_Form::SaveFileN(const nana::string   &fileTip)
+	{	
+        std::wcout<<std::endl<<STR("Seaving tip: ")<<fileTip<<std::endl;
+        _OSbx.fb_s.init_path(fileTip);
+        _OSbx.save();
+       if(_OSbx.Canceled () ) return;
+       SaveFile();
 	}
 void EditLayot_Form::SaveFile()
-	{	if(!_save) return;
-
+	{	
+      if(_OSbx.Canceled () ) return;
         std::wcout<<std::endl<<STR("Seaving file: ")<<_OSbx.FileName()<<std::endl;
-
 		_textBox.store(_OSbx.FileName().c_str() );
-		caption	(_Titel+STR(" <")+ _OSbx.FileName()+STR(">"));
-		_save=true;
-
+        _Loaded=_OSbx.FileName();
+		caption	(_Titel+STR(" <" )+ _Loaded + STR( ">" ));
 		std::wcout<<std::endl<<STR("SavedFIle: ")<<_OSbx.FileName()<<std::endl;
 	}
 void EditLayot_Form::EditMyLayot()
@@ -125,7 +128,9 @@ const char* EditLayot_Form::readLayot(const nana::string& FileName, std::string&
 		std::ifstream loy(FileName);
 		std::string temp;
 
-		while (std::getline(loy,temp)) layot+=temp;
+		while (std::getline(loy,temp)) layot+=temp + "\n";
+        //if (!layot.empty () )
+        //    layot.resize (layot.size()-1 );
 		std::cout<< layot;
 		return layot.c_str();
     }	

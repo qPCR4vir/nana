@@ -1,4 +1,6 @@
 #include <../temp/CompoWidget.hpp>
+#include <iostream>    // temp, for debugging
+#include <fstream>     // temp, for debugging
 
 
 CompoWidget::CompoWidget (	const nana::string &caption_, 
@@ -29,7 +31,9 @@ OpenSaveBox::OpenSaveBox     (	nana::gui::form &fm,
 								const nana::string   &DefFileName )
 							:	CompoWidget(	label  ),
 								Open(fm), Save(fm), Pick(fm),_fileName(fm),_label(fm),
-								fb_o(fm,true ),fb_s(fm,false ),fb_p(fm,true )
+								fb_o(fm,true ),fb_s(fm,false ),fb_p(fm,true ),
+                                _user_selected(false),
+                                _canceled(true)
 {
 	//caption(label);  // or def as FileName  ??
 	_label.caption (caption()  ); 
@@ -63,23 +67,51 @@ OpenSaveBox::OpenSaveBox     (	nana::gui::form &fm,
 	{	_fileName.push_back	(DefFileName);
 		_fileName.option(0);
 	}
-
+    _user_selected=true;
 }
 	
 void OpenSaveBox::open()
 {
-	if(fb_o())  
-	    _fileName.push_back(fb_o.file()).option(_fileName.the_number_of_options());
+	std::wcout<<std::endl<<STR("open: ")<<std::endl;
+
+    if(fb_o())  
+	{   
+        _user_selected=false;
+        _fileName.push_back(fb_o.file()).option(_fileName.the_number_of_options());
+	    std::wcout<<std::endl<<STR("open OK: ")<<std::endl;
+        _user_selected=true;
+        _canceled= false;
+        return;
+    }
+    std::wcout<<std::endl<<STR("open Canceled: ")<<std::endl;
+    _canceled= true;
+
 }
 void OpenSaveBox::save()
 {
+	std::wcout<<std::endl<<STR("save: ")<<std::endl;
 	if(fb_s())  
-		_fileName.push_back(fb_s.file()).option(_fileName.the_number_of_options());
+	{	_user_selected=false;
+        _fileName.push_back(fb_s.file()).option(_fileName.the_number_of_options());
+	    std::wcout<<std::endl<<STR("save OK: ")<<std::endl;
+        _user_selected=true;
+        _canceled= false;
+        return;
+    }
+    std::wcout<<std::endl<<STR("save Canceled: ")<<std::endl;
+    _canceled= true;
 }
 void OpenSaveBox::pick()
 {
+	std::wcout<<std::endl<<STR("pick: ")<<std::endl;
 	if(fb_p())  
-		_fileName.push_back(fb_p.file()).option(_fileName.the_number_of_options());
+	{	
+        _user_selected=false;
+        _fileName.push_back(fb_p.file()).option(_fileName.the_number_of_options());
+        _user_selected=true;
+        _canceled= false;
+    }
+    _canceled= true;
 }
 OpenSaveBox::p::field_reference	OpenSaveBox::put(p::field_reference f)
 {
