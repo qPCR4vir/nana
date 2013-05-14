@@ -31,7 +31,10 @@
                  OpenFile();
              }
         } else   		          
-        {    _textBox.append(nana::string(nana::charset(lay)),false );
+        {   _textBox.append(nana::string(nana::charset(lay)),false );
+            _textBox.select(true);
+            _textBox.show();
+
              if (! DefLayotFileName.empty())
                 _OSbx.FileName	(   DefLayotFileName  );
         }
@@ -70,7 +73,10 @@ void EditLayot_Form::MakeResponsive()
 void EditLayot_Form::InitMyLayot()
 	{
 		std::string layot;
-        _place.div( readLayot( STR("Layot_Form.lay.txt"), layot ="") );
+        readLayot( STR("Layot_Form.lay.txt"), layot ="");
+        if (layot.empty() )
+            layot="vertical\n\t	<weight=25>\n\t<weight=2>\n\t<Layot gap=2 weight=19>\n\t<weight=2>\n\t<textBox>\n\t< weight=25 <weight=5> <re weight=50 gap=1>>\n\t<weight=5>";
+        _place.div( layot.c_str () );
 		_place						<< _OSbx;
 		_place.field("textBox"	   )<< _textBox;
 		_place.field("re"		   )<< _ReCollocate ;
@@ -120,7 +126,8 @@ void EditLayot_Form::SaveFile()
 void EditLayot_Form::EditMyLayot()
 		{
 			if (!_myEdLayForm) 
-				_myEdLayForm.reset (new EditLayot_Form (_place,"",  STR("Layot_Form.lay.txt") , this ));
+				_myEdLayForm.reset (new EditLayot_Form (_place,"vertical\n\t	<weight=25>\n\t<weight=2>\n\t<Layot gap=2 weight=19>\n\t<weight=2>\n\t<textBox>\n\t< weight=25 <weight=5> <re weight=50 gap=1>>\n\t<weight=5>",
+                STR("Layot_Form.lay.txt") , this ));
 			_myEdLayForm->show ();
 		}
 const char* EditLayot_Form::readLayot(const nana::string& FileName, std::string& layot)
@@ -129,8 +136,6 @@ const char* EditLayot_Form::readLayot(const nana::string& FileName, std::string&
 		std::string temp;
 
 		while (std::getline(loy,temp)) layot+=temp + "\n";
-        //if (!layot.empty () )
-        //    layot.resize (layot.size()-1 );
 		std::cout<< layot;
 		return layot.c_str();
     }	

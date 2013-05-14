@@ -85,7 +85,6 @@ void OpenSaveBox::open()
     }
     std::wcout<<std::endl<<STR("open Canceled: ")<<std::endl;
     _canceled= true;
-
 }
 void OpenSaveBox::save()
 {
