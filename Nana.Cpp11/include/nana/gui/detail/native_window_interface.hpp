@@ -43,10 +43,11 @@ namespace detail
 #if defined(NANA_X11)
 		static void set_modal(native_window_type);
 #endif
+		static void enable_window(native_window_type, bool is_enabled);
 		static bool window_icon(native_window_type, const paint::image&);
-		static void	active_owner(native_window_type);
-		static void	close_window(native_window_type);
-		static void	show_window(native_window_type, bool show, bool active);
+		static void active_owner(native_window_type);
+		static void close_window(native_window_type);
+		static void show_window(native_window_type, bool show, bool active);
 		static void restore_window(native_window_type);
 		static void	refresh_window(native_window_type);
 		static bool is_window(native_window_type);

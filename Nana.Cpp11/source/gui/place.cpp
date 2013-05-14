@@ -455,17 +455,52 @@ namespace nana{	namespace gui
 				default:	break;
 				}
 			}
+
+			window window_handle() const
+			{
+				switch(kind_of_element)
+				{
+				case kind::window:
+					return u.handle;
+				case kind::fixed:
+					return u.fixed_ptr->first;
+				case kind::percent:
+					return u.percent_ptr->first;
+				case kind::room:
+					return u.room_ptr->first;
+				default:	break;
+				}
+				return nullptr;
+			}
 		};
 	public:
 		typedef std::vector<element_t>::const_iterator const_iterator;
 
-		field_impl()
-			: attached(false)
+		field_impl(place * p)
+			: place_ptr_(p), attached(false)
 		{}
 	private:
+		//Listen to destroy of a window
+		//It will delete the element and recollocate when the window destroyed.
+		void _m_make_destroy(window wd)
+		{
+			API::make_event<events::destroy>(wd, [this](const eventinfo& ei)
+			{
+				for(auto i = elements.begin(), end = elements.end(); i != end; ++i)
+				{
+					if(ei.window != i->window_handle())
+						continue;
+					elements.erase(i);
+					break;
+				}
+				place_ptr_->collocate();
+			});
+		}
+
 		field_t& operator<<(window wd) override
 		{
 			elements.emplace_back(wd);
+			_m_make_destroy(wd);
 			return *this;
 		}
 
@@ -475,15 +510,17 @@ namespace nana{	namespace gui
 			return *this;
 		}
 
-		field_t& operator<<(const fixed_t& f) override
+		field_t& operator<<(const fixed_t& fx) override
 		{
-			elements.emplace_back(f);
+			elements.emplace_back(fx);
+			_m_make_destroy(fx.first);
 			return *this;
 		}
 
-		field_t& operator<<(const percent_t& p) override
+		field_t& operator<<(const percent_t& pcnt) override
 		{
-			elements.emplace_back(p);
+			elements.emplace_back(pcnt);
+			_m_make_destroy(pcnt.first);
 			return *this;
 		}
 
@@ -495,12 +532,26 @@ namespace nana{	namespace gui
 			if(x.second.second == 0)
 				x.second.second = 1;
 			elements.emplace_back(x);
+			_m_make_destroy(r.first);
 			return *this;
 		}
 
 		field_t& fasten(window wd) override
 		{
 			fastened.push_back(wd);
+
+			//Listen to destroy of a window. The deleting a fastened window
+			//does not change the layout.
+			API::make_event<events::destroy>(wd, [this](const eventinfo& ei)
+			{
+				for(auto i = fastened.begin(), end = fastened.end(); i != end; ++i)
+				{
+					if(ei.window != *i)
+						continue;
+					fastened.erase(i);
+					break;
+				}
+			});	
 			return *this;
 		}
 	public:
@@ -542,6 +593,8 @@ namespace nana{	namespace gui
 		bool attached;
 		std::vector<element_t> elements;
 		std::vector<window>	fastened;
+	private:
+		place * place_ptr_;
 	};//end class field_impl
 
 	class place::implement::division
@@ -1163,6 +1216,19 @@ namespace nana{	namespace gui
 		place::place(window wd)
 			: impl_(new implement)
 		{
+			bind(wd);
+		}
+
+		place::~place()
+		{
+			delete impl_;
+		}
+
+		void place::bind(window wd)
+		{
+			if(impl_->window_handle)
+				throw std::runtime_error("place.bind: it has already binded to a window.");
+
 			impl_->window_handle = wd;
 			impl_->event_size_handle = API::make_event<events::size>(wd, [this](const eventinfo&ei)
 				{
@@ -1172,11 +1238,6 @@ namespace nana{	namespace gui
 						impl_->root_division->collocate();
 					}					
 				});
-		}
-
-		place::~place()
-		{
-			delete impl_;
 		}
 
 		void place::div(const char* s)
@@ -1209,9 +1270,9 @@ namespace nana{	namespace gui
 
 			//get the field with specified name, if no such field with specified name
 			//then create one.
-			auto * p = impl_->fields[name];
+			auto & p = impl_->fields[name];
 			if(nullptr == p)
-				p = (impl_->fields[name] = new implement::field_impl);
+				p = new implement::field_impl(this);
 
 			if((false == p->attached) && impl_->root_division)
 			{
@@ -1236,6 +1297,16 @@ namespace nana{	namespace gui
 			{
 				impl_->root_division->area = API::window_size(impl_->window_handle);
 				impl_->root_division->collocate();
+
+				for(auto & field : impl_->fields)
+				{
+					bool is_show = field.second->attached;
+					if(is_show)
+						is_show = (nullptr != implement::search_div_name(impl_->root_division, field.first));
+
+					for(auto & el : field.second->elements)
+						API::show_window(el.window_handle(), is_show);
+				}
 			}
 		}
 	//end class place

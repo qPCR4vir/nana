@@ -450,6 +450,23 @@ namespace nana{
 			}
 		}
 #endif
+		
+		void native_interface::enable_window(native_window_type wd, bool is_enabled)
+		{
+#if defined(NANA_WINDOWS)
+			::EnableWindow(reinterpret_cast<HWND>(wd), is_enabled);
+#else
+			int mask = ExposureMask | StructureNotifyMask;
+			if(is_enabled)
+			{
+				mask |= (ButtonPressMask | ButtonReleaseMask | PointerMotionMask);
+				mask |= (KeyPressMask | KeyReleaseMask);
+				mask |= (EnterWindowMask | LeaveWindowMask | FocusChangeMask);
+			}
+
+			::XSelectInput(restrict::spec.open_display(), reinterpret_cast<Window>(wd), mask);
+#endif		
+		}
 
 		bool native_interface::window_icon(native_window_type wd, const nana::paint::image& img)
 		{

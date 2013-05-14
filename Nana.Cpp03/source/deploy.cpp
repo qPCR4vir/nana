@@ -33,6 +33,15 @@ namespace nana
 #endif
 	}
 
+	double strtod(const char_t* str, char_t**endptr)
+	{
+#if defined(NANA_UNICODE)
+		return ::wcstod(str, endptr);
+#else
+		return ::strtod(str, endptr);
+#endif
+	}
+
 	char_t* strcpy(char_t* dest, const char_t* source)
 	{
 #if defined(NANA_UNICODE)

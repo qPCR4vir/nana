@@ -126,6 +126,35 @@ namespace nana{	namespace gui
 			}
 		};
 
+		struct comp_sort_by_name
+		{
+			bool operator()(const nana::string& a, nana::any* anyptr_a, const nana::string& b, nana::any* anyptr_b, bool reverse) const
+			{
+				int dira = anyptr_a->get<item_fs>()->directory ? 1 : 0;
+				int dirb = anyptr_b->get<item_fs>()->directory ? 1 : 0;
+				if(dira != dirb)
+					return (reverse ? dira < dirb : dira > dirb);
+
+				std::size_t pos_a = a.find_first_not_of(STR("+-0123456789."));
+				std::size_t pos_b = b.find_first_not_of(STR("+-0123456789."));
+				if(pos_a && pos_b)
+				{
+					if((pos_a != a.npos) && (a.at(pos_a - 1) == '.'))
+						--pos_a;
+					if((pos_b != b.npos) && (b.at(pos_b - 1) == '.'))
+						--pos_b;
+					
+					if(pos_a && pos_b)
+					{
+						double va = nana::strtod(a.substr(0, pos_a).c_str(), 0);
+						double vb = nana::strtod(b.substr(0, pos_b).c_str(), 0);
+						return (reverse ? va > vb : va < vb);
+					}
+				}
+				return (reverse ? a > b : a < b);			
+			}
+		};
+
 		struct comp_sort_by_type
 		{
 			bool operator()(const nana::string& a, nana::any* anyptr_a, const nana::string& b, nana::any* anyptr_b, bool reverse) const
@@ -182,6 +211,7 @@ namespace nana{	namespace gui
 			ls_file_.append_header(STR("Size"), 70);
 			ls_file_.make_event<events::dbl_click>(*this, &filebox_implement::_m_sel_file);
 			ls_file_.make_event<events::mouse_down>(*this, &filebox_implement::_m_sel_file);
+			ls_file_.set_sort_compare(0, comp_sort_by_name());
 			ls_file_.set_sort_compare(2, comp_sort_by_type());
 			ls_file_.set_sort_compare(3, comp_sort_by_size());
 
@@ -841,11 +871,6 @@ namespace nana{	namespace gui
 		}
 
 		bool filebox::show() const
-		{
-			return operator()();
-		}
-
-		bool filebox::operator()() const
 		{
 #if defined(NANA_WINDOWS)
 			nana::char_t buffer[520];

@@ -9,7 +9,7 @@ namespace nana{	namespace gui
 	{
 		struct implement;
 	public:
-		filebox(window owner, bool for_open);
+		filebox(window owner, bool is_open_mode);
 		~filebox();
 
 		void title(const nana::string& s);
@@ -17,8 +17,15 @@ namespace nana{	namespace gui
 		void add_filter(const nana::string& description, const nana::string& filetype);
 
 		nana::string file() const;
-		bool operator()() const;
+
+		//Show the filebox
 		bool show() const;
+		
+		//A function object method alternative to show()
+		bool operator()() const
+		{
+			return show();
+		}
 	private:
 		implement * impl_;
 	};

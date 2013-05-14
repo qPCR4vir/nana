@@ -34,8 +34,13 @@ namespace nana{	namespace gui{
 			return *this;
 		}
 
-		pick_t operator()() const;
 		pick_t show() const;
+
+		//A function object method alternative to show();
+		pick_t operator()() const
+		{
+			return show();
+		}
 	private:
 		std::stringstream sstream_;
 		window wd_;

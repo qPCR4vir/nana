@@ -42,9 +42,14 @@ namespace gui
 		typedef field_t & field_reference;
 
 		place();
-		place(window wd);
+		place(window);
 		~place();
 
+		/** @brief Bind to a window
+		 *	@param handle	A handle to a window which the place wants to attach.
+		 *	@remark	It will throw an exception if the place has already binded to a window.
+		 */
+		void bind(window);
 		void div(const char* s);
 		field_reference field(const char* name);
 		void collocate();

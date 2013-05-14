@@ -598,6 +598,8 @@ namespace API
 			{
 				iwd->flags.enabled = enabled;
 				restrict::window_manager.update(iwd, true, false);
+				if(category::root_tag::value == iwd->other.category)
+					restrict::interface_type::enable_window(iwd->root, enabled);
 			}
 		}
 	}
@@ -1199,7 +1201,7 @@ namespace API
 		return false;
 	}
 
-	mouse_action::t mouse_action(window wd)
+	gui::mouse_action::t mouse_action(window wd)
 	{
 		internal_scope_guard isg;
 		restrict::core_window_t * iwd = reinterpret_cast<restrict::core_window_t*>(wd);

@@ -936,7 +936,7 @@ namespace detail
 					auto & atoms = nana::detail::platform_spec::instance().atombase();
 					if(atoms.wm_protocols == xevent.xclient.message_type)
 					{
-						if(atoms.wm_delete_window == static_cast<Atom>(xevent.xclient.data.l[0]))
+						if(msgwnd->flags.enabled && (atoms.wm_delete_window == static_cast<Atom>(xevent.xclient.data.l[0])))
 						{
 							ei.unload.cancel = false;
 							bedrock.raise_event(event_tag::unload, msgwnd, ei, true);
@@ -982,7 +982,31 @@ namespace detail
 
 		++(context->event_pump_ref_count);
 		wd_manager.internal_lock().revert();
+		
+		native_window_type owner_native = 0;
+		core_window_t * owner = 0;
+		if(modal_window)
+		{
+			native_window_type modal = root(reinterpret_cast<core_window_t*>(modal_window));
+			owner_native = native_interface::get_owner_window(modal);
+			if(owner_native)
+			{
+				native_interface::enable_window(owner_native, false);
+				owner = wd_manager.root(owner_native);
+				if(owner)
+					owner->flags.enabled = false;
+			}	
+		}
+		
 		nana::detail::platform_spec::instance().msg_dispatch(modal_window ? reinterpret_cast<core_window_t*>(modal_window)->root : 0);
+
+		if(owner_native)
+		{
+			if(owner)
+				owner->flags.enabled = true;
+			native_interface::enable_window(owner_native, true);
+		}
+		
 		wd_manager.internal_lock().forward();
 		if(0 == --(context->event_pump_ref_count))
 		{

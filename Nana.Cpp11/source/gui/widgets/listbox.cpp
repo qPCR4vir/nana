@@ -373,9 +373,7 @@ namespace nana{ namespace gui{
 						{	//No user-defined comparer is provided, and default comparer is applying.
 							for(auto & cat: list_)
 							{
-								auto bi = std::begin(cat.sorted);
-								auto ei = std::end(cat.sorted);
-								std::sort(bi, ei, [&cat, &weak_ordering_comp, this](std::size_t x, std::size_t y){
+								std::sort(std::begin(cat.sorted), std::end(cat.sorted), [&cat, this](std::size_t x, std::size_t y){
 										auto & a = cat.items[x].texts[sorted_index_];
 										auto & b = cat.items[y].texts[sorted_index_];
 										return (sorted_reverse_ ? a > b : a < b);

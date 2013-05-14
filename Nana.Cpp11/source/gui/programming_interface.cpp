@@ -590,6 +590,8 @@ namespace API
 			{
 				iwd->flags.enabled = enabled;
 				restrict::window_manager.update(iwd, true, false);
+				if(category::root_tag::value == iwd->other.category)
+					restrict::interface_type::enable_window(iwd->root, enabled);
 			}
 		}
 	}
