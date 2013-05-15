@@ -279,5 +279,8 @@
     <ClCompile Include="..\..\source\gui\animation.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\gui\filebox.cpp">
+      <Filter>Source Files\gui</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
