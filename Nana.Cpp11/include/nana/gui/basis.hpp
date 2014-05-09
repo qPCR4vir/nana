@@ -168,7 +168,7 @@ namespace gui
 					typename NoActive = null_type>
 		struct decorate
 		{
-			typedef metacomp::fixed_type_set<Minimize, Maximize, Sizable, Floating, NoActive> set_type;
+			typedef meta::fixed_type_set<Minimize, Maximize, Sizable, Floating, NoActive> set_type;
 
 			operator appearance() const
 			{
@@ -190,7 +190,7 @@ namespace gui
                    typename Sizable  = null_type>
 		struct bald
 		{
-			typedef metacomp::fixed_type_set<Taskbar, Floating, NoActive, Minimize, Maximize, Sizable> set_type;
+			typedef meta::fixed_type_set<Taskbar, Floating, NoActive, Minimize, Maximize, Sizable> set_type;
 
 			operator appearance() const
 			{
@@ -212,7 +212,7 @@ namespace gui
                    typename NoActive = null_type>
 		struct optional
 		{
-			typedef metacomp::fixed_type_set<Taskbar, Floating, NoActive> set_type;
+			typedef meta::fixed_type_set<Taskbar, Floating, NoActive> set_type;
 
 			operator appearance() const
 			{

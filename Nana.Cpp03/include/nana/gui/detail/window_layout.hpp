@@ -207,6 +207,7 @@ namespace detail
 			//Enable the effect.
 			data_sect.effects_bground_windows.push_back(wd);
 			wd->other.glass_buffer.make(wd->dimension.width, wd->dimension.height);
+			make_bground(wd);
 			return true;
 		}
 
@@ -381,8 +382,10 @@ namespace detail
 
 				//Test a parent of the glass window is invisible.
 				for(core_window_t *p = x->parent; p; p = p->parent)
+				{
 					if(false == p->visible)
-						return;
+						continue;
+				}
 
 				if(sigwd->parent == x->parent)
 				{

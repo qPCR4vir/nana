@@ -20,57 +20,64 @@ namespace nana
 		noncopyable();
 	};
 
-	namespace metacomp
+	template<bool Test, typename T = void>
+	struct enable_if
+	{
+		// type is undefined for assumed !_Test
+	};
+
+	template<typename T>
+	struct enable_if<true, T>
+	{
+		typedef T type;
+	};
+
+	namespace meta
 	{
 		struct true_type
-        {
-              enum{value = 1};
-        };
+		{
+			static const bool value = true;
+		};
 
 		struct false_type
-        {
-              enum{value = 0};
-        private:
-               int placeholder[2];
-        };
-
-		namespace detail
 		{
-			template<bool Condition, typename T1, typename T2>
-			struct static_if
-			{
-				typedef T1 value_type;
-			};
-
-			template<typename T1, typename T2>
-			struct static_if<false, T1, T2>
-			{
-				 typedef T2 value_type;
-			};	
-		}//end namespace detail
-
+			static const bool value = false;
+		private:
+			int placeholder[2];
+		};
 
 		template<bool is_true>
 		struct bool_type: public true_type
 		{
-			typedef true_type value_type;
+			typedef true_type type;
 		};
 
 		template<>
 		struct bool_type<false>: public false_type
 		{
-			typedef false_type value_type;
+			typedef false_type type;
+		};
+
+		template<bool Test, typename Then, typename Else>
+		struct conditional
+		{
+			typedef Else type;
+		};
+
+		template<typename Then, typename Else>
+		struct conditional<true, Then, Else>
+		{
+			typedef Then type;
 		};
 	}//end namespace meta
-
 
 	namespace traits
 	{
 
 		namespace detail
 		{
-			typedef nana::metacomp::true_type	true_type;
-			typedef nana::metacomp::false_type	false_type;
+			typedef nana::meta::true_type	true_type;
+			typedef nana::meta::false_type	false_type;
 
 			template<typename T> true_type match(T);
 			template<typename> false_type match(...);
@@ -81,28 +88,32 @@ namespace nana
 
 		template<typename T1, typename T2>
 		struct same_type
-			: metacomp::bool_type<false>
+			: meta::bool_type<false>
 		{};
 
 		template<typename T>
 		struct same_type<T, T>
-			: metacomp::bool_type<true>{};
+			: meta::bool_type<true>{};
 
 
 		template<typename T>
-		struct is_reference: metacomp::bool_type<false>{};
+		struct is_reference: meta::bool_type<false>{};
 
 		template<typename T>
-		struct is_reference<T&>: metacomp::bool_type<true>{};
+		struct is_reference<T&>: meta::bool_type<true>{};
 
 		template<typename T>
-		struct is_pointer: metacomp::bool_type<false>{};
+		struct is_pointer: meta::bool_type<false>{};
 
 		template<typename T>
-		struct is_pointer<T*>: metacomp::bool_type<true>{};
+		struct is_pointer<T*>: meta::bool_type<true>{};
 
 		template<typename Derived, typename Base>
-		struct is_derived: metacomp::bool_type<sizeof(detail::true_type) == sizeof(detail::match<Base*>((Derived*)0))>{};
+		struct is_derived: meta::bool_type<sizeof(detail::true_type) == sizeof(detail::match<Base*>((Derived*)0))>{};
+
+		template<typename Base, typename Derived>
+		struct is_base_of: meta::bool_type<sizeof(detail::true_type) == sizeof(detail::match<Base*>((Derived*)0))>
+		{};
 
 		//traits types for const-volatile specifier
 		
@@ -136,7 +147,7 @@ namespace nana
 		};
 	}//end namespace traits
 
-	namespace metacomp
+	namespace meta
 	{
 		template<typename T>
 		struct rm_const
@@ -153,13 +164,13 @@ namespace nana
 		template<typename T>
 		struct rm_ref
 		{
-			typedef T value_type;
+			typedef T type;
 		};
 
 		template<typename T>
 		struct rm_ref<T&>
 		{
-			typedef T value_type;
+			typedef T type;
 		};
 
 		template<typename T>
@@ -169,82 +180,32 @@ namespace nana
 		};
 
 		template<typename T>
-		struct rm_a_ptr
+		struct remove_pointer
 		{
-			typedef T value_type;
+			typedef T type;
 		};
 
 		template<typename T>
-		struct rm_a_ptr<T*>
+		struct remove_pointer<T*>
 		{
-			typedef T value_type;
+			typedef T type;
 		};
 
-		template<typename T>
-		struct rm_all_ptr
-		{
-			typedef T value_type;
-		};
-
-		template<typename T>
-		struct rm_all_ptr<T*>
-		{
-			typedef typename rm_all_ptr<T>::value_type value_type;
-		};
-
-
-		template<typename ExpressType1, typename ExpressType2>
-		struct static_or
-			:bool_type<
-				detail::static_if<ExpressType1::value,
-									bool_type<true>,
-									typename detail::static_if<ExpressType2::value,
-																bool_type<true>,
-																bool_type<false>
-									>::value_type
-				>::value_type::value != 0
-			>{};
-
-
-		template<typename Condition, typename T1, typename T2>
-		struct static_if
-		{
-            typedef typename static_if<
-								typename detail::static_if<
-											traits::is_derived<Condition, true_type>::value,
-											true_type, false_type>::value_type,
-								T1, T2>::value_type value_type;
-		};
-		
-		template<typename T1, typename T2>
-		struct static_if<true_type, T1, T2>
-		{
-			 typedef T1 value_type;
-		};
-
-		template<typename T1, typename T2>
-		struct static_if<false_type, T1, T2>
-		{
-			 typedef T2 value_type;
-		};
-
-	}//end namespace metacomp
+	}//end namespace meta
 
 	namespace traits
 	{	
 		template<typename T>
 		struct is_function_pointer
-			:metacomp::bool_type<
-						metacomp::static_if<is_pointer<T>,
-						metacomp::bool_type<sizeof(detail::match_fcn_t<typename metacomp::rm_all_ptr<T>::value_type>(0)) == sizeof(metacomp::true_type)>,
-							metacomp::bool_type<false>
-						>::value_type::value
-			>
+			:	meta::conditional<is_pointer<T>::value,
+						meta::bool_type<sizeof(detail::match_fcn_t<typename meta::remove_pointer<T>::type>(0)) == sizeof(meta::true_type)>,
+						meta::bool_type<false>
+					>::type
 		{};
 
 		template<typename T>
 		struct is_function_type
-			:metacomp::bool_type<(sizeof(detail::match_fcn_t<T>(0)) == sizeof(metacomp::true_type)) && (traits::same_type<T, void>::value == 0) >
+			:meta::bool_type<(sizeof(detail::match_fcn_t<T>(0)) == sizeof(meta::true_type)) && (traits::same_type<T, void>::value == 0) >
 		{};	
 
 		//The traits of pointer to member function
@@ -710,7 +671,7 @@ namespace nana
 		};
 	}//end namespace traits
 
-	namespace metacomp
+	namespace meta
 	{
 		template<	typename Param0 = null_type, typename Param1 = null_type,
 					typename Param2 = null_type, typename Param3 = null_type,
@@ -734,7 +695,7 @@ namespace nana
 								traits::same_type<Param9, T>::value};
 			};
 		};
-	}//end namespace metacomp
+	}//end namespace meta
 }//end namespace nana
 
 #endif

@@ -41,10 +41,10 @@ namespace system
 		template<typename Function>
 		struct function_ptr
 		{
-			typedef typename nana::metacomp::static_if<nana::traits::is_function_pointer<Function>,
+			typedef typename nana::meta::conditional<nana::traits::is_function_pointer<Function>::value,
 										Function,
-										typename nana::metacomp::static_if<nana::traits::is_function_type<Function>, Function*, int>::value_type
-			>::value_type value_type;
+										typename nana::meta::conditional<nana::traits::is_function_type<Function>::value, Function*, int>::type
+			>::type type;
 		};
 
 		struct impl_type
@@ -65,10 +65,10 @@ namespace system
 		bool empty() const;
 
 		template<typename Function>
-		typename function_ptr<Function>::value_type
+		typename function_ptr<Function>::type
 		symbols(const char* symbol)
 		{
-			typedef typename function_ptr<Function>::value_type fptr_type;
+			typedef typename function_ptr<Function>::type fptr_type;
 
 			if(nana::traits::is_function_pointer<fptr_type>::value == false)
 				throw nana::bad_error("shared_wrapper::symbols, template<_Function> is not a function type or a function pointer type");

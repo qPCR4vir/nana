@@ -2147,7 +2147,7 @@ namespace nana{ namespace gui{
 									}
 								}
 
-								typedef object<decltype(crook_renderer_)>::type::state state;
+								typedef std::remove_reference<decltype(crook_renderer_)>::type::state state;
 
 								crook_renderer_.check(item.flags.checked ?  state::checked : state::unchecked);
 								crook_renderer_.draw(*graph, bgcolor, txtcolor, chkarea, estate);

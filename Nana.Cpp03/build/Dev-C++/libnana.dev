@@ -1,7 +1,7 @@
 [Project]
 FileName=libnana.dev
 Name=libnana
-UnitCount=78
+UnitCount=79
 Type=2
 Ver=1
 ObjFiles=
@@ -821,6 +821,16 @@ BuildCmd=
 FileName=..\..\source\memory.cpp
 CompileCpp=1
 Folder=nana
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit79]
+FileName=..\..\source\gui\detail\element_store.cpp
+CompileCpp=1
+Folder=nana/gui/detail
 Compile=1
 Link=1
 Priority=1000

@@ -38,6 +38,10 @@ namespace nana{ namespace pat{
 				:object_(obj)
 			{}
 
+			cloneable_wrapper(value_t&& rv)
+				:object_(std::move(rv))
+			{}
+
 			template<typename U>
 			cloneable_wrapper(const U& u)
 				: object_(u)
@@ -97,7 +101,7 @@ namespace nana{ namespace pat{
 
 		template<typename U>
 		struct member_enabled
-			: public std::enable_if<!std::is_base_of<cloneable, typename std::remove_reference<U>::type>::value, int>
+			: public std::enable_if<(!std::is_base_of<cloneable, typename std::remove_reference<U>::type>::value) && std::is_base_of<base_t, typename std::remove_reference<U>::type>::value, int>
 		{};
 	public:
 		cloneable()
@@ -109,16 +113,8 @@ namespace nana{ namespace pat{
 		{}
 
 		template<typename T>
-		cloneable(const T& t)
-			:	cwrapper_(new detail::cloneable_wrapper<T, base_t>(t), deleter()),
-				fast_ptr_(&(cwrapper_->refer()))
-		{}
-
-
-		//VC2012 has not yet supported the default template argument in template function.
-		template<typename T>
-		cloneable(T&& t,  typename member_enabled<T>::type = 0)
-			:	cwrapper_(new detail::cloneable_wrapper<T, base_t>(std::forward<T>(t)), deleter()),
+		cloneable(T&& t, typename member_enabled<T>::type = 0)
+			:	cwrapper_(new detail::cloneable_wrapper<typename std::remove_cv<typename std::remove_reference<T>::type>::type, base_t>(std::forward<T>(t)), deleter()),
 				fast_ptr_(&(cwrapper_->refer()))
 		{}
 
@@ -227,7 +223,7 @@ namespace nana{ namespace pat{
 
 		template<typename U>
 		struct member_enabled
-			: public std::enable_if<!std::is_base_of<mutable_cloneable, typename std::remove_reference<U>::type>::value, int>
+			: public std::enable_if<std::is_base_of<base_t, typename std::remove_reference<U>::type>::value && (!std::is_base_of<mutable_cloneable, typename std::remove_reference<U>::type>::value), int>
 		{};
 	public:
 		mutable_cloneable()
@@ -239,16 +235,11 @@ namespace nana{ namespace pat{
 		{}
 
 		template<typename T>
-		mutable_cloneable(const T& t)
-			:	cwrapper_(new detail::cloneable_wrapper<T, base_t>(t), deleter()),
-				fast_ptr_(&(cwrapper_->refer()))
-		{}
-
-		template<typename T>
-		mutable_cloneable(T&& t, typename member_enabled<T>::value = 0)
-			:	cwrapper_(new detail::cloneable_wrapper<T, base_t>(std::move(t)), deleter()),
-				fast_ptr_(&(cwrapper_->refer()))
-		{}
+		mutable_cloneable(T&& t, typename member_enabled<T>::type = 0)
+			: cwrapper_(new detail::cloneable_wrapper<typename std::remove_cv<typename std::remove_reference<T>::type>::type, base_t>(std::forward<T>(t)), deleter()),
+			fast_ptr_(&(cwrapper_->refer()))
+		{
+		}
 
 		mutable_cloneable(const mutable_cloneable& r)
 			:	cwrapper_(nullptr),

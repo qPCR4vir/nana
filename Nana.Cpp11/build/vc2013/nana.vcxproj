@@ -82,9 +82,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\source\any.cpp" />
     <ClCompile Include="..\..\source\audio\detail\audio_device.cpp" />
     <ClCompile Include="..\..\source\audio\detail\audio_stream.cpp" />
@@ -102,6 +99,7 @@
     <ClCompile Include="..\..\source\gui\basis.cpp" />
     <ClCompile Include="..\..\source\gui\detail\basic_window.cpp" />
     <ClCompile Include="..\..\source\gui\detail\drawer.cpp" />
+    <ClCompile Include="..\..\source\gui\detail\element_store.cpp" />
     <ClCompile Include="..\..\source\gui\detail\event_manager.cpp" />
     <ClCompile Include="..\..\source\gui\detail\native_window_interface.cpp" />
     <ClCompile Include="..\..\source\gui\detail\timer_trigger.cpp" />

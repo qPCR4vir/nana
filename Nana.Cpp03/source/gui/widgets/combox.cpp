@@ -108,6 +108,7 @@ namespace nana{ namespace gui{
 				{
 					nana::shared_ptr<item> p(new item(text));
 					items_.push_back(p);
+					API::refresh_window(widget_->handle());
 				}
 
 				int get_where() const
@@ -344,6 +345,11 @@ namespace nana{ namespace gui{
 					pos = items_.size();
 					nana::shared_ptr<item> p(new item(kv));
 					items_.push_back(p);
+
+					//Redraw, because the state of push button is changed when a first new item is created.
+					if (0 == pos)
+						API::refresh_window(*widget_);
+
 					return pos;
 				}
 
@@ -383,6 +389,10 @@ namespace nana{ namespace gui{
 							--module_.index;
 
 						items_.erase(items_.begin() + pos);
+
+						//Redraw, because the state of push button is changed when the last item is created.
+						if (items_.empty())
+							API::refresh_window(*widget_);
 					}
 				}
 
@@ -423,12 +433,20 @@ namespace nana{ namespace gui{
 						option(module_.index, true);
 						API::update_window(*widget_);
 					}
+					else
+					{
+						//Redraw the widget even though the index has not been changed,
+						//because the push button should be updated due to the state
+						//changed from pressed to normal/hovered.
+						API::refresh_window(*widget_);
+					}
 				}
 
 				void _m_draw_background(graph_reference graph, const nana::rectangle&, nana::color_t)
 				{
 					nana::rectangle r(graph.size());
-					unsigned color_start = color::button_face_shadow_start, color_end = gui::color::button_face_shadow_end;
+					nana::color_t color_start = color::button_face_shadow_start;
+					nana::color_t color_end = gui::color::button_face_shadow_end;
 					if(state_.state == StatePress)
 					{
 						r.pare_off(2);

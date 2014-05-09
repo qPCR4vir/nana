@@ -44,11 +44,12 @@ namespace nana
 
 	template<typename Function>
 	class functor
-		:public detail::interface_holder<typename metacomp::static_if<traits::is_function_type<Function>, Function, typename metacomp::rm_a_ptr<Function>::value_type >::value_type>
+		:	public detail::interface_holder<typename meta::conditional<true, Function, typename meta::remove_pointer<Function>::type>::type>
 	{
-		typedef detail::interface_holder<typename metacomp::static_if<traits::is_function_type<Function>, Function, typename metacomp::rm_a_ptr<Function>::value_type >::value_type> base_type;
+		typedef typename meta::conditional<traits::is_function_type<Function>::value, Function, typename meta::remove_pointer<Function>::type>::type private_signature;
+		typedef detail::interface_holder<private_signature> base_type;
 	public:
-		typedef typename metacomp::static_if<traits::is_function_type<Function>, Function, typename metacomp::rm_a_ptr<Function>::value_type>::value_type signature;
+		typedef private_signature signature;
 
 		functor(){}
 

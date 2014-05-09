@@ -1,5 +1,6 @@
 #ifndef NANA_PAT_PROTOTYPE_HPP
 #define NANA_PAT_PROTOTYPE_HPP
+#include <nana/traits.hpp>
 
 namespace nana{ namespace pat{
 
@@ -80,13 +81,18 @@ namespace nana{ namespace pat{
 		};
 
 		typedef int inner_bool::* operator_bool_t;
+
+		template<typename U>
+		struct member_enabled
+			: public nana::enable_if<nana::traits::is_base_of<base_t, typename nana::meta::rm_ref<U>::type>::value && (!nana::traits::is_base_of<cloneable, typename nana::meta::rm_ref<U>::type>::value), int>
+		{};
 	public:
 		cloneable()
 			: real_(0), fast_ptr_(0)
 		{}
 
 		template<typename T>
-		cloneable(const T& t)
+		cloneable(const T& t, typename member_enabled<T>::type = 0)
 			:	real_(new detail::cloneable_wrapper<T, base_t>(t)),
 				fast_ptr_(&(real_->refer()))
 		{}
@@ -146,8 +152,12 @@ namespace nana{ namespace pat{
 		void reset()
 		{
 			fast_ptr_ = 0;
-			real_->self_delete();
-			real_ = 0;
+
+			if(real_)
+			{
+				real_->self_delete();
+				real_ = 0;
+			}
 		}
 
 		operator operator_bool_t() const volatile
@@ -171,13 +181,18 @@ namespace nana{ namespace pat{
 		};
 
 		typedef int inner_bool::* operator_bool_t;
+
+		template<typename U>
+		struct member_enabled
+			: public nana::enable_if<nana::traits::is_base_of<base_t, typename nana::meta::rm_ref<U>::type>::value && (!nana::traits::is_base_of<mutable_cloneable, typename nana::meta::rm_ref<U>::type>::value), int>
+		{};
 	public:
 		mutable_cloneable()
 			: real_(0), fast_ptr_(0)
 		{}
 
 		template<typename T>
-		mutable_cloneable(const T& t)
+		mutable_cloneable(const T& t, typename member_enabled<T>::type = 0)
 			:	real_(new detail::cloneable_wrapper<T, base_t>(t)),
 				fast_ptr_(&(real_->refer()))
 		{}
@@ -227,8 +242,12 @@ namespace nana{ namespace pat{
 		void reset()
 		{
 			fast_ptr_ = 0;
-			real_->self_delete();
-			real_ = 0;
+
+			if(real_)
+			{
+				real_->self_delete();
+				real_ = 0;
+			}
 		}
 
 		operator operator_bool_t() const volatile

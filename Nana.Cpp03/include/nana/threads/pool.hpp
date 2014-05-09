@@ -65,7 +65,7 @@ namespace threads
 
 			try
 			{
-				taskptr = new task_wrapper<typename nana::metacomp::static_if<typename nana::traits::is_function_type<Function>::value_type, Function*, Function>::value_type>(f);
+				taskptr = new task_wrapper<typename nana::meta::conditional<nana::traits::is_function_type<Function>::value, Function*, Function>::type>(f);
 				_m_push(taskptr);
 			}
 			catch(std::bad_alloc&)
@@ -88,7 +88,7 @@ namespace threads
 	class pool_pusher
 	{
 	public:
-		typedef typename nana::metacomp::static_if<typename nana::traits::is_function_type<Function>::value_type, Function*, Function>::value_type value_type;
+		typedef typename nana::meta::conditional<nana::traits::is_function_type<Function>::value, Function*, Function>::type value_type;
 
 		pool_pusher(pool& pobj, value_type fn)
 			:pobj_(pobj), value_(fn)

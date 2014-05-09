@@ -1,6 +1,7 @@
 /*
  *	A Button Implementation
- *	Copyright(C) 2003-2013 Jinhao(cnjinhao@hotmail.com)
+ *	Nana C++ Library(http://www.nanapro.org)
+ *	Copyright(C) 2003-2014 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -17,145 +18,22 @@ namespace drawerbase
 {
 	namespace button
 	{
-		struct image_block
-		{
-			bool enable;
-			nana::gui::button::state::t who;
-			nana::point pos;
-		};
-
-		struct trigger::bgimage_tag
-		{
-			nana::paint::image image;
-			nana::rectangle valid_area;
-			nana::arrange	arrange;
-			nana::size		block_size;
-			const static int state_number = static_cast<int>(state::disabled) + 1;
-			image_block		block[state_number];
-
-			struct stretch_tag
-			{
-				nana::arrange arrange;
-				int beg;
-				int end;
-			}stretch;
-
-			bgimage_tag()
-			{
-				for(int i = 0; i < nana::gui::button::state::disabled + 1; ++i)
-				{
-					block[i].enable = true;
-					block[i].who = static_cast<nana::gui::button::state::t>(i);
-				}
-
-				stretch.arrange = nana::arrange::unkown;
-				stretch.beg = stretch.end = 0;
-			}
-
-			void set_valid_area(nana::arrange arg, const nana::rectangle& r)
-			{
-				arrange = arg;
-				valid_area = r;
-			}
-
-			bool enable(state::t sta, bool eb)
-			{
-				if(state::normal <= sta && sta <= state::disabled)
-				{
-					if(block[sta].enable != eb)
-					{
-						block[sta].enable = eb;
-						this->update_blocks();
-						return true;
-					}
-				}
-				return false;
-			}
-
-			bool join(state::t to, state::t from)
-			{
-				if(to != from)
-				{
-					if(state::normal <= to && to <= state::disabled && state::normal <= from && from <= state::disabled)
-					{
-						if(block[from].who != block[to].who)
-						{
-							block[from].who = block[to].who;
-							update_blocks();
-							return true;
-						}
-					}
-				}
-				return false;
-			}
-
-			void set_stretch(nana::arrange arg, int beg, int end)
-			{
-				stretch.arrange = arg;
-				if(beg > end) beg = end;
-				stretch.beg = beg;
-				stretch.end = end;
-			}
-
-			void update_blocks()
-			{
-				int blocks = 0;
-				image_block * blockptr = block;
-				for(int i = 0; i < state_number; ++i, ++blockptr)
-				{
-					if(blockptr->enable && (blockptr->who == i))
-						++blocks;
-				}
-
-				if(blocks == 0) return;
-
-				unsigned each_pixels = (arrange.value == arrange::horizontal ? valid_area.width : valid_area.height) / blocks;
-				if(arrange.value == arrange::horizontal)
-				{
-					each_pixels = valid_area.width / blocks;
-					block_size.width = each_pixels;
-					block_size.height = valid_area.height;
-				}
-				else
-				{
-					each_pixels = valid_area.height / blocks;
-					block_size.height = each_pixels;
-					block_size.width = valid_area.width;
-				}
-
-				int pos = 0;
-				blockptr = block;
-				for(int i = 0; i < state_number; ++i, ++blockptr)
-				{
-					if(blockptr->enable && (blockptr->who == i))
-					{
-						blockptr->pos = nana::point(valid_area.x, valid_area.y);
-						if(arrange.value == arrange::horizontal)
-							blockptr->pos.x += pos;
-						else
-							blockptr->pos.y += pos;
-
-						pos += static_cast<int>(each_pixels);
-					}
-				}
-			}
-		};
-
 		//trigger
 		//@brief: draw the button
 		trigger::trigger()
-			:widget_(0), graph_(0), bgimage_(0)
+			:	widget_(0),
+				graph_(0),
+				cite_("button")
 		{
+			attr_.e_state = element_state::normal;
 			attr_.omitted = attr_.focused = attr_.pushed = attr_.enable_pushed = attr_.keep_pressed = false;
 			attr_.focus_color = true;
 			attr_.icon = 0;
-			attr_.act_state = state::normal;
 		}
 
 		trigger::~trigger()
 		{
 			delete attr_.icon;
-			delete bgimage_;
 		}
 
 		void trigger::attached(widget_reference widget, graph_reference graph)
@@ -190,18 +68,16 @@ namespace drawerbase
 			if(pshd != attr_.pushed)
 			{
 				attr_.pushed = pshd;
-				if(pshd)
+				if(!pshd)
 				{
-					attr_.act_state = state::pressed;
+					if(API::find_window(API::cursor_position()) == this->widget_->handle())
+						attr_.e_state = element_state::hovered;
+					else
+						attr_.e_state = element_state::normal;
 				}
 				else
-				{
-					window wd = API::find_window(API::cursor_position());
-					if(wd == this->widget_->handle())
-						attr_.act_state = state::highlight;
-					else
-						attr_.act_state = (attr_.focused ? state::focused : state::normal);
-				}
+					attr_.e_state = element_state::pressed;
+
 				return true;
 			}
 			return false;
@@ -227,6 +103,11 @@ namespace drawerbase
 			return false;
 		}
 
+		element::cite_bground& trigger::cite()
+		{
+			return cite_;
+		}
+
 		void trigger::refresh(graph_reference graph)
 		{
 			_m_draw(graph);
@@ -234,7 +115,7 @@ namespace drawerbase
 
 		void trigger::mouse_enter(graph_reference graph, const eventinfo&)
 		{
-			attr_.act_state = (attr_.pushed || attr_.keep_pressed ? state::pressed : state::highlight);
+			attr_.e_state = (attr_.pushed || attr_.keep_pressed ? element_state::pressed : element_state::hovered);
 			_m_draw(graph);
 			API::lazy_refresh();
 		}
@@ -244,14 +125,14 @@ namespace drawerbase
 			if(attr_.enable_pushed && attr_.pushed)
 				return;
 
-			attr_.act_state = (attr_.focused ? state::focused : state::normal);
+			attr_.e_state = element_state::normal;
 			_m_draw(graph);
 			API::lazy_refresh();
 		}
 
 		void trigger::mouse_down(graph_reference graph, const eventinfo&)
 		{
-			attr_.act_state = state::pressed;
+			attr_.e_state = element_state::pressed;
 			attr_.keep_pressed = true;
 			_m_draw(graph);
 			API::capture_window(*widget_, true);
@@ -268,10 +149,10 @@ namespace drawerbase
 				return;
 			}
 
-			if(attr_.act_state == state::pressed)
-				attr_.act_state = state::highlight;
+			if(element_state::pressed == attr_.e_state)
+				attr_.e_state = element_state::hovered;
 			else
-				attr_.act_state = (attr_.focused ? state::focused : state::normal);
+				attr_.e_state = element_state::normal;
 
 			attr_.pushed = false;
 			_m_draw(graph);
@@ -349,7 +230,7 @@ namespace drawerbase
 				nana::paint::text_renderer tr(graph);
 				if(enabled)
 				{
-					if(attr_.act_state == state::pressed)
+					if(element_state::pressed == attr_.e_state)
 					{
 						++x;
 						++y;
@@ -392,58 +273,38 @@ namespace drawerbase
 		{
 			window wd = widget_->handle();
 			bool eb = API::window_enabled(wd);
-			bool def_bground = true;
+
 			attr_.bgcolor = API::background(wd);
 			attr_.fgcolor = API::foreground(wd);
-			if(bgimage_)
+
+			element_state::t e_state = attr_.e_state;
+			if(eb)
 			{
-				std::size_t which = (eb ? attr_.act_state : state::disabled);
-				image_block & block = bgimage_->block[bgimage_->block[which].who];
-				if(block.enable)
+				if(attr_.focused)
 				{
-					def_bground = false;
-					if(bgimage_->stretch.arrange == nana::arrange::horizontal && (bgimage_->stretch.beg < bgimage_->stretch.end))
+					switch(e_state)
 					{
-						unsigned img_beg_width = static_cast<unsigned>(bgimage_->stretch.beg);
-						unsigned img_mid_width = static_cast<unsigned>(bgimage_->stretch.end - bgimage_->stretch.beg);
-						unsigned img_end_width = bgimage_->block_size.width - static_cast<unsigned>(bgimage_->stretch.end);
-						unsigned height = bgimage_->block_size.height;
-
-						nana::rectangle r(block.pos, nana::size(img_beg_width, height));
-						nana::point p_dst;
-
-						if(bgimage_->stretch.beg)
-							bgimage_->image.paste(r, graph, p_dst);
-
-						unsigned width = graph.width() - (img_beg_width + img_end_width);
-						bgimage_->image.stretch(nana::rectangle(block.pos.x + bgimage_->stretch.beg, block.pos.y, img_mid_width, height), graph, nana::rectangle(bgimage_->stretch.beg, 0, width, height));
-						if(bgimage_->stretch.end)
-						{
-							r.x = bgimage_->stretch.end;
-							r.width = img_end_width;
-							p_dst.x = static_cast<int>(graph.width() - img_end_width);
-							bgimage_->image.paste(r, graph, p_dst);
-						}
-					}
-					else if((bgimage_->stretch.arrange == nana::arrange::horizontal_vertical) && (bgimage_->stretch.beg >= bgimage_->stretch.end))
-					{
-						bgimage_->image.stretch(nana::rectangle(block.pos, bgimage_->block_size), graph, graph.size());
-					}
-					else
-					{
-						if((graph.width() > bgimage_->block_size.width) || (graph.height() > bgimage_->block_size.height))
-						{
-							_m_draw_background(graph);
-							_m_draw_border(graph);
-						}
-						bgimage_->image.paste(nana::rectangle(block.pos, bgimage_->block_size), graph, nana::point());
+					case element_state::normal:
+						e_state = element_state::focus_normal;
+						break;
+					case element_state::hovered:
+						e_state = element_state::focus_hovered;
+						break;
+					default:
+						break;
 					}
 				}
 			}
-			if(def_bground)
+			else
+				e_state = element_state::disabled;
+
+			if(false == cite_.draw(graph, attr_.bgcolor, attr_.fgcolor, graph.size(), e_state))
 			{
-				_m_draw_background(graph);
-				_m_draw_border(graph);
+				if (bground_mode::basic != API::effects_bground_mode(wd))
+				{
+					_m_draw_background(graph);
+					_m_draw_border(graph);
+				}
 			}
 			_m_draw_title(graph, eb);
 		}
@@ -455,7 +316,7 @@ namespace drawerbase
 			nana::color_t color_start = nana::paint::graphics::mix(attr_.bgcolor, 0xFFFFFF, 0.2);
 			nana::color_t color_end = nana::paint::graphics::mix(attr_.bgcolor, 0x0, 0.95);
 
-			if(attr_.act_state == state::pressed)
+			if(element_state::pressed == attr_.e_state)
 			{
 				r.x = r.y = 2;
 				std::swap(color_start, color_end);
@@ -485,7 +346,7 @@ namespace drawerbase
 			graph.set_pixel(right, bottom, gui::color::button_face);
 
 
-			if(attr_.act_state == state::pressed)
+			if(element_state::pressed == attr_.e_state)
 			{
 				r.pare_off(1);
 				graph.rectangle(r, 0xC3C3C3, false);
@@ -499,24 +360,6 @@ namespace drawerbase
 			if(0 == attr_.icon)
 				attr_.icon = new paint::image;
 			*attr_.icon = img;
-		}
-
-		void trigger::image(const nana::paint::image& img)
-		{
-			delete bgimage_;
-			bgimage_ = 0;
-
-			if(img.empty() == false)
-			{
-				bgimage_ = new bgimage_tag;
-				bgimage_->image = img;
-				bgimage_->set_valid_area(nana::arrange::horizontal, img.size());
-			}
-		}
-
-		trigger::bgimage_tag * trigger::ref_bgimage()
-		{
-			return bgimage_;
 		}
 		//end class trigger
 	}//end namespace button
@@ -556,69 +399,6 @@ namespace drawerbase
 				return *this;
 			}
 
-			button& button::image(const nana::char_t * filename)
-			{
-				nana::paint::image img;
-				if(img.open(filename))
-				{
-					internal_scope_guard isg;
-					get_drawer_trigger().image(img);
-					API::refresh_window(handle());
-				}
-				return *this;
-			}
-
-			button& button::image(const nana::paint::image& img)
-			{
-				internal_scope_guard isg;
-				get_drawer_trigger().image(img);
-				API::refresh_window(handle());
-				return *this;
-			}
-
-			button& button::image_enable(button::state::t sta, bool eb)
-			{
-				internal_scope_guard isg;
-				drawerbase::button::trigger::bgimage_tag * bgi = get_drawer_trigger().ref_bgimage();
-				if(bgi && bgi->enable(sta, eb))
-					API::refresh_window(handle());
-				return *this;
-			}
-
-			button& button::image_valid_area(nana::arrange arg, const nana::rectangle& r)
-			{
-				internal_scope_guard isg;
-				drawerbase::button::trigger::bgimage_tag * bgi = get_drawer_trigger().ref_bgimage();
-				if(bgi)
-				{
-					bgi->set_valid_area(arg, r);
-					bgi->update_blocks();
-					API::refresh_window(handle());
-				}
-				return *this;
-			}
-
-			button& button::image_join(button::state::t target, button::state::t from)
-			{
-				internal_scope_guard isg;
-				drawerbase::button::trigger::bgimage_tag * bgi = get_drawer_trigger().ref_bgimage();
-				if(bgi && bgi->join(target, from))
-					API::refresh_window(handle());
-				return *this;
-			}
-
-			button& button::image_stretch(nana::arrange arg, int beg, int end)
-			{
-				internal_scope_guard isg;
-				drawerbase::button::trigger::bgimage_tag * bgi = get_drawer_trigger().ref_bgimage();
-				if(bgi)
-				{
-					bgi->set_stretch(arg, beg, end);
-					API::refresh_window(handle());
-				}
-				return *this;
-			}
-
 			button& button::enable_pushed(bool eb)
 			{
 				internal_scope_guard isg;
@@ -650,9 +430,50 @@ namespace drawerbase
 
 			button& button::enable_focus_color(bool eb)
 			{
-				internal_scope_guard isg;
+				internal_scope_guard lock;
 				if(get_drawer_trigger().focus_color(eb))
 					API::refresh_window(handle());
+				return *this;
+			}
+
+			button& button::set_bground(const pat::cloneable<element::element_interface>& rv)
+			{
+				internal_scope_guard lock;
+				get_drawer_trigger().cite().set(rv);
+				return *this;
+			}
+
+			button& button::set_bground(const std::string& name)
+			{
+				internal_scope_guard lock;
+				get_drawer_trigger().cite().set(name.data());
+				return *this;
+			}
+
+			button& button::transparent(bool enabled)
+			{
+				if (enabled)
+					API::effects_bground(*this, effects::bground_transparent(0), 0.0);
+				else
+					API::effects_bground_remove(*this);
+				return *this;
+			}
+
+			bool button::transparent() const
+			{
+				return (bground_mode::basic == API::effects_bground_mode(*this));
+			}
+
+			button& button::edge_effects(bool enable)
+			{
+				if (enable)
+				{
+					API::effects_edge_nimbus(*this, effects::edge_nimbus::active);
+					API::effects_edge_nimbus(*this, effects::edge_nimbus::over);
+				}
+				else
+					API::effects_edge_nimbus(*this, effects::edge_nimbus::none);
+
 				return *this;
 			}
 

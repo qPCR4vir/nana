@@ -44,7 +44,7 @@ atomic_integer_t atomic_dec(atomic_integer_t * pw)
         "memory", "cc" // clobbers
     );
 
-    return r;
+    return r - 1;
 }
 #endif
 

@@ -66,7 +66,7 @@ namespace threads
 
 			try
 			{
-				taskptr = new task_wrapper<typename nana::metacomp::static_if<std::is_function<Function>::value, Function*, Function>::value_type>(f);
+				taskptr = new task_wrapper<typename std::conditional<std::is_function<Function>::value, Function*, Function>::type>(f);
 				_m_push(taskptr);
 			}
 			catch(std::bad_alloc&)
@@ -90,7 +90,7 @@ namespace threads
 	{
 	public:
            /// same as Function if Function is not a function prototype, otherwise value_type is a pointer type of function
-		typedef typename nana::metacomp::static_if<std::is_function<Function>::value, Function*, Function>::value_type value_type;
+		typedef typename std::conditional<std::is_function<Function>::value, Function*, Function>::type value_type;
 
 		pool_pusher(pool& pobj, value_type fn)
 			:pobj_(pobj), value_(fn)

@@ -165,7 +165,7 @@ namespace nana{ namespace gui{
 		template<typename ButtonAdd = nana::null_type, typename ButtonScroll = nana::null_type, typename ButtonList = nana::null_type, typename ButtonClose = nana::null_type>
 		struct button_container
 		{
-			typedef metacomp::fixed_type_set<ButtonAdd, ButtonScroll, ButtonList, ButtonClose> type_set;
+			typedef meta::fixed_type_set<ButtonAdd, ButtonScroll, ButtonList, ButtonClose> type_set;
 		};
 
 		tabbar()

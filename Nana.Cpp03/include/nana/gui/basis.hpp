@@ -15,7 +15,7 @@
 #define NANA_GUI_BASIS_HPP
 
 #include "../basic_types.hpp"
-#include "../traits.hpp"	//metacomp::fixed_type_set
+#include "../traits.hpp"	//meta::fixed_type_set
 
 namespace nana
 {
@@ -188,7 +188,7 @@ namespace gui
 					typename NoActive = null_type>
 		struct decorate
 		{
-			typedef metacomp::fixed_type_set<Minimize, Maximize, Sizable, Floating, NoActive> set_type;
+			typedef meta::fixed_type_set<Minimize, Maximize, Sizable, Floating, NoActive> set_type;
 
 			operator appearance() const
 			{
@@ -205,7 +205,7 @@ namespace gui
 		template<typename Taskbar = null_type, typename Floating = null_type, typename NoActive = null_type, typename Minimize = null_type, typename Maximize = null_type, typename Sizable = null_type>
 		struct bald
 		{
-			typedef metacomp::fixed_type_set<Taskbar, Floating, NoActive, Minimize, Maximize, Sizable> set_type;
+			typedef meta::fixed_type_set<Taskbar, Floating, NoActive, Minimize, Maximize, Sizable> set_type;
 
 			operator appearance() const
 			{
@@ -223,7 +223,7 @@ namespace gui
 		template<bool HasDecoration = true, typename Sizable = null_type, typename Taskbar = null_type, typename Floating = null_type, typename NoActive = null_type>
 		struct optional
 		{
-			typedef metacomp::fixed_type_set<Taskbar, Floating, NoActive> set_type;
+			typedef meta::fixed_type_set<Taskbar, Floating, NoActive> set_type;
 
 			operator appearance() const
 			{

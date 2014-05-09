@@ -1,6 +1,7 @@
 /*
  *	A Bedrock Implementation
- *	Copyright(C) 2003-2013 Jinhao(cnjinhao@hotmail.com)
+ *	Nana C++ Library(http://www.nanapro.org)
+ *	Copyright(C) 2003-2014 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -13,6 +14,7 @@
 #include PLATFORM_SPEC_HPP
 #include GUI_BEDROCK_HPP
 #include <nana/gui/detail/eventinfo.hpp>
+#include <nana/gui/detail/element_store.hpp>
 #include <nana/system/platform.hpp>
 #include <sstream>
 #include <windows.h>
@@ -165,6 +167,8 @@ namespace detail
 		nana::threads::recursive_mutex mutex;
 		thr_context_container thr_contexts;
 
+		element_store estore;
+
 		struct cache_type
 		{
 			struct thread_context_cache
@@ -192,9 +196,9 @@ namespace detail
 			bool has_keyboard;
 		}menu;
 
-		struct keyboard_tracking_state
+		struct keyboard_tracking_state_tag
 		{
-			keyboard_tracking_state()
+			keyboard_tracking_state_tag()
 				:has_shortkey_occured(false), has_keyup(true), alt(0)
 			{}
 
@@ -1479,6 +1483,11 @@ namespace detail
 	bool bedrock::whether_keyboard_shortkey() const
 	{
 		return impl_->keyboard_tracking_state.has_shortkey_occured;
+	}
+
+	element_store& bedrock::get_element_store() const
+	{
+		return impl_->estore;
 	}
 
 	bool bedrock::fire_event_for_drawer(event_code::t code, core_window_t* wd, eventinfo& ei, thread_context* thrd)

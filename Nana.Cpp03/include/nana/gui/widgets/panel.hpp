@@ -36,8 +36,8 @@ namespace nana{	namespace gui
 
 	template<bool HasBackground>
 	class panel
-		: public widget_object<typename metacomp::static_if<metacomp::bool_type<HasBackground>,
-												 gui::category::widget_tag, gui::category::lite_widget_tag>::value_type, drawerbase::panel::drawer>
+		: public widget_object<typename meta::conditional<HasBackground, gui::category::widget_tag, gui::category::lite_widget_tag>::type,
+								drawerbase::panel::drawer>
 	{
 	public:
 		panel(){}

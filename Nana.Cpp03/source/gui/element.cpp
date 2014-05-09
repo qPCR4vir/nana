@@ -1,5 +1,7 @@
 #include <nana/gui/element.hpp>
 #include <nana/gui/detail/bedrock.hpp>
+#include <nana/gui/detail/element_store.hpp>
+#include <nana/paint/image.hpp>
 #include <nana/threads/mutex.hpp>
 #include <nana/memory.hpp>
 #include <map>
@@ -313,7 +315,7 @@ namespace nana{	namespace gui
 				initial = false;
 
 				element::add_crook<element::crook>("");
-				element::add_crook<element::menu_crook>("menu_crook");					
+				element::add_crook<element::menu_crook>("menu_crook");
 			}
 			return obj;
 		}
@@ -434,5 +436,373 @@ namespace nana{	namespace gui
 		}
 	//end class facade<element::crook>
 
+	namespace element
+	{
+		void set_bground(const char* name, const pat::cloneable<element_interface>& obj)
+		{
+			nana::gui::detail::bedrock::instance().get_element_store().bground(name, obj);
+		}
+
+		//class cite
+		cite_bground::cite_bground(const char* name)
+			: ref_ptr_(detail::bedrock::instance().get_element_store().bground(name))
+		{
+		}
+
+		void cite_bground::set(const cloneable_element& rhs)
+		{
+			holder_ = rhs;
+			place_ptr_ = holder_.get();
+			ref_ptr_ = &place_ptr_;
+		}
+
+		void cite_bground::set(const char* name)
+		{
+			holder_.reset();
+			ref_ptr_ = detail::bedrock::instance().get_element_store().bground(name);
+		}
+
+		bool cite_bground::draw(graph_reference dst, nana::color_t bgcolor, nana::color_t fgcolor, const nana::rectangle& r, element_state::t state)
+		{
+			if (ref_ptr_ && *ref_ptr_)
+				return (*ref_ptr_)->draw(dst, bgcolor, fgcolor, r, state);
+
+			return false;
+		}
+		//end class cite
+
+		//class bground
+		struct bground::draw_method
+		{
+			virtual ~draw_method(){}
+
+			virtual draw_method * clone() const = 0;
+
+			virtual void paste(const nana::rectangle& from_r, graph_reference, const nana::point& dst_pos) = 0;
+			virtual void stretch(const nana::rectangle& from_r, graph_reference dst, const nana::rectangle & to_r) = 0;
+		};
+
+		struct bground::draw_image
+			: public draw_method
+		{
+			nana::paint::image image;
+
+			draw_image(const nana::paint::image& img)
+				: image(img)
+			{}
+
+			draw_method * clone() const
+			{
+				return new draw_image(image);
+			}
+
+			void paste(const nana::rectangle& from_r, graph_reference dst, const nana::point& dst_pos)
+			{
+				image.paste(from_r, dst, dst_pos);
+			}
+
+			void stretch(const nana::rectangle& from_r, graph_reference dst, const nana::rectangle& to_r)
+			{
+				image.stretch(from_r, dst, to_r);
+			}
+		};
+
+		struct bground::draw_graph
+			: public draw_method
+		{
+			nana::paint::graphics graph;
+
+			draw_graph()
+			{}
+
+			draw_graph(const nana::paint::graphics& g)
+				: graph(g)
+			{}
+
+			draw_method * clone() const
+			{
+				draw_graph* p = new draw_graph;
+				p->graph.make(graph.width(), graph.height());
+				graph.paste(p->graph, 0, 0);
+				return p;
+			}
+
+			void paste(const nana::rectangle& from_r, graph_reference dst, const nana::point& dst_pos)
+			{
+				graph.paste(from_r, dst, dst_pos.x, dst_pos.y);
+			}
+
+			void stretch(const nana::rectangle& from_r, graph_reference dst, const nana::rectangle& to_r)
+			{
+				graph.stretch(from_r, dst, to_r);
+			}
+		};
+
+		bground::bground()
+			:	method_(0),
+				vertical_(false),
+				stretch_all_(true),
+				left_(0), top_(0), right_(0), bottom_(0)
+		{
+			reset_states();
+		}
+
+		bground::bground(const bground& rhs)
+			: method_(rhs.method_ ? rhs.method_->clone() : 0),
+			vertical_(rhs.vertical_),
+			valid_area_(rhs.valid_area_),
+			states_(rhs.states_),
+			join_(rhs.join_),
+			stretch_all_(rhs.stretch_all_),
+			left_(rhs.left_), top_(rhs.top_), right_(rhs.right_), bottom_(rhs.bottom_)
+		{
+		}
+
+		bground::~bground()
+		{
+			delete method_;
+		}
+
+		bground& bground::operator=(const bground& rhs)
+		{
+			if (this != &rhs)
+			{
+				delete method_;
+				method_		= (rhs.method_ ? rhs.method_->clone() : 0);
+				vertical_	= rhs.vertical_;
+				valid_area_ = rhs.valid_area_;
+				states_ = rhs.states_;
+				join_ = rhs.join_;
+				stretch_all_ = rhs.stretch_all_;
+				left_	= rhs.left_;
+				top_	= rhs.top_;
+				right_	= rhs.right_;
+				bottom_	= rhs.bottom_;
+			}
+			return *this;
+		}
+
+		//Set a picture for the background
+		bground& bground::image(const paint::image& img, bool vertical, const nana::rectangle& valid_area)
+		{
+			delete method_;
+			method_ = new draw_image(img);
+			vertical_ = vertical;
+
+			if (valid_area.width && valid_area.height)
+				valid_area_ = valid_area;
+			else
+				valid_area_ = nana::rectangle(img.size());
+			return *this;
+		}
+
+		bground& bground::image(const paint::graphics& graph, bool vertical, const nana::rectangle& valid_area)
+		{
+			delete method_;
+			method_ = new draw_graph(graph);
+			vertical_ = vertical;
+
+			if (valid_area.width && valid_area.height)
+				valid_area_ = valid_area;
+			else
+				valid_area_ = nana::rectangle(graph.size());
+			return *this;
+		}
+
+		//Set the state sequence of the background picture.
+		void bground::states(const std::vector<element_state::t> & s)
+		{
+			states_ = s;
+		}
+
+		void bground::reset_states()
+		{
+			states_.clear();
+			states_.push_back(element_state::normal);
+			states_.push_back(element_state::hovered);
+			states_.push_back(element_state::focus_normal);
+			states_.push_back(element_state::focus_hovered);
+			states_.push_back(element_state::pressed);
+			states_.push_back(element_state::disabled);
+			join_.clear();
+		}
+
+		void bground::join(element_state::t target, element_state::t joiner)
+		{
+			join_[joiner] = target;
+		}
+
+		void bground::stretch_parts(unsigned left, unsigned top, unsigned right, unsigned bottom)
+		{
+			left_ = left;
+			top_ = top;
+			right_ = right;
+			bottom_ = bottom;
+
+			stretch_all_ = !(left || right || top || bottom);
+		}
+
+		//Implement the methods of bground_interface.
+		bool bground::draw(graph_reference dst, nana::color_t bgcolor, nana::color_t fgcolor, const nana::rectangle& to_r, element_state::t state)
+		{
+			if (0 == method_)
+				return false;
+
+			std::map<element_state::t, element_state::t>::iterator mi = join_.find(state);
+			if (mi != join_.end())
+				state = mi->second;
+
+			std::size_t pos = 0;
+			for (; pos < states_.size(); ++pos)
+			{
+				if (states_[pos] == state)
+					break;
+			}
+
+			if (pos == states_.size())
+				return false;
+
+			nana::rectangle from_r = valid_area_;
+			if (vertical_)
+			{
+				from_r.height /= static_cast<unsigned>(states_.size());
+				from_r.y += static_cast<int>(from_r.height * pos);
+			}
+			else
+			{
+				from_r.width /= static_cast<unsigned>(states_.size());
+				from_r.x += static_cast<int>(from_r.width * pos);
+			}
+
+			if (stretch_all_)
+			{
+				if (from_r.width == to_r.width && from_r.height == to_r.height)
+					method_->paste(from_r, dst, to_r);
+				else
+					method_->stretch(from_r, dst, to_r);
+
+				return true;
+			}
+
+
+			nana::rectangle perf_from_r = from_r;
+			nana::rectangle perf_to_r = to_r;
+
+			if (left_ + right_ < to_r.width)
+			{
+				nana::rectangle src_r = from_r;
+				src_r.y += static_cast<int>(top_);
+				src_r.height -= top_ + bottom_;
+
+				nana::rectangle dst_r = to_r;
+				dst_r.y += static_cast<int>(top_);
+				dst_r.height -= top_ + bottom_;
+
+				if (left_)
+				{
+					src_r.width = left_;
+					dst_r.width = left_;
+
+					method_->stretch(src_r, dst, dst_r);
+
+					perf_from_r.x += static_cast<int>(left_);
+					perf_from_r.width -= left_;
+					perf_to_r.x += static_cast<int>(left_);
+					perf_to_r.width -= left_;
+				}
+
+				if (right_)
+				{
+					src_r.x += (static_cast<int>(from_r.width) - static_cast<int>(right_));
+					src_r.width = right_;
+
+					dst_r.x += (static_cast<int>(to_r.width) - static_cast<int>(right_));
+					dst_r.width = right_;
+
+					method_->stretch(src_r, dst, dst_r);
+
+					perf_from_r.width -= right_;
+					perf_to_r.width -= right_;
+				}
+			}
+
+			if (top_ + bottom_ < to_r.height)
+			{
+				nana::rectangle src_r = from_r;
+				src_r.x += static_cast<int>(left_);
+				src_r.width -= left_ + right_;
+
+				nana::rectangle dst_r = to_r;
+				dst_r.x += static_cast<int>(left_);
+				dst_r.width -= left_ + right_;
+
+				if (top_)
+				{
+					src_r.height = top_;
+					dst_r.height = top_;
+
+					method_->stretch(src_r, dst, dst_r);
+
+					perf_from_r.y += static_cast<int>(top_);
+					perf_to_r.y += static_cast<int>(top_);
+				}
+
+				if (bottom_)
+				{
+					src_r.y += static_cast<int>(from_r.height - bottom_);
+					src_r.height = bottom_;
+
+					dst_r.y += static_cast<int>(to_r.height - bottom_);
+					dst_r.height = bottom_;
+
+					method_->stretch(src_r, dst, dst_r);
+				}
+
+				perf_from_r.height -= (top_ + bottom_);
+				perf_to_r.height -= (top_ + bottom_);
+			}
+
+			if (left_)
+			{
+				nana::rectangle src_r = from_r;
+				src_r.width = left_;
+				if (top_)
+				{
+					src_r.height = top_;
+					method_->paste(src_r, dst, to_r);
+				}
+				if (bottom_)
+				{
+					src_r.y += static_cast<int>(from_r.height) - static_cast<int>(bottom_);
+					src_r.height = bottom_;
+					method_->paste(src_r, dst, nana::point(to_r.x, to_r.y + static_cast<int>(to_r.height - bottom_)));
+				}
+			}
+
+			if (right_)
+			{
+				const int to_x = to_r.x + int(to_r.width - right_);
+
+				nana::rectangle src_r = from_r;
+				src_r.x += static_cast<int>(src_r.width) - static_cast<int>(right_);
+				src_r.width = right_;
+				if (top_)
+				{
+					src_r.height = top_;
+					method_->paste(src_r, dst, nana::point(to_x, to_r.y));
+				}
+				if (bottom_)
+				{
+					src_r.y += (static_cast<int>(from_r.height) - static_cast<int>(bottom_));
+					src_r.height = bottom_;
+					method_->paste(src_r, dst, nana::point(to_x, to_r.y + int(to_r.height - bottom_)));
+				}
+			}
+
+			method_->stretch(perf_from_r, dst, perf_to_r);
+			return true;
+		}
+		//end class bground
+	}//end namespace element
 }//end namespace gui
 }//end namespace nana

@@ -1,6 +1,7 @@
 /*
  *	A Button Implementation
- *	Copyright(C) 2003-2013 Jinhao(cnjinhao@hotmail.com)
+ *	Nana C++ Library(http://www.nanapro.org)
+ *	Copyright(C) 2003-2014 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0. 
  *	(See accompanying file LICENSE_1_0.txt or copy at 
@@ -12,6 +13,7 @@
 #ifndef NANA_GUI_WIDGET_BUTTON_HPP
 #define NANA_GUI_WIDGET_BUTTON_HPP
 #include "widget.hpp"
+#include "../element.hpp"
 
 
 namespace nana{namespace gui{
@@ -24,22 +26,16 @@ namespace nana{namespace gui{
 			class trigger: public nana::gui::drawer_trigger
 			{
 			public:
-				struct bgimage_tag;
-				struct state
-				{
-					enum t{normal, focused, highlight, pressed, disabled};
-				};
-				
 				trigger();
 				~trigger();
 				void icon(const nana::paint::image&);
-				void image(const nana::paint::image&);
-				bgimage_tag * ref_bgimage();
 				bool enable_pushed(bool);
 				bool pushed(bool);
 				bool pushed() const;
 				void omitted(bool);
 				bool focus_color(bool);
+
+				element::cite_bground& cite();
 			private:
 				void attached(widget_reference, graph_reference);
 				void refresh(graph_reference);
@@ -59,14 +55,14 @@ namespace nana{namespace gui{
 				nana::gui::widget* widget_;
 				nana::paint::graphics* graph_;
 
-				struct bgimage_tag* bgimage_;
+				element::cite_bground cite_;
 				struct attr_tag
 				{
+					element_state::t e_state;
 					bool omitted;
 					bool focused;
 					bool pushed;
 					bool keep_pressed;
-					state::t act_state;
 					bool enable_pushed;
 					bool focus_color;
 					paint::image * icon;
@@ -77,16 +73,13 @@ namespace nana{namespace gui{
 		}//end namespace button
 	}//end namespace drawerbase
 
-		//button
-		//@brief: defaine a button widget and it provides the interfaces to be operational
+		/// Defaine a button widget and it provides the interfaces to be operational
 		class button
 			: public widget_object<category::widget_tag, drawerbase::button::trigger>
 		{
 			typedef button self_type;
 			typedef widget_object<category::widget_tag, drawerbase::button::trigger> base_type;
 		public:
-			typedef drawerbase::button::trigger::state state;
-
 			button();
 			button(window, bool visible);
 			button(window, const nana::string& caption, bool visible = true);
@@ -94,17 +87,19 @@ namespace nana{namespace gui{
 			button(window, const rectangle& = rectangle(), bool visible = true);
 
 			button& icon(const nana::paint::image&);
-			button& image(const char_t * filename);
-			button& image(const nana::paint::image&);
-			button& image_enable(state::t, bool);
-			button& image_join(state::t target, state::t from);
-			button& image_stretch(nana::arrange, int beg, int end);
-			button& image_valid_area(nana::arrange, const nana::rectangle&);
 			button& enable_pushed(bool);
 			bool pushed() const;
 			button& pushed(bool);
 			button& omitted(bool);
 			button& enable_focus_color(bool);
+
+			button& set_bground(const pat::cloneable<element::element_interface>&);
+			button& set_bground(const std::string&);
+
+			button& transparent(bool enable);
+			bool transparent() const;
+
+			button& edge_effects(bool enable);
 		private:
 			void _m_shortkey();
 			void _m_complete_creation();

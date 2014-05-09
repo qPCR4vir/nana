@@ -1,6 +1,7 @@
 /*
  *	A Bedrock Implementation
- *	Copyright(C) 2003-2013 Jinhao(cnjinhao@hotmail.com)
+ *	Nana C++ Library(http://www.nanapro.org)
+ *	Copyright(C) 2003-2014 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -29,6 +30,8 @@ namespace gui
 namespace detail
 {
 	struct native_interface;
+
+	class element_store;
 
 	//class bedrock
 	//@brief:	bedrock is a fundamental core component, it provides a abstract to the OS platform
@@ -69,7 +72,7 @@ namespace detail
 		bool set_keyboard_shortkey(bool yes);
 		bool whether_keyboard_shortkey() const;
 
-
+		element_store& get_element_store() const;
 	public:
 		void event_expose(core_window_t *, bool exposed);
 		void event_move(core_window_t*, int x, int y);

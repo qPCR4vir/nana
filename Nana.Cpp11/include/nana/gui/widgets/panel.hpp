@@ -14,6 +14,7 @@
 #ifndef NANA_GUI_WIDGETS_PANEL_HPP
 #define NANA_GUI_WIDGETS_PANEL_HPP
 #include "widget.hpp"
+#include <type_traits>
 
 namespace nana{	namespace gui
 {
@@ -36,8 +37,8 @@ namespace nana{	namespace gui
     /// For placing other widgets, where the bool template parameter determinte if it is  widget or lite_widget, wich in actual use make no difference.
 	template<bool HasBackground>
 	class panel
-		: public widget_object<typename metacomp::static_if<HasBackground,
-		gui::category::widget_tag, gui::category::lite_widget_tag>::value_type, drawerbase::panel::drawer>
+		: public widget_object<typename std::conditional<HasBackground, gui::category::widget_tag, gui::category::lite_widget_tag>::type,
+								drawerbase::panel::drawer>
 	{
 	public:
 		panel(){}

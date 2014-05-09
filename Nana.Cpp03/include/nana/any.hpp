@@ -86,7 +86,7 @@ namespace nana
 		{
 			if(super_)
 			{
-				typedef typename nana::metacomp::rm_const<T>::value_type type;
+				typedef typename nana::meta::rm_const<T>::value_type type;
 				object_type<type>* obj = dynamic_cast<object_type<type>*>(super_);
 				if(obj) return &(obj->object);
 			}

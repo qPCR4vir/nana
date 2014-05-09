@@ -300,5 +300,8 @@
     <ClCompile Include="..\..\source\gui\element.cpp">
       <Filter>Source Files\nana\gui</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\gui\detail\element_store.cpp">
+      <Filter>Source Files\nana\gui\detail</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -198,6 +198,9 @@
 							RelativePath="..\..\source\gui\detail\drawer.cpp">
 						</File>
 						<File
+							RelativePath="..\..\source\gui\detail\element_store.cpp">
+						</File>
+						<File
 							RelativePath="..\..\source\gui\detail\event_manager.cpp">
 						</File>
 						<File

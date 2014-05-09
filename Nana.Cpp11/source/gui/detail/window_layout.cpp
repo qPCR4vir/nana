@@ -185,6 +185,7 @@ namespace nana{
 					//Enable the effect.
 					data_sect.effects_bground_windows.push_back(wd);
 					wd->other.glass_buffer.make(wd->dimension.width, wd->dimension.height);
+					make_bground(wd);
 					return true;
 				}
 
@@ -341,9 +342,10 @@ namespace nana{
 
 						//Test a parent of the glass window is invisible.
 						for (auto p = wd->parent; p; p = p->parent)
-						if (false == p->visible)
-							return;
-
+						{
+							if (false == p->visible)
+								continue;
+						}
 						if (sigwd->parent == wd->parent)
 						{
 							if (sigwd->index < wd->index)

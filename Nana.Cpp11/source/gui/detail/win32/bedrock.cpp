@@ -21,6 +21,7 @@
 #include <nana/gui/detail/inner_fwd_implement.hpp>
 #include <nana/gui/detail/native_window_interface.hpp>
 #include <nana/gui/layout_utility.hpp>
+#include <nana/gui/detail/element_store.hpp>
 
 #ifndef WM_MOUSEWHEEL
 #define WM_MOUSEWHEEL	0x020A
@@ -166,6 +167,8 @@ namespace detail
 		std::recursive_mutex mutex;
 		thr_context_container thr_contexts;
 
+		element_store estore;
+
 		struct cache_type
 		{
 			struct thread_context_cache
@@ -193,9 +196,9 @@ namespace detail
 			bool has_keyboard;
 		}menu;
 
-		struct keyboard_tracking_state
+		struct keyboard_tracking_state_tag
 		{
-			keyboard_tracking_state()
+			keyboard_tracking_state_tag()
 				:has_shortkey_occured(false), has_keyup(true), alt(0)
 			{}
 
@@ -1485,6 +1488,11 @@ namespace detail
 	bool bedrock::whether_keyboard_shortkey() const
 	{
 		return impl_->keyboard_tracking_state.has_shortkey_occured;
+	}
+
+	element_store& bedrock::get_element_store() const
+	{
+		return impl_->estore;
 	}
 
 	bool bedrock::fire_event_for_drawer(event_code event_id, core_window_t* wd, eventinfo& ei, thread_context* thrd)

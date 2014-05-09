@@ -52,6 +52,7 @@
 		<Unit filename="../../source/gui/detail/basic_window.cpp" />
 		<Unit filename="../../source/gui/detail/bedrock_selector.cpp" />
 		<Unit filename="../../source/gui/detail/drawer.cpp" />
+		<Unit filename="../../source/gui/detail/element_store.cpp" />
 		<Unit filename="../../source/gui/detail/event_manager.cpp" />
 		<Unit filename="../../source/gui/detail/native_window_interface.cpp" />
 		<Unit filename="../../source/gui/detail/timer_trigger.cpp" />

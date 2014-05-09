@@ -31,25 +31,6 @@ namespace nana
 		nonmovable();
 	};
 
-	namespace metacomp
-	{
-		namespace detail
-		{
-			template<bool Condition, typename T1, typename T2>
-			struct static_if
-			{
-				typedef T1 value_type;
-			};
-
-			template<typename T1, typename T2>
-			struct static_if<false, T1, T2>
-			{
-				 typedef T2 value_type;
-			};	
-		}//end namespace detail
-	}//end namespace meta
-
-
 	namespace traits
 	{
 		//traits types for const-volatile specifier
@@ -82,49 +63,7 @@ namespace nana
 		{
 			typedef const_volatile_specifier value_type;
 		};
-	}//end namespace traits
 
-	namespace metacomp
-	{
-		template<typename T>
-		struct rm_a_ptr
-		{
-			typedef T value_type;
-		};
-
-		template<typename T>
-		struct rm_a_ptr<T*>
-		{
-			typedef T value_type;
-		};
-
-		template<typename T>
-		struct rm_all_ptr
-		{
-			typedef T value_type;
-		};
-
-		template<typename T>
-		struct rm_all_ptr<T*>
-		{
-			typedef typename rm_all_ptr<T>::value_type value_type;
-		};
-
-		template<bool Condition, typename ThenType, typename ElseType>
-		struct static_if
-		{
-            typedef ThenType value_type;
-		};
-		
-		template<typename ThenType, typename ElseType>
-		struct static_if<false, ThenType, ElseType>
-		{
-			 typedef ElseType value_type;
-		};
-	}//end namespace metacomp
-
-	namespace traits
-	{	
 		template<typename T>
 		struct is_function_pointer
 			: public std::integral_constant<bool, std::is_pointer<T>::value && std::is_function<typename std::remove_pointer<T>::type>::value>
@@ -572,7 +511,7 @@ namespace nana
 		};
 	}//end namespace traits
 
-	namespace metacomp
+	namespace meta
 	{
 		template<	typename Param0 = null_type, typename Param1 = null_type,
 					typename Param2 = null_type, typename Param3 = null_type,
@@ -596,7 +535,7 @@ namespace nana
 								std::is_same<Param9, T>::value};
 			};
 		};
-	}//end namespace metacomp
+	}//end namespace meta
 }//end namespace nana
 
 #endif

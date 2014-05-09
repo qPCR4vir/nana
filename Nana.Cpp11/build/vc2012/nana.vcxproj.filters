@@ -279,9 +279,6 @@
     <ClCompile Include="..\..\source\gui\animation.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\gui\filebox.cpp">
-      <Filter>Source Files\gui</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\source\gui\effects.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
@@ -289,6 +286,12 @@
       <Filter>Source Files\gui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\gui\detail\window_layout.cpp">
+      <Filter>Source Files\gui\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\gui\filebox.cpp">
+      <Filter>Source Files\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\gui\detail\element_store.cpp">
       <Filter>Source Files\gui\detail</Filter>
     </ClCompile>
   </ItemGroup>
