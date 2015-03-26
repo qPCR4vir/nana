@@ -51,6 +51,10 @@ namespace nana
 			return *color_;
 		}
 	//end class color_proxy
+    widget_colors widget_colors::def  {color_proxy(static_cast<color_rgb>(0x60C8FD)), 
+                                       color_proxy(colors::button_face), 
+                                       color_proxy(colors::black)};
+
 
 	namespace detail
 	{

@@ -36,11 +36,18 @@ namespace nana
 	struct widget_colors
 	{
 		virtual ~widget_colors() = default;
+        widget_colors(){}
+        widget_colors(color_proxy ac,  color_proxy bg , color_proxy fg):
+                 activated(ac), background(bg), foreground(fg){}
 
-		color_proxy activated{ static_cast<color_rgb>(0x60C8FD) };
-		color_proxy background{colors::button_face};
-		color_proxy foreground{colors::black};
+        color_proxy activated   {def.activated };
+        color_proxy background  {def.background};
+        color_proxy foreground  {def.background};
+
+        static widget_colors def; 
 	};
+
+
 }
 
 #endif
