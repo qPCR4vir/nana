@@ -85,6 +85,10 @@ script:
   - ./dock
   - ./drag-button
   - ./draw
+  - ./file_explorer
+  - ./example_menu
+  - ./example_listbox
+  -. /example_combox
   #- ./MontiHall
   - ./a_group_impl
   #- ./animate-bmp
