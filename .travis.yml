@@ -77,5 +77,6 @@ script:
   - make
   - ls
   - ./main
+  - ./clicked
 
 
