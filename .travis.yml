@@ -77,9 +77,17 @@ script:
   - make
   - ls
   - ./clicked
-  - ./MontiHall
+  - ./HelloWord
+  - ./background-effects
+  - ./categ
+  - ./decore
+  - ./example.button
+  - ./dock
+  - ./drag-button
+  - ./draw
+  #- ./MontiHall
   - ./a_group_impl
-  - ./animate-bmp
+  #- ./animate-bmp
   #- ./calculator  
   #- ./helloworld_demo 
   #- ./notepad 
