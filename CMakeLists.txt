@@ -253,7 +253,7 @@ if (NANA_CMAKE_BUILD_DEMOS)
 	     add_definitions(-DNANA_ADD_DEF_AUTOMATIC_GUI_TESTING)
 	endif(NANA_CMAKE_ADD_DEF_AUTOMATIC_GUI_TESTING)
 	
-    set (demos   calculator  helloworld_demo notepad        )
+    set (demos     helloworld_demo notepad        )
 
     foreach ( demo ${demos})
         add_executable(${demo} "../nana-demo/${demo}.cpp")
@@ -268,7 +268,7 @@ if (NANA_CMAKE_BUILD_DEMOS)
         message("... to build: ../nana-demo/${demo}.cpp" )
     endforeach( demo ${demos})
 
-    set (demos     widget_show widget_show2      )
+    set (demos    calculator widget_show widget_show2      )
 
     if (NANA_CMAKE_INCLUDE_EXPERIMENTAL_DEMOS)
         list(APPEND demos  file_explorer FreeMe)    # ??
