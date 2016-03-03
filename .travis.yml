@@ -81,7 +81,7 @@ script:
   - ./background-effects
   - ./categ
   - ./decore
-  - ./example.button
+  #- ./example.button
   - ./dock
   - ./drag-button
   - ./draw
@@ -89,6 +89,7 @@ script:
   - ./example_menu
   - ./example_listbox
   -. /example_combox
+  -. /example.button
   #- ./MontiHall
   - ./a_group_impl
   #- ./animate-bmp
