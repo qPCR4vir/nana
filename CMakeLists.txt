@@ -253,7 +253,7 @@ if (NANA_CMAKE_BUILD_DEMOS)
 	     add_definitions(-DNANA_ADD_DEF_AUTOMATIC_GUI_TESTING)
 	endif(NANA_CMAKE_ADD_DEF_AUTOMATIC_GUI_TESTING)
 	
-    set (demos    calculator  helloworld_demo notepad        )
+    set (demos    calculator file_explorer helloworld_demo notepad        )
 
     foreach ( demo ${demos})
         add_executable(${demo} "../nana-demo/${demo}.cpp")
