@@ -81,15 +81,14 @@ script:
   - ./background-effects
   - ./categ
   - ./decore
-  #- ./example.button
   - ./dock
   - ./drag-button
   - ./draw
   - ./file_explorer
   - ./example_menu
   - ./example_listbox
-  -. /example_combox
-  -. /example.button
+  - ./example_combox
+  #- ./example.button
   #- ./MontiHall
   - ./a_group_impl
   #- ./animate-bmp
