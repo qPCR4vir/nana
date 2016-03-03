@@ -74,6 +74,5 @@ script:
   - make
   - ls
   - ./main
-  - ./HelloWord
-  - ./clicked
+
 
