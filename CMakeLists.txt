@@ -54,7 +54,7 @@ option(NANA_CMAKE_BOOST_FILESYSTEM_FORCE "Force use of Boost filesystem if avail
 #option(NANA_CMAKE_BOOST_FILESYSTEM_INCLUDE_ROOT "Where to find <boost/filesystem.hpp>?" "../")
 #option(NANA_CMAKE_BOOST_FILESYSTEM_LIB "Flag for the compiler to link: " "-lboost/fs")
 #include_directories("${NANA_CMAKE_BOOST_FILESYSTEM_INCLUDE_ROOT}")
-#list(APPEND NANA_LINKS "${NANA_CMAKE_BOOST_FILESYSTEM_LIB}")
+#list(APPEND NANA_LINKS "${NANA_CMAKE_BOOST_FILESYSTEM_LIB}" )
 
 
 if (NANA_CMAKE_NANA_FILESYSTEM_FORCE)
