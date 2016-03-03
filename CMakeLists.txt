@@ -284,7 +284,7 @@ if (NANA_CMAKE_BUILD_DEMOS)
     endforeach( demo ${demos})
 
 
-    set (demos   main)
+    set (demos   main clicked)
                  # a_group_impl  animate-bmp  audio_player audio_player_simple  background-effects categ clicked
                  # decore dock  drag-button  draw example.button example_combox example_listbox example_menu
                  # filebox-txt folder_tree folder_tree_nana folder_tree_std framework_design_1 framework_design_2 framework_design_3
