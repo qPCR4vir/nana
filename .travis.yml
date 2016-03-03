@@ -77,9 +77,12 @@ script:
   - make
   - ls
   - ./clicked
-  - ./calculator  
-  - ./helloworld_demo 
-  - ./notepad 
+  - ./MontiHall
+  - ./a_group_impl
+  - ./animate-bmp
+  #- ./calculator  
+  #- ./helloworld_demo 
+  #- ./notepad 
   
 
 
