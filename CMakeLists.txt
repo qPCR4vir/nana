@@ -253,7 +253,7 @@ if (NANA_CMAKE_BUILD_DEMOS)
 	     add_definitions(-DNANA_ADD_DEF_AUTOMATIC_GUI_TESTING)
 	endif(NANA_CMAKE_ADD_DEF_AUTOMATIC_GUI_TESTING)
 	
-    set (demos     helloworld_demo notepad        )
+    set (demos   calculator  helloworld_demo notepad        )
 
     foreach ( demo ${demos})
         add_executable(${demo} "../nana-demo/${demo}.cpp")
@@ -261,14 +261,14 @@ if (NANA_CMAKE_BUILD_DEMOS)
         target_link_libraries(${demo} ${PROJECT_NAME})
         #if(NANA_CMAKE_AUTOMATIC_GUI_TESTING)
             #add_custom_command( TARGET  ${demo} POST_BUILD COMMAND  ${demo} )
-            #add_custom_target(do_always_${demo} ALL COMMAND ${demo})
-            add_test(${demo} COMMAND ${demo})
+            add_custom_target(do_always_${demo} ALL COMMAND ${demo})
+            #add_test(${demo} COMMAND ${demo})
         #endif(NANA_CMAKE_AUTOMATIC_GUI_TESTING)
         install(TARGETS ${demo} RUNTIME DESTINATION  "../nana-demo/")
         message("... to build: ../nana-demo/${demo}.cpp" )
     endforeach( demo ${demos})
 
-    set (demos     calculator  widget_show widget_show2      )
+    set (demos     widget_show widget_show2      )
 
     if (NANA_CMAKE_INCLUDE_EXPERIMENTAL_DEMOS)
         list(APPEND demos  file_explorer FreeMe)    # ??
@@ -284,14 +284,13 @@ if (NANA_CMAKE_BUILD_DEMOS)
     endforeach( demo ${demos})
 
 
-    set (demos   main clicked)
-                 # a_group_impl  animate-bmp  audio_player audio_player_simple  background-effects categ clicked
-                 # decore dock  drag-button  draw example.button example_combox example_listbox example_menu
-                 # filebox-txt folder_tree folder_tree_nana folder_tree_std framework_design_1 framework_design_2 framework_design_3
-                 # group HelloWord helloword_quit inputbox label_listener lambda_event.Cpp11 listbox_inline_widget listbox_Resolver loader_1 loader_2
-                 # main mbox menu_debug menu_popuper modal_form MontiHall place_login png screen stretch_image
-                 # threading thread-pool various_events window-dragger windows-subclassing
-                 # )
+    set (demos    a_group_impl  animate-bmp  audio_player audio_player_simple  background-effects categ clicked
+                  decore dock  drag-button  draw example.button example_combox example_listbox example_menu
+                  filebox-txt folder_tree folder_tree_nana folder_tree_std framework_design_1 framework_design_2 framework_design_3
+                  group HelloWord helloword_quit inputbox label_listener lambda_event.Cpp11 listbox_inline_widget listbox_Resolver loader_1 loader_2
+                  main mbox menu_debug menu_popuper modal_form MontiHall place_login png screen stretch_image
+                  threading thread-pool various_events window-dragger windows-subclassing
+                  )
     # Pending: 
     
     foreach ( demo ${demos})
