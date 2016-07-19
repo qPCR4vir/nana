@@ -43,7 +43,7 @@ namespace nana
 				: public item_renderer
 			{
 			private:
-				virtual void background(graph_reference graph, const nana::rectangle& r, const ::nana::color& bgcolor)
+				virtual void background(graph_reference graph, const nana::rectangle&, const ::nana::color& bgcolor)
 				{
 					if(bgcolor_ != bgcolor)
 					{
@@ -59,7 +59,6 @@ namespace nana
 
 				virtual void item(graph_reference graph, const item_t& m, bool active, state_t sta)
 				{
-					//*
 					const nana::rectangle & r = m.r;
 					color bgcolor;
 					color blcolor;
@@ -586,9 +585,17 @@ namespace nana
 				{
 					if(pos < list_.size() && (pos != basis_.active))
 					{
-						API::show_window(iterator_at(pos)->relative, true);
-						if(basis_.active < list_.size())
-							API::show_window(iterator_at(basis_.active)->relative, false);
+						auto & tab_act = *iterator_at(pos);
+						API::show_window(tab_act.relative, true);
+						if (basis_.active < list_.size())
+						{
+							auto & tab_deact = *iterator_at(basis_.active);
+
+							//Don't hide the relative window if it is equal to active relative window.
+							//The tabbar allows a window to be attached to multiple tabs(pass false to DropOther of attach method)
+							if (tab_deact.relative != tab_act.relative)
+								API::show_window(tab_deact.relative, false);
+						}
 
 						basis_.active = pos;
 						track();
@@ -604,13 +611,27 @@ namespace nana
 					return basis_.active;
 				}
 
-				void attach(std::size_t pos, window wd)
+				window attach(std::size_t pos, window wd, bool drop_other)
 				{
 					if (pos >= list_.size())
 						throw std::out_of_range("tabbar: invalid position");
 
-					iterator_at(pos)->relative = wd;
+					auto & tab = *iterator_at(pos);
+					auto old = tab.relative;
+
+					if (drop_other)
+					{
+						//Drop the relative windows which are equal to wd.
+						for (auto & t : list_)
+						{
+							if (wd == t.relative)
+								t.relative = nullptr;
+						}
+					}
+					
+					tab.relative = wd;
 					API::show_window(wd, basis_.active == pos);
+					return old;
 				}
 
 				bool tab_color(std::size_t pos, bool is_bgcolor, const ::nana::color& clr)
@@ -961,7 +982,8 @@ namespace nana
 					auto bgcolor = API::bgcolor(basis_.wd);
 					auto fgcolor = API::fgcolor(basis_.wd);
 
-					item_renderer::item_t m{ ::nana::rectangle{ basis_.graph->size() } };
+					item_renderer::item_t m;
+					m.r = ::nana::rectangle{ basis_.graph->size() };
 
 					basis_.renderer->background(*basis_.graph, m.r, bgcolor);
 
@@ -1181,9 +1203,9 @@ namespace nana
 					return layouter_->toolbox_object().close_fly(fly);
 				}
 
-				void trigger::attach(std::size_t pos, window wd)
+				window trigger::attach(std::size_t pos, window wd, bool drop_other)
 				{
-					layouter_->attach(pos, wd);
+					return layouter_->attach(pos, wd, drop_other);
 				}
 
 				void trigger::erase(std::size_t pos)
@@ -1255,7 +1277,7 @@ namespace nana
 						if(false == layouter_->active_by_trace())
 							layouter_->toolbox_answer(arg);
 						layouter_->render();
-						API::lazy_refresh();
+						API::dev::lazy_refresh();
 					}
 				}
 
@@ -1266,7 +1288,7 @@ namespace nana
 					if(rd)
 					{
 						layouter_->render();
-						API::lazy_refresh();
+						API::dev::lazy_refresh();
 					}
 				}
 
@@ -1275,7 +1297,7 @@ namespace nana
 					if(layouter_->trace(arg.pos.x, arg.pos.y))
 					{
 						layouter_->render();
-						API::lazy_refresh();
+						API::dev::lazy_refresh();
 					}
 				}
 
@@ -1284,7 +1306,7 @@ namespace nana
 					if(layouter_->leave())
 					{
 						layouter_->render();
-						API::lazy_refresh();
+						API::dev::lazy_refresh();
 					}
 				}
 			//end class trigger
@@ -1535,7 +1557,7 @@ namespace nana
 							return;
 
 						refresh(graph);
-						API::lazy_refresh();
+						API::dev::lazy_refresh();
 					}
 
 					void driver::mouse_leave(graph_reference graph, const arg_mouse&)
@@ -1544,7 +1566,7 @@ namespace nana
 							return;
 
 						refresh(graph);
-						API::lazy_refresh();
+						API::dev::lazy_refresh();
 					}
 
 					void driver::mouse_down(graph_reference graph, const arg_mouse&)
@@ -1559,10 +1581,10 @@ namespace nana
 							model_->show_attached_window();
 
 							refresh(graph);
-							API::lazy_refresh();
+							API::dev::lazy_refresh();
 
 							event_arg arg;
-							model_->widget_ptr()->events().selected.emit(arg);
+							model_->widget_ptr()->events().selected.emit(arg, model_->widget_ptr()->handle());
 						}
 					}
 				//end class driver
@@ -1701,7 +1723,7 @@ namespace nana
 			if (selection_changed && (active_pos != npos))
 			{
 				event_arg arg;
-				events().selected.emit(arg);
+				events().selected.emit(arg, handle());
 			}
 		}
 		//end class tabbar

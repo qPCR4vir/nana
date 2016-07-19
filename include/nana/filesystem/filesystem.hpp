@@ -8,7 +8,7 @@
  *	http://www.boost.org/LICENSE_1_0.txt)
  *
  *	@file nana/filesystem/filesystem.hpp
- *  @author Jinhao, conributed: Ariel Vina-Rodriguez
+ *  @author Ariel Vina-Rodriguez, Jinhao
  *  @brief Mimic std::experimental::filesystem::v1   (boost v3)
  *  and need VC2015 or a C++11 compiler. With a few correction can be compiler by VC2013
  */
@@ -29,6 +29,54 @@
 
 #ifndef NANA_FILESYSTEM_HPP
 #define NANA_FILESYSTEM_HPP
+#include <nana/push_ignore_diagnostic>
+
+//Filesystem Selection
+#include <nana/config.hpp>
+
+#if defined(NANA_USING_NANA_FILESYSTEM) || defined(NANA_USING_STD_FILESYSTEM) || defined(NANA_USING_BOOST_FILESYSTEM)
+#undef NANA_USING_NANA_FILESYSTEM
+#undef NANA_USING_STD_FILESYSTEM
+#undef NANA_USING_BOOST_FILESYSTEM
+#endif
+
+#define NANA_USING_NANA_FILESYSTEM  0
+#define NANA_USING_STD_FILESYSTEM   0
+#define NANA_USING_BOOST_FILESYSTEM 0
+
+#if (defined(NANA_FILESYSTEM_FORCE) || ( (defined(STD_FILESYSTEM_NOT_SUPPORTED) && !defined(BOOST_FILESYSTEM_AVAILABLE)) && !(defined(BOOST_FILESYSTEM_FORCE) || defined(STD_FILESYSTEM_FORCE)) ) )
+
+#undef  NANA_USING_NANA_FILESYSTEM 
+#define NANA_USING_NANA_FILESYSTEM  1
+
+#elif (defined(BOOST_FILESYSTEM_AVAILABLE) && ( defined(BOOST_FILESYSTEM_FORCE) || ( defined(STD_FILESYSTEM_NOT_SUPPORTED) && !defined(STD_FILESYSTEM_FORCE) ) )) 
+
+#undef  NANA_USING_BOOST_FILESYSTEM
+#define NANA_USING_BOOST_FILESYSTEM 1
+#   include <boost/filesystem.hpp>
+
+// add boost::filesystem into std::experimental::filesystem
+namespace std {
+	namespace experimental {
+		namespace filesystem {
+			using namespace boost::filesystem;
+		} // filesystem
+	} // experimental
+} // std
+
+#else
+
+#undef NANA_USING_STD_FILESYSTEM 
+#define NANA_USING_STD_FILESYSTEM 1
+#    include <experimental/filesystem>
+#endif
+
+#ifndef __cpp_lib_experimental_filesystem
+#   define __cpp_lib_experimental_filesystem 1
+#endif
+
+#if NANA_USING_NANA_FILESYSTEM
+
 #include <string>
 #include <system_error>
 #include <iterator>
@@ -112,7 +160,7 @@ namespace nana  { namespace experimental { namespace filesystem
 	public:
 #if defined(NANA_WINDOWS)
 		using value_type = wchar_t;
-		const static value_type preferred_separator = L'\\';  //? L'\\' ?
+		const static value_type preferred_separator = L'\\';
 #else
 		using value_type = char;
 		const static value_type preferred_separator = '/';
@@ -230,18 +278,18 @@ namespace nana  { namespace experimental { namespace filesystem
 	{
 	public:
 		directory_entry() = default;
-		explicit directory_entry(const path&);
+		explicit directory_entry(const ::nana::experimental::filesystem::path&);
 
 		//modifiers
-		void assign(const path&);
-		void replace_filename(const path&);
+		void assign(const ::nana::experimental::filesystem::path&);
+		void replace_filename(const ::nana::experimental::filesystem::path&);
 
 		//observers
 		file_status status() const;
-		operator const filesystem::path&() const;
+		operator const filesystem::path&() const {	return path_;	};
 		const filesystem::path& path() const;
 	private:
-		filesystem::path path_;
+		::nana::experimental::filesystem::path path_;
 	};
 
     /// InputIterator that iterate over the sequence of directory_entry elements representing the files in a directory, not an recursive_directory_iterator
@@ -353,7 +401,6 @@ namespace nana  { namespace experimental { namespace filesystem
 	bool create_directory(const path& p, const path& attributes);
 	//bool create_directory(const path& p, const path& attributes,     error_code& ec) noexcept;
 	
-	bool modified_file_time(const path& p, struct tm&);    ///< extention ?
 
 	/// The time of last data modification of p, determined as if by the value of the POSIX
     /// stat structure member st_mtime obtained as if by POSIX stat().
@@ -361,7 +408,6 @@ namespace nana  { namespace experimental { namespace filesystem
 	/// returns file_time_type::min() if an error occurs
 	//file_time_type last_write_time(const path& p, error_code& ec) noexcept;
 
-	path path_user();    ///< extention ?
 
 	path current_path();
 	//path current_path(error_code& ec);
@@ -409,4 +455,21 @@ namespace nana  { namespace experimental { namespace filesystem
   //namespace filesystem = experimental::filesystem;
 } //end namespace nana
 
-#endif
+
+namespace std {
+	namespace experimental {
+		namespace filesystem {
+
+#       ifdef CXX_NO_INLINE_NAMESPACE
+			using namespace nana::experimental::filesystem;
+#       else
+			using namespace nana::experimental::filesystem::v1;
+#       endif
+		} // filesystem
+	} // experimental
+} // std
+
+#endif	//NANA_USING_NANA_FILESYSTEM
+
+#include <nana/pop_ignore_diagnostic>
+#endif	//NANA_FILESYSTEM_HPP

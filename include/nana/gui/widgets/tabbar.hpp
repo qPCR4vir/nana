@@ -13,6 +13,8 @@
  */
 #ifndef NANA_GUI_WIDGET_TABBAR_HPP
 #define NANA_GUI_WIDGET_TABBAR_HPP
+#include <nana/push_ignore_diagnostic>
+
 #include "widget.hpp"
 #include <nana/pat/cloneable.hpp>
 #include <nana/any.hpp>
@@ -111,14 +113,14 @@ namespace nana
 					if(pos != npos)
 					{
 						drawer_trigger_.at_no_bound_check(pos) = T();
-						tabbar_.events().added.emit(arg_tabbar({ tabbar_, tabbar_[pos] }));
+						tabbar_.events().added.emit(arg_tabbar({ tabbar_, tabbar_[pos] }), tabbar_);
 					}
 				}
 
 				void activated(std::size_t pos) override
 				{
 					if(pos != npos)
-						tabbar_.events().activated.emit(arg_tabbar({ tabbar_, tabbar_[pos]}));
+						tabbar_.events().activated.emit(arg_tabbar({ tabbar_, tabbar_[pos]}), tabbar_);
 				}
 
 				bool removed(std::size_t pos, bool & close_attach) override
@@ -126,7 +128,7 @@ namespace nana
 					if (pos != npos)
 					{
 						::nana::arg_tabbar_removed<T> arg(tabbar_, tabbar_[pos]);
-						tabbar_.events().removed.emit(arg);
+						tabbar_.events().removed.emit(arg, tabbar_);
 						close_attach = arg.close_attach_window;
 						return arg.remove;
 					}
@@ -166,7 +168,7 @@ namespace nana
 				void insert(std::size_t, native_string_type&&, nana::any&&);
 				std::size_t length() const;
 				bool close_fly(bool);
-				void attach(std::size_t, window);
+				window attach(std::size_t, window, bool drop_other);
 				void erase(std::size_t);
 				void tab_color(std::size_t, bool is_bgcolor, const ::nana::color&);
 				void tab_image(size_t, const nana::paint::image&);
@@ -304,12 +306,19 @@ namespace nana
 			API::update_window(*this);
 		}
 
-		void attach(std::size_t pos, window attach_wd)
+		/// Attach a window to a specified tab. When the tab is activated, tabbar shows the attached window. 
+		/**
+		 * @param pos The position of tab to set the attached window.
+		 * @param attach_wd A handle to the window to be set.
+		 * @param drop_other Drop the attached windows of other tabs whose attach windows are equal to the parameter attach_wd. If drop_other is true, the other tabs attached windows equal to attach_wd will be dropped.
+		 * @return A handle to the last attached window of specified tab.
+		 */
+		window attach(std::size_t pos, window attach_wd, bool drop_other = true)
 		{
 			if (attach_wd && API::empty_window(attach_wd))
 				throw std::invalid_argument("tabbar.attach: invalid window handle");
 
-			this->get_drawer_trigger().attach(pos, attach_wd);
+			return this->get_drawer_trigger().attach(pos, attach_wd, drop_other);
 		}
 
 		void erase(std::size_t pos)
@@ -410,5 +419,6 @@ namespace nana
 		void erase(std::size_t pos, bool close_attached = true);
 	};
 }
+#include <nana/pop_ignore_diagnostic>
 
 #endif

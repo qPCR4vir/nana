@@ -12,6 +12,7 @@
 
 #ifndef NANA_GUI_MSGBOX_HPP
 #define NANA_GUI_MSGBOX_HPP
+#include <nana/push_ignore_diagnostic>
 
 #include <sstream>
 
@@ -59,6 +60,12 @@ namespace nana
 
 		/// Writes a string to the buffer.
 		msgbox & operator<<(const wchar_t*);
+
+		/// Writes a UTF-8 string to the buffer.
+		msgbox & operator<<(const std::string&);
+
+		/// Writes a UTF-8 string to the buffer.
+		msgbox & operator<<(const char*);
 
 		/// Writes a string to the buffer.
 		msgbox & operator<<(const nana::charset&);
@@ -253,5 +260,6 @@ namespace nana
 		::nana::rectangle valid_areas_[4];
 	};
 }//end namespace nana
+#include <nana/pop_ignore_diagnostic>
 
 #endif

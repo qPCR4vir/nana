@@ -18,6 +18,8 @@
 #ifndef NANA_DETAIL_PLATFORM_SPEC_HPP
 #define NANA_DETAIL_PLATFORM_SPEC_HPP
 
+#include <nana/push_ignore_diagnostic>
+
 #include <thread>
 #include <mutex>
 #include <memory>
@@ -60,6 +62,8 @@ namespace detail
 
 	class charset_conv
 	{
+		charset_conv(const charset_conv&) = delete;
+		charset_conv& operator=(const charset_conv*) = delete;
 	public:
 		charset_conv(const char* tocode, const char* fromcode);
 		~charset_conv();
@@ -118,6 +122,9 @@ namespace detail
 		void update_color();
 		void update_text_color();
 	private:
+		drawable_impl_type(const drawable_impl_type&) = delete;
+		drawable_impl_type& operator=(const drawable_impl_type&) = delete;
+
 		unsigned current_color_{ 0xFFFFFF };
 		unsigned color_{ 0xFFFFFFFF };
 		unsigned text_color_{ 0xFFFFFFFF };
@@ -168,7 +175,8 @@ namespace detail
 		Atom xdnd_finished;
 	};
 
-	struct caret_tag;
+	//A forward declaration of caret data
+	struct caret_rep;
 
 	class timer_runner;
 
@@ -188,8 +196,8 @@ namespace detail
 			native_window_type owner;
 			std::vector<native_window_type> * owned;
 		};
-    public:
-        int error_code;
+	public:
+		int error_code;
 	public:
 		typedef drawable_impl_type::font_ptr_t font_ptr_t;
 		typedef void (*timer_proc_type)(unsigned tid);
@@ -197,6 +205,8 @@ namespace detail
 		typedef ::nana::event_code		event_code;
 		typedef ::nana::native_window_type	native_window_type;
 
+		platform_spec(const platform_spec&) = delete;
+		platform_spec& operator=(const platform_spec&) = delete;
 
 		platform_spec();
 		~platform_spec();
@@ -234,9 +244,7 @@ namespace detail
 		void caret_close(native_window_type);
 		void caret_pos(native_window_type, const ::nana::point&);
 		void caret_visible(native_window_type, bool);
-		void caret_flash(caret_tag&);
 		bool caret_update(native_window_type, nana::paint::graphics& root_graph, bool is_erase_caret_from_root_graph);
-		static bool caret_reinstate(caret_tag&);
 		void set_error_handler();
 		int rev_error_handler();
 
@@ -278,7 +286,7 @@ namespace detail
 		{
 			volatile bool exit_thread;
 			std::unique_ptr<std::thread> thr;
-			std::map<native_window_type, caret_tag*> carets;
+			std::map<native_window_type, caret_rep*> carets;
 		}caret_holder_;
 
 		std::map<native_window_type, window_context_t> wincontext_;
@@ -327,6 +335,7 @@ namespace detail
 
 }//end namespace nana
 
+#include <nana/pop_ignore_diagnostic>
 // .h ward
 #endif
 

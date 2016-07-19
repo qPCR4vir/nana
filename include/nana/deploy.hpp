@@ -14,11 +14,10 @@
 
 #ifndef NANA_DEPLOY_HPP
 #define NANA_DEPLOY_HPP
+#include <nana/push_ignore_diagnostic>
 
 #include <nana/config.hpp>
-#if defined(VERBOSE_PREPROCESSOR)
-	#include <nana/verbose_preprocessor.hpp>
-#endif
+
 
 #include <stdexcept>
 #include <nana/charset.hpp>
@@ -113,11 +112,35 @@ namespace std
 
 namespace nana
 {
+	/// move to *.h ??
+	struct utf8_Error : std::runtime_error
+	{
+		static bool use_throw; ///< def { true }; use carefully - it is a global variable !! \todo initialize from a #define ?
+
+		using std::runtime_error::runtime_error;
+
+#if defined(_MSC_VER)
+#	if (_MSC_VER < 1900)
+		//A workaround for lack support of C++11 inheriting constructors  for VC2013
+		explicit utf8_Error(const std::string& msg);
+#	endif
+#endif
+
+		void emit();
+	};
+
+	
 	/// Checks whether a specified text is utf8 encoding
-	bool is_utf8(const char* str, unsigned len);
+	bool is_utf8(const char* str, std::size_t len);
 	void throw_not_utf8(const std::string& text);
-	void throw_not_utf8(const char*, unsigned len);
+	void throw_not_utf8(const char*, std::size_t len);
 	void throw_not_utf8(const char*);
+
+	/// this text needed change, it needed review ??
+	bool review_utf8(const std::string& text);
+
+	/// this text needed change, it needed review ??
+	bool review_utf8(std::string& text);
 
 	const std::string& to_utf8(const std::string&);
 	std::string to_utf8(const std::wstring&);
@@ -209,5 +232,5 @@ namespace std {
 			make_unique(Args&&...) = delete;
 }
 #endif //STD_make_unique_NOT_SUPPORTED
-
-#endif //NANA_MACROS_HPP
+#include <nana/pop_ignore_diagnostic>
+#endif //NANA_DEPLOY_HPP

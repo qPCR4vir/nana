@@ -355,13 +355,13 @@ namespace nana
 	msgbox::msgbox(const std::string& title)
 		: wd_(nullptr), title_(title), button_(ok), icon_(icon_none)
 	{
-		throw_not_utf8(title_);
+		review_utf8(title_);
 	}
 
 	msgbox::msgbox(window wd, const std::string& title, button_t b)
 		: wd_(wd), title_(title), button_(b), icon_(icon_none)
 	{
-		throw_not_utf8(title_);
+		review_utf8(title_);
 	}
 
 	msgbox& msgbox::icon(icon_t ic)
@@ -378,19 +378,35 @@ namespace nana
 
 	msgbox & msgbox::operator<<(const std::wstring& str)
 	{
-		sstream_ << to_osmbstr(to_utf8(str));
+		sstream_ << to_utf8(str);
 		return *this;
 	}
 
 	msgbox & msgbox::operator<<(const wchar_t* str)
 	{
-		sstream_ << to_osmbstr(to_utf8(str));
+		sstream_ << to_utf8(str);
 		return *this;
+	}
+
+
+	/// Writes a UTF-8 string to the buffer.
+	msgbox & msgbox::operator<<(const std::string& u8str)
+	{
+		review_utf8(u8str);
+		sstream_ << u8str;
+
+		return *this;
+	}
+
+	/// Writes a UTF-8 string to the buffer.
+	msgbox & msgbox::operator<<(const char* u8str)
+	{
+		return operator<<(std::string{ u8str });
 	}
 
 	msgbox & msgbox::operator<<(const nana::charset& cs)
 	{
-		std::string str = cs;
+		std::string str = cs.to_bytes(nana::unicode::utf8);
 		sstream_ << str;
 		return *this;
 	}
@@ -452,7 +468,7 @@ namespace nana
 		return pick_yes;
 #elif defined(NANA_X11)
 		msgbox_window box(wd_, title_, button_, icon_);
-		box.prompt(nana::charset(sstream_.str()));
+		box.prompt(sstream_.str());
 		return box.pick();
 #endif
 		return pick_yes;
@@ -702,13 +718,13 @@ namespace nana
 
 		impl->spinbox.value(std::to_string(impl->value));
 
-		impl->dock.events().resized.connect_unignorable([impl, label_px, value_px](const ::nana::arg_resized& arg)
+		impl->dock.events().resized.connect_unignorable([impl, label_px, value_px](const ::nana::arg_resized&)
 		{
 			impl->label.size({ label_px, 24 });
 			impl->spinbox.size({ value_px, 24 });
 		});
 
-		impl->spinbox.events().destroy.connect_unignorable([impl]
+		impl->spinbox.events().destroy.connect_unignorable([impl](const arg_destroy&)
 		{
 			impl->value = impl->spinbox.to_int();
 		});
@@ -780,13 +796,13 @@ namespace nana
 
 		impl->spinbox.value(std::to_string(impl->value));
 
-		impl->dock.events().resized.connect_unignorable([impl, label_px, value_px](const ::nana::arg_resized& arg)
+		impl->dock.events().resized.connect_unignorable([impl, label_px, value_px](const ::nana::arg_resized&)
 		{
 			impl->label.size(::nana::size{ label_px, 24 });
 			impl->spinbox.size(::nana::size{ value_px, 24 });
 		});
 
-		impl->spinbox.events().destroy.connect_unignorable([impl]
+		impl->spinbox.events().destroy.connect_unignorable([impl](const arg_destroy&)
 		{
 			impl->value = impl->spinbox.to_double();
 		});
@@ -913,7 +929,7 @@ namespace nana
 		});
 
 		auto & wdg = (value_px ? static_cast<widget&>(impl->combox) : static_cast<widget&>(impl->textbox));
-		wdg.events().destroy.connect_unignorable([&wdg, impl]
+		wdg.events().destroy.connect_unignorable([&wdg, impl](const arg_destroy&)
 		{
 			impl->value = wdg.caption();
 		});
@@ -1028,16 +1044,19 @@ namespace nana
 			impl->wdg_year.size(sz);
 		});
 
-		impl->wdg_day.events().destroy.connect_unignorable([impl]
+		auto destroy_fn = [impl](const arg_destroy& arg)
 		{
-			impl->day = impl->wdg_day.to_int();
-			impl->month = static_cast<int>(impl->wdg_month.option()) + 1;
-		});
+			if (arg.window_handle == impl->wdg_day.handle())
+			{
+				impl->day = impl->wdg_day.to_int();
+				impl->month = static_cast<int>(impl->wdg_month.option()) + 1;
+			}
+			else if(arg.window_handle == impl->wdg_year.handle())
+				impl->year = impl->wdg_year.to_int();
+		};
 
-		impl->wdg_year.events().destroy.connect_unignorable([impl]
-		{
-			impl->year = impl->wdg_year.to_int();
-		});
+		impl->wdg_day.events().destroy.connect_unignorable(destroy_fn);
+		impl->wdg_year.events().destroy.connect_unignorable(destroy_fn);
 
 		auto make_days = [impl]
 		{
@@ -1123,7 +1142,7 @@ namespace nana
 
 		impl->browse.create(impl->dock);
 		impl->browse.i18n(i18n_eval("Browse"));
-		impl->browse.events().click([wd, impl]
+		impl->browse.events().click.connect_unignorable([wd, impl](const arg_click&)
 		{
 			impl->fbox.owner(wd);
 			if (impl->fbox.show())
@@ -1140,7 +1159,7 @@ namespace nana
 			impl->browse.move({static_cast<int>(arg.width - 60), 0, 60, arg.height});
 		});
 
-		impl->path_edit.events().destroy.connect_unignorable([impl]
+		impl->path_edit.events().destroy.connect_unignorable([impl](const arg_destroy&)
 		{
 			impl->value = impl->path_edit.caption();
 		});
