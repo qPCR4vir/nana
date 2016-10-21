@@ -1,7 +1,7 @@
 /*
 *	A Menu implementation
 *	Nana C++ Library(http://www.nanapro.org)
-*	Copyright(C) 2009-2015 Jinhao(cnjinhao@hotmail.com)
+*	Copyright(C) 2009-2016 Jinhao(cnjinhao@hotmail.com)
 *
 *	Distributed under the Boost Software License, Version 1.0.
 *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -10,6 +10,7 @@
 *	@file: nana/gui/widgets/menu.cpp
 *	@contributors:
 *		kmribti(pr#102)
+*		dankan1890(pr#158)
 */
 
 #include <nana/gui/widgets/menu.hpp>
@@ -1120,9 +1121,9 @@ namespace nana
 			delete impl_;
 		}
 
-		auto menu::append(const std::string& text, const menu::event_fn_t& f) -> item_proxy
+		auto menu::append(std::string text_utf8, const menu::event_fn_t& f) -> item_proxy
 		{
-			impl_->mbuilder.data().items.emplace_back(text, f);
+			impl_->mbuilder.data().items.emplace_back(std::move(text_utf8), f);
 			return item_proxy(size() - 1, impl_->mbuilder.data().items.back());
 		}
 
@@ -1156,6 +1157,11 @@ namespace nana
 		void menu::image(std::size_t index, const paint::image& img)
 		{
 			impl_->mbuilder.data().items.at(index).image = img;
+		}
+
+		void menu::text(std::size_t index, std::string text_utf8)
+		{
+			impl_->mbuilder.data().items.at(index).text.swap(text_utf8);
 		}
 
 		bool menu::link(std::size_t index, menu& menu_obj)
