@@ -69,10 +69,10 @@ namespace drawerbase {
 			auto scheme = API::dev::get_scheme(wdg);
 
 			editor_ = new text_editor(wd, graph, dynamic_cast<::nana::widgets::skeletons::text_editor_scheme*>(scheme));
-			editor_->textbase().set_event_agent(evt_agent_.get());
-			editor_->set_event(evt_agent_.get());
 
 			evt_agent_.reset(new event_agent(static_cast<::nana::textbox&>(wdg), editor_->text_position()));
+			editor_->textbase().set_event_agent(evt_agent_.get());
+			editor_->set_event(evt_agent_.get());
 
 			_m_text_area(graph.width(), graph.height());
 
@@ -260,8 +260,11 @@ namespace drawerbase {
 			internal_scope_guard lock;
 			auto editor = get_drawer_trigger().editor();
 			if (editor)
-			{				
-				editor->text(to_wstring(str), end_caret);
+			{
+				editor->text(to_wstring(str), false);
+				
+				if (end_caret)
+					editor->move_caret_end(true);
 
 				editor->textbase().reset();
 				API::update_window(this->handle());
@@ -358,7 +361,7 @@ namespace drawerbase {
 			if(editor)
 			{
 				if(at_caret == false)
-					editor->move_caret_end();
+					editor->move_caret_end(false);
 
 				editor->put(to_wstring(text));
 				API::update_window(this->handle());
