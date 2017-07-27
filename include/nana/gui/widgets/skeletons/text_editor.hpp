@@ -85,6 +85,9 @@ namespace nana{	namespace widgets
 			text_editor(window, graph_reference, const text_editor_scheme*);
 			~text_editor();
 
+			size caret_size() const;
+			const point& content_origin() const;
+
 			void set_highlight(const ::std::string& name, const ::nana::color&, const ::nana::color&);
 			void erase_highlight(const ::std::string& name);
 			void set_keyword(const ::std::wstring& kw, const std::string& name, bool case_sensitive, bool whole_word_matched);
@@ -147,12 +150,13 @@ namespace nana{	namespace widgets
 			void text(std::wstring, bool end_caret);
 			std::wstring text() const;
 
-			/// Sets caret position through text coordinate.
+			/// Moves the caret at specified position
 			/**
 			 * @param pos the text position
-			 * @param reset indicates whether to reset the text position by the pos. If this parameter is true, the text position is set by pos. If the parameter is false, it only moves the UI caret to the specified position. 
+			 * @param stay_in_view Indicates whether to adjust the view to make the caret in view. This parameter is ignored if the caret is already in view.
+			 * @return true indicates a refresh is required.
 			 */
-			bool move_caret(const upoint& pos, bool reset = false);
+			bool move_caret(upoint pos, bool stay_in_view = false);
 			void move_caret_end(bool update);
 			void reset_caret_pixels() const;
 			void reset_caret(bool stay_in_view = false);
@@ -181,6 +185,8 @@ namespace nana{	namespace widgets
 
 			void focus_behavior(text_focus_behavior);
 			void select_behavior(bool move_to_end);
+
+			std::size_t line_count(bool text_lines) const;
 		public:
 			void draw_corner();
 			void render(bool focused);
@@ -207,6 +213,7 @@ namespace nana{	namespace widgets
 			bool mouse_enter(bool entering);
 			bool mouse_move(bool left_button, const point& screen_pos);
 			void mouse_pressed(const arg_mouse& arg);
+			bool select_word(const arg_mouse& arg);
 
 			skeletons::textbase<char_type>& textbase();
 			const skeletons::textbase<char_type>& textbase() const;
@@ -217,8 +224,10 @@ namespace nana{	namespace widgets
 			std::vector<upoint> _m_render_text(const ::nana::color& text_color);
 			void _m_pre_calc_lines(std::size_t line_off, std::size_t lines);
 
-			::nana::point	_m_caret_to_screen(::nana::upoint pos) const;
-			::nana::upoint	_m_screen_to_caret(::nana::point pos) const;
+			//Caret to screen coordinate or context coordiate(in pixels)
+			::nana::point	_m_caret_to_coordinate(::nana::upoint pos, bool to_screen_coordinate = true) const;
+			//Screen coordinate or context coordinate(in pixels) to caret,
+			::nana::upoint	_m_coordinate_to_caret(::nana::point pos, bool from_screen_coordinate = true) const;
 
 			bool _m_pos_from_secondary(std::size_t textline, const nana::upoint& secondary, unsigned & pos);
 			bool _m_pos_secondary(const nana::upoint& charpos, nana::upoint& secondary_pos) const;
@@ -230,18 +239,21 @@ namespace nana{	namespace widgets
 
 			void _m_reset_content_size(bool calc_lines = false);
 			void _m_reset();
+
+			//Inserts text at position where the caret is
 			::nana::upoint _m_put(::std::wstring);
+
 			::nana::upoint _m_erase_select();
 
 			::std::wstring _m_make_select_string() const;
 			static bool _m_resolve_text(const ::std::wstring&, std::vector<std::pair<std::size_t, std::size_t>> & lines);
 
 			bool _m_cancel_select(int align);
-			unsigned _m_tabs_pixels(size_type tabs) const;
 			nana::size _m_text_extent_size(const char_type*, size_type n) const;
 
-			/// Moves the view of window.
-			bool _m_move_offset_x_while_over_border(int many);
+			/// Adjust position of view to make caret stay in screen
+			bool _m_adjust_view();
+
 			bool _m_move_select(bool record_undo);
 
 			int _m_text_top_base() const;
@@ -313,7 +325,6 @@ namespace nana{	namespace widgets
 			{
 				nana::upoint	caret;	//position of caret by text, it specifies the position of a new character
 				nana::upoint	shift_begin_caret;
-				unsigned		xpos{0};	//This data is used for move up/down
 			}points_;
 		};
 	}//end namespace skeletons

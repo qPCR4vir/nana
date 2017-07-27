@@ -1781,6 +1781,11 @@ namespace nana
 					widget.caption("nana treebox");
 				}
 
+				void trigger::detached()
+				{
+					impl_->data.graph = nullptr;
+				}
+
 				void trigger::refresh(graph_reference)
 				{
 					//Don't reset the scroll and update the window
@@ -2200,7 +2205,7 @@ namespace nana
 				}
 
 				path.insert(0, pnode->value.first);
-				return std::move(path);
+				return path;
 			}
 			return{};
 		}

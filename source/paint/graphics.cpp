@@ -291,6 +291,12 @@ namespace paint
 		{
 			if(impl_->handle == nullptr || impl_->size != sz)
 			{
+				if (sz.empty())
+				{
+					release();
+					return;
+				}
+
 				//The object will be delete while dwptr_ is performing a release.
 				drawable_type dw = new nana::detail::drawable_impl_type;
 				//Reuse the old font
@@ -342,7 +348,7 @@ namespace paint
 				Display* disp = spec.open_display();
 				int screen = DefaultScreen(disp);
 				Window root = ::XRootWindow(disp, screen);
-				dw->pixmap = ::XCreatePixmap(disp, root, (sz.width ? sz.width : 1), (sz.height ? sz.height : 1), DefaultDepth(disp, screen));
+				dw->pixmap = ::XCreatePixmap(disp, root, sz.width, sz.height, DefaultDepth(disp, screen));
 				dw->context = ::XCreateGC(disp, dw->pixmap, 0, 0);
 	#if defined(NANA_USE_XFT)
 				dw->xftdraw = ::XftDrawCreate(disp, dw->pixmap, spec.screen_visual(), spec.colormap());
@@ -509,9 +515,7 @@ namespace paint
 			nana::size sz;
 			if(impl_->handle && impl_->handle->context && str.size())
 			{
-				std::vector<unicode_bidi::entity> reordered;
-				unicode_bidi bidi;
-				bidi.linestr(str.c_str(), str.size(), reordered);
+				auto const reordered = unicode_reorder(str.c_str(), str.size());
 				for(auto & i: reordered)
 				{
 					nana::size t = text_extent_size(i.begin, i.end - i.begin);
@@ -958,9 +962,8 @@ namespace paint
 		unsigned graphics::bidi_string(const nana::point& pos, const wchar_t * str, std::size_t len)
 		{
 			auto moved_pos = pos;
-			unicode_bidi bidi;
-			std::vector<unicode_bidi::entity> reordered;
-			bidi.linestr(str, len, reordered);
+
+			auto const reordered = unicode_reorder(str, len);
 			for (auto & i : reordered)
 			{
 				string(moved_pos, i.begin, i.end - i.begin);
@@ -1199,7 +1202,11 @@ namespace paint
 #elif defined(NANA_X11)
 			if (nullptr == impl_->handle) return;
 
-			double deltapx = double(vertical ? rct.height : rct.width);
+			nana::rectangle good_rct;
+			if(!nana::overlap(nana::rectangle{ size() }, rct, good_rct))
+				return;
+
+			double deltapx = double(vertical ? good_rct.height : good_rct.width);
 			double r, g, b;
 			const double delta_r = (to.r() - (r = from.r())) / deltapx;
 			const double delta_g = (to.g() - (g = from.g())) / deltapx;
@@ -1208,14 +1215,15 @@ namespace paint
 			unsigned last_color = (int(r) << 16) | (int(g) << 8) | int(b);
 
 			Display * disp = nana::detail::platform_spec::instance().open_display();
-			impl_->handle->fgcolor(static_cast<color_rgb>(last_color));
-			const int endpos = deltapx + (vertical ? rct.y : rct.x);
+			impl_->handle->set_color(static_cast<color_rgb>(last_color));
+			impl_->handle->update_color();
+			const int endpos = deltapx + (vertical ? good_rct.y : good_rct.x);
 			if (endpos > 0)
 			{
 				if (vertical)
 				{
-					int x1 = rct.x, x2 = rct.right();
-					auto y = rct.y;
+					int x1 = good_rct.x, x2 = good_rct.right();
+					auto y = good_rct.y;
 					for (; y < endpos; ++y)
 					{
 						::XDrawLine(disp, impl_->handle->pixmap, impl_->handle->context, x1, y, x2, y);
@@ -1223,14 +1231,15 @@ namespace paint
 						if (new_color != last_color)
 						{
 							last_color = new_color;
-							impl_->handle->fgcolor(static_cast<color_rgb>(last_color));
+							impl_->handle->set_color(static_cast<color_rgb>(last_color));
+							impl_->handle->update_color();
 						}
 					}
 				}
 				else
 				{
-					int y1 = rct.y, y2 = rct.bottom();
-					auto x = rct.x;
+					int y1 = good_rct.y, y2 = good_rct.bottom();
+					auto x = good_rct.x;
 					for (; x < endpos; ++x)
 					{
 						::XDrawLine(disp, impl_->handle->pixmap, impl_->handle->context, x, y1, x, y2);
@@ -1238,7 +1247,8 @@ namespace paint
 						if (new_color != last_color)
 						{
 							last_color = new_color;
-							impl_->handle->fgcolor(static_cast<color_rgb>(last_color));
+							impl_->handle->set_color(static_cast<color_rgb>(last_color));
+							impl_->handle->update_color();
 						}
 					}
 				}

@@ -30,10 +30,12 @@ namespace nana {
 				point skew_vert;
 				nana::size extra_px;
 
-				bool	enable_update{ true };
+				bool	passive{ true }; //The passive mode determines whether to update if scrollbar changes. It updates the client window if passive is true.
+
 				bool	drag_started{ false };
 				point origin;
 
+				scrolls enabled_scrolls{scrolls::both};
 				nana::scroll<false>	horz;
 				nana::scroll<true>	vert;
 
@@ -92,14 +94,15 @@ namespace nana {
 
 					auto mouse_evt = [this](const arg_mouse& arg)
 					{
-						if (event_code::mouse_move == arg.evt_code)
+						if (event_code::mouse_down == arg.evt_code)
 						{
 							if (!arg.is_left_button())
 								return;
 
-							if ((!this->drag_started) && this->view.view_area().is_hit(arg.pos))
-								this->drag_started = true;
-
+							this->drag_started = this->view.view_area().is_hit(arg.pos);
+						}
+						else if (event_code::mouse_move == arg.evt_code)
+						{
 							if (this->drag_started && this->drive(arg.pos))
 							{
 								tmr.interval(16);
@@ -113,6 +116,7 @@ namespace nana {
 						}
 					};
 
+					API::events(handle).mouse_down.connect_unignorable(mouse_evt);
 					API::events(handle).mouse_move.connect_unignorable(mouse_evt);
 					API::events(handle).mouse_up.connect_unignorable(mouse_evt);
 
@@ -164,14 +168,12 @@ namespace nana {
 					speed_horz = (std::min)(5, (std::max)(speed_horz, -5));
 					speed_vert = (std::min)(5, (std::max)(speed_vert, -5));
 
-					view.move_origin({
+					return view.move_origin({
 						speed_horz, speed_vert
 					});
-
-					return true;
 				}
 
-				void size_changed(bool try_update)
+				void size_changed(bool passive)
 				{
 					auto imd_area = view.view_area();
 
@@ -186,20 +188,23 @@ namespace nana {
 						if (this->events.scrolled)
 							this->events.scrolled();
 
-						if (this->enable_update)
+						if (this->passive)
 							API::refresh_window(this->window_handle);
 					};
 
-					this->enable_update = try_update;
+					this->passive = passive;
 
-					if (imd_area.width != disp_area.width)
+					bool const vert_allowed = (enabled_scrolls == scrolls::vert || enabled_scrolls == scrolls::both);
+					bool const horz_allowed = (enabled_scrolls == scrolls::horz || enabled_scrolls == scrolls::both);
+
+					if ((imd_area.width != disp_area.width) && vert_allowed)
 					{
 						if (vert.empty())
 						{
 							vert.create(window_handle);
 							vert.events().value_changed.connect_unignorable(event_fn);
 							API::take_active(vert, false, window_handle);
-							this->enable_update = false;
+							this->passive = false;
 						}
 						
 						vert.move({
@@ -216,17 +221,21 @@ namespace nana {
 					else
 					{
 						vert.close();
-						origin.y = 0;
+
+						//If vert is allowed, it indicates the vertical origin is not moved
+						//Make sure the v origin is zero
+						if (vert_allowed)
+							origin.y = 0;
 					}
 
-					if (imd_area.height != disp_area.height)
+					if ((imd_area.height != disp_area.height) && horz_allowed)
 					{
 						if (horz.empty())
 						{
 							horz.create(window_handle);
 							horz.events().value_changed.connect_unignorable(event_fn);
 							API::take_active(horz, false, window_handle);
-							this->enable_update = false;
+							this->passive = false;
 						}
 
 						horz.move({
@@ -243,10 +252,13 @@ namespace nana {
 					else
 					{
 						horz.close();
-						origin.x = 0;
+						//If horz is allowed, it indicates the horzontal origin is not moved
+						//Make sure the x origin is zero
+						if (horz_allowed)
+							origin.x = 0;
 					}
 
-					this->enable_update = true;
+					this->passive = true;
 				}
 			};
 
@@ -263,6 +275,16 @@ namespace nana {
 			content_view::events_type& content_view::events()
 			{
 				return impl_->events;
+			}
+
+			bool content_view::enable_scrolls(scrolls which)
+			{
+				if (impl_->enabled_scrolls == which)
+					return false;
+
+				impl_->enabled_scrolls = which;
+				impl_->size_changed(false);
+				return true;
 			}
 
 			void content_view::step(unsigned step_value, bool horz)
@@ -319,31 +341,31 @@ namespace nana {
 
 			void content_view::content_size(const size& sz, bool try_update)
 			{
+				auto const view_sz = this->view_area(sz);
+
 				if (sz.height < impl_->content_size.height)
 				{
-					if (impl_->origin.y + impl_->disp_area.height > sz.height)
+					if (impl_->origin.y + view_sz.height > sz.height)
 					{
-						if (impl_->disp_area.height > sz.height)
+						if (view_sz.height > sz.height)
 							impl_->origin.y = 0;
 						else
-							impl_->origin.y = sz.height - impl_->disp_area.height;
+							impl_->origin.y = sz.height - view_sz.height;
 					}
 				}
 
 				if (sz.width < impl_->content_size.width)
 				{
-					if (impl_->origin.x + impl_->disp_area.width > sz.width)
+					if (impl_->origin.x + view_sz.width > sz.width)
 					{
-						if (impl_->disp_area.width > sz.width)
+						if (view_sz.width > sz.width)
 							impl_->origin.x = 0;
 						else
-							impl_->origin.x = sz.width - impl_->disp_area.width;
+							impl_->origin.x = sz.width - view_sz.width;
 					}
 				}
 
-
 				impl_->content_size = sz;
-
 				impl_->size_changed(try_update);
 			}
 
@@ -382,24 +404,32 @@ namespace nana {
 			void content_view::draw_corner(graph_reference graph)
 			{
 				auto r = corner();
-				if(!r.empty())
+				if ((!r.empty()) && (scrolls::both == impl_->enabled_scrolls))
 					graph.rectangle(r, true, colors::button_face);
 			}
 
 			rectangle content_view::view_area() const
 			{
-				unsigned extra_horz = (impl_->disp_area.width < impl_->content_size.width ? space() : 0);
-				unsigned extra_vert = (impl_->disp_area.height < impl_->content_size.height + extra_horz ? space() : 0);
+				return view_area(impl_->content_size);
+			}
+
+			rectangle content_view::view_area(const size& alt_content_size) const
+			{
+				bool const vert_allowed = (impl_->enabled_scrolls == scrolls::vert || impl_->enabled_scrolls == scrolls::both);
+				bool const horz_allowed = (impl_->enabled_scrolls == scrolls::horz || impl_->enabled_scrolls == scrolls::both);
+
+				unsigned extra_horz = (horz_allowed && (impl_->disp_area.width < alt_content_size.width) ? space() : 0);
+				unsigned extra_vert = (vert_allowed && (impl_->disp_area.height < alt_content_size.height + extra_horz) ? space() : 0);
 
 				if ((0 == extra_horz) && extra_vert)
-					extra_horz = (impl_->disp_area.width < impl_->content_size.width + extra_vert ? space() : 0);
+					extra_horz = (impl_->disp_area.width < alt_content_size.width + extra_vert ? space() : 0);
 
 				return rectangle{
 					impl_->disp_area.position(),
 					size{
-					impl_->disp_area.width > extra_vert ? impl_->disp_area.width - extra_vert : 0,
-					impl_->disp_area.height > extra_horz ? impl_->disp_area.height - extra_horz : 0
-				}
+						impl_->disp_area.width > extra_vert ? impl_->disp_area.width - extra_vert : 0,
+						impl_->disp_area.height > extra_horz ? impl_->disp_area.height - extra_horz : 0
+					}
 				};
 			}
 
@@ -435,9 +465,11 @@ namespace nana {
 				}
 			}
 
-			void content_view::move_origin(const point& skew)
+			bool content_view::move_origin(const point& skew)
 			{
 				auto imd_area = this->view_area();
+
+				auto pre_origin = impl_->origin;
 
 				impl_->origin.x += skew.x;
 				if (impl_->origin.x + imd_area.width > impl_->content_size.width)
@@ -451,14 +483,16 @@ namespace nana {
 					impl_->origin.y = static_cast<int>(impl_->content_size.height) - static_cast<int>(imd_area.height);
 
 				if (impl_->origin.y < 0)	impl_->origin.y = 0;
+
+				return (pre_origin != impl_->origin);
 			}
 
-			void content_view::sync(bool try_update)
+			void content_view::sync(bool passive)
 			{
-				impl_->enable_update = try_update;
+				impl_->passive = passive;
 				impl_->horz.value(impl_->origin.x);
 				impl_->vert.value(impl_->origin.y);
-				impl_->enable_update = true;
+				impl_->passive = true;
 			}
 
 			void content_view::pursue(const point& cursor)

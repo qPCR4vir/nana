@@ -80,6 +80,7 @@ namespace nana
 				void mouse_up(graph_reference, const arg_mouse&)	override;
 				void mouse_enter(graph_reference, const arg_mouse&)	override;
 				void mouse_leave(graph_reference, const arg_mouse&)	override;
+				void dbl_click(graph_reference, const arg_mouse&)	override;
 				void key_press(graph_reference, const arg_keyboard&)override;
 				void key_char(graph_reference, const arg_keyboard&)	override;
 				void mouse_wheel(graph_reference, const arg_wheel&)	override;
@@ -139,6 +140,8 @@ namespace nana
 
 		colored_area_access_interface* colored_area_access();
 
+		point content_origin() const;
+
 		/// Enables/disables the textbox to indent a line. Idents a new line when it is created by pressing enter.
 		/// @param generator generates text for identing a line. If it is empty, textbox indents the line according to last line.
 		textbox& indention(bool, std::function<std::string()> generator = {});
@@ -173,6 +176,9 @@ namespace nana
 		/// Gets the caret position
 		/// Returns true if the caret is in the area of display, false otherwise.
 		bool caret_pos(point& pos, bool text_coordinate) const;
+
+		/// Gets the caret position, in text coordinate
+		upoint caret_pos() const;
 
 		/// Sets the caret position with a text position
 		textbox& caret_pos(const upoint&);
@@ -257,6 +263,17 @@ namespace nana
 		 * @param len The length of the queue. If this parameter is zero, the undo/redo is disabled.
 		 */
 		void set_undo_queue_length(std::size_t len);
+
+		/// Returns the number of lines that text are displayed in the screen.
+		/**
+		 * The number of display lines may be not equal to the number of text lines when the textbox
+		 * is line wrapped mode.
+		 * @return the number of lines that text are displayed in the screen.
+		 */
+		std::size_t display_line_count() const noexcept;
+
+		/// Returns the number of text lines.
+		std::size_t text_line_count() const noexcept;
 	protected:
 		//Overrides widget's virtual functions
 		native_string_type _m_caption() const throw() override;

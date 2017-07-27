@@ -8,6 +8,7 @@
  *	http://www.boost.org/LICENSE_1_0.txt)
  *
  *	@file: nana/gui/widgets/textbox.hpp
+ *	@contributors: Oleg Smolsky
  */
 
 #include <nana/gui/widgets/textbox.hpp>
@@ -143,6 +144,14 @@ namespace drawerbase {
 				API::dev::lazy_refresh();
 		}
 
+		//Added Windows-style mouse double-click to the textbox(https://github.com/cnjinhao/nana/pull/229)
+		//Oleg Smolsky
+		void drawer::dbl_click(graph_reference, const arg_mouse& arg)
+		{
+			if(editor_->select_word(arg))
+				API::dev::lazy_refresh();
+		}
+
 		void drawer::key_press(graph_reference, const arg_keyboard& arg)
 		{
 			editor_->respond_key(arg);
@@ -258,6 +267,15 @@ namespace drawerbase {
 				return &editor->colored_area();
 
 			return nullptr;
+		}
+
+		point textbox::content_origin() const
+		{
+			auto editor = get_drawer_trigger().editor();
+			if (editor)
+				return editor->content_origin();
+
+			return{};
 		}
 
 		/// Enables/disables the textbox to indent a line. Idents a new line when it is created by pressing enter.
@@ -379,6 +397,16 @@ namespace drawerbase {
 				pos = scr_pos;
 
 			return editor->hit_text_area(scr_pos);
+		}
+
+		upoint textbox::caret_pos() const
+		{
+			auto editor = get_drawer_trigger().editor();
+			internal_scope_guard lock;
+			if (editor)
+				return editor->caret();
+
+			return{};
 		}
 
 		textbox& textbox::caret_pos(const upoint& pos)
@@ -720,6 +748,26 @@ namespace drawerbase {
 				editor->set_undo_queue_length(len);
 		}
 
+		std::size_t textbox::display_line_count() const noexcept
+		{
+			internal_scope_guard lock;
+			auto editor = get_drawer_trigger().editor();
+			if (editor)
+				return editor->line_count(false);
+
+			return 0;
+		}
+
+		std::size_t textbox::text_line_count() const noexcept
+		{
+			internal_scope_guard lock;
+			auto editor = get_drawer_trigger().editor();
+			if (editor)
+				return editor->line_count(true);
+
+			return 0;
+		}
+
 		//Override _m_caption for caption()
 		auto textbox::_m_caption() const throw() -> native_string_type
 		{
@@ -738,7 +786,9 @@ namespace drawerbase {
 			if (editor)
 			{
 				editor->text(to_wstring(str), false);
-				API::update_window(this->handle());
+
+				if (editor->try_refresh())
+					API::update_window(this->handle());
 			}
 		}
 
