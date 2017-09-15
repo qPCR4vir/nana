@@ -1105,8 +1105,8 @@ namespace nana
 			class internal_placer
 				: public compset_placer_interface
 			{
-				static const unsigned item_offset = 16;
-				static const unsigned text_offset = 4;
+				static const unsigned item_offset = 16;  /// \todo schema ??
+				static const unsigned text_offset = 4;   /// \todo schema ??
 			private:
 				//Implement the compset_locator_interface
 
@@ -1115,10 +1115,10 @@ namespace nana
 					switch(comp)
 					{
 					case component_t::crook:
-						pixels_crook_ = (enabled ? 16 : 0);
+						pixels_crook_ = (enabled ? 16 : 0);        /// \todo schema ??
 						break;
 					case component_t::icon:
-						pixels_icon_ = (enabled ? 16 : 0);
+						pixels_icon_ = (enabled ? 16 : 0);         /// \todo schema ??
 						break;
 					default:
 						break;
@@ -1130,7 +1130,7 @@ namespace nana
 					switch(comp)
 					{
 					case component_t::crook:
-						return (0 != pixels_crook_);
+						return (0 != pixels_crook_);                            
 					case component_t::icon:
 						return (0 != pixels_icon_);
 					default:
@@ -1141,7 +1141,7 @@ namespace nana
 
 				virtual unsigned item_height(graph_reference graph) const override
 				{
-					return graph.text_extent_size(L"jH{", 3).height + 8;
+					return graph.text_extent_size(L"jH{", 3).height + 8;  /// \todo schema ??
 				}
 
 				virtual unsigned item_width(graph_reference graph, const item_attribute_t& attr) const override
@@ -1179,9 +1179,9 @@ namespace nana
 						if(pixels_icon_)
 						{
 							r->x += item_offset + pixels_crook_;
-							r->y = 2;
+							r->y = 2;                                     /// \todo schema ??
 							r->width = pixels_icon_;
-							r->height -= 2;
+							r->height -= 2;                                /// \todo schema ??
 							return true;
 						}
 						return false;
@@ -1218,9 +1218,9 @@ namespace nana
 
 					if(compset->comp_attribute(component::bground, attr))
 					{
-						const ::nana::color color_table[][2] = { { { 0xE8, 0xF5, 0xFD }, { 0xD8, 0xF0, 0xFA } }, //highlighted
-						{ { 0xC4, 0xE8, 0xFA }, { 0xB6, 0xE6, 0xFB } }, //Selected and highlighted
-						{ { 0xD5, 0xEF, 0xFC }, {0x99, 0xDE, 0xFD } }  //Selected but not highlighted
+						const ::nana::color color_table[][2] = { { { 0xE8, 0xF5, 0xFD }, { 0xD8, 0xF0, 0xFA } },  /// \todo schema ?? //highlighted
+						{ { 0xC4, 0xE8, 0xFA }, { 0xB6, 0xE6, 0xFB } },  /// \todo schema ??//Selected and highlighted
+						{ { 0xD5, 0xEF, 0xFC }, {0x99, 0xDE, 0xFD } }   /// \todo schema ??//Selected but not highlighted
 														};
 
 						const ::nana::color *clrptr = nullptr;
@@ -1243,7 +1243,7 @@ namespace nana
 								item_graph.rectangle(rectangle{attr.area.dimension()}.pare_off(1), true, *clrptr);
 
 
-								graph.blend(attr.area, item_graph, attr.area.position(), 0.5);
+								graph.blend(attr.area, item_graph, attr.area.position(), 0.5);  /// \todo schema ??
 							}
 							else
 							{
@@ -1267,8 +1267,8 @@ namespace nana
 							arrow.direction(direction::east);
 						}
 						auto r = attr.area;
-						r.y += (attr.area.height - 16) / 2;
-						r.width = r.height = 16;
+						r.y += (attr.area.height - 16) / 2;               /// \todo schema ??
+						r.width = r.height = 16;                           /// \todo schema ?? 
 						arrow.draw(graph, API::bgcolor(window_handle_), (attr.mouse_pointed ? colors::deep_sky_blue : colors::black), r, element_state::normal);
 					}
 				}
@@ -1278,7 +1278,7 @@ namespace nana
 					comp_attribute_t attr;
 					if(compset->comp_attribute(component::crook, attr))
 					{
-						attr.area.y += (attr.area.height - 16) / 2;
+						attr.area.y += (attr.area.height - 16) / 2;               /// \todo schema ??
 						crook_.check(compset->item_attribute().checked);
 						crook_.draw(graph, API::bgcolor(window_handle_), API::fgcolor(window_handle_), attr.area, attr.mouse_pointed ? element_state::hovered : element_state::normal);
 					}
@@ -1321,7 +1321,7 @@ namespace nana
 				virtual void text(graph_reference graph, const compset_interface * compset) const override
 				{
 					comp_attribute_t attr;
-					if (compset->comp_attribute(component::text, attr))
+					if (compset->comp_attribute(component::text, attr))             /// \todo schema ??
 						graph.string(point{ attr.area.x, attr.area.y + 3 }, compset->item_attribute().text, API::fgcolor(window_handle_));
 				}
 			private:
