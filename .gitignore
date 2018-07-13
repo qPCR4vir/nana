@@ -7,6 +7,8 @@ bii/cmake/*
 bii/deps/*
 build/vc2013-bkl/*
 build/makefile-bkl/*
+build/compile_commands.json
+build/install_manifest.txt
 *.obj
 *.exe
 *.pdb
@@ -39,9 +41,11 @@ lib/
 *.ninja*
 CMakeCache.txt
 CMakeFiles/
+cmake-build-debug/
 .idea/
 cmake_install.cmake
 *.DS_Store
 
 *.db
 *.opendb
+.vscode

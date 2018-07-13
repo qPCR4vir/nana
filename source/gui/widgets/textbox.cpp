@@ -1,7 +1,7 @@
 /*
  *	A Textbox Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -435,7 +435,23 @@ namespace drawerbase {
 			}
 			return *this;
 		}
+        //a native wstring version textbox::append
+        textbox& textbox::append(const std::wstring& text, bool at_caret)
+        {
+            internal_scope_guard lock;
+            auto editor = get_drawer_trigger().editor();
+            if(editor)
+            {
+                if(at_caret == false)
+                    editor->move_caret_end(false);
 
+                editor->put(text);
+
+                editor->try_refresh();
+                API::update_window(this->handle());
+            }
+            return *this;
+        }
 		/// Determine wheter the text is auto-line changed.
 		bool textbox::line_wrapped() const
 		{
@@ -769,7 +785,7 @@ namespace drawerbase {
 		}
 
 		//Override _m_caption for caption()
-		auto textbox::_m_caption() const throw() -> native_string_type
+		auto textbox::_m_caption() const noexcept -> native_string_type
 		{
 			internal_scope_guard lock;
 			auto editor = get_drawer_trigger().editor();
@@ -799,6 +815,16 @@ namespace drawerbase {
 			auto editor = get_drawer_trigger().editor();
 			if(editor)
 				editor->reset_caret_pixels();
+		}
+
+		std::shared_ptr<scroll_operation_interface> textbox::_m_scroll_operation()
+		{
+			internal_scope_guard lock;
+			auto editor = get_drawer_trigger().editor();
+			if (editor)
+				return editor->scroll_operation();
+
+			return {};
 		}
 	//end class textbox
 }//end namespace nana

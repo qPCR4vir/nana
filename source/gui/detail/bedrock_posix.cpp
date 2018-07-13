@@ -1,7 +1,7 @@
 /*
  *	A Bedrock Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -15,10 +15,10 @@
 #include <nana/gui/detail/bedrock_pi_data.hpp>
 #include <nana/gui/detail/event_code.hpp>
 #include <nana/system/platform.hpp>
-#include <nana/gui/detail/inner_fwd_implement.hpp>
 #include <nana/gui/detail/native_window_interface.hpp>
 #include <nana/gui/layout_utility.hpp>
 #include <nana/gui/detail/element_store.hpp>
+#include "inner_fwd_implement.hpp"
 #include <errno.h>
 #include <algorithm>
 
@@ -80,29 +80,65 @@ namespace detail
 			cursor.handle = 0;
 		}
 	};
-	
+
 	struct bedrock::private_impl
 	{
 		typedef std::map<unsigned, thread_context> thr_context_container;
 		std::recursive_mutex mutex;
 		thr_context_container thr_contexts;
-		
+
 		element_store estore;
 
 		struct cache_type
 		{
 			struct thread_context_cache
 			{
-				unsigned tid{ 0 };
+				thread_t tid{ 0 };
 				thread_context *object{ nullptr };
 			}tcontext;
 		}cache;
 	};
 
-	void timer_proc(unsigned);
+	void timer_proc(thread_t);
 	void window_proc_dispatcher(Display*, nana::detail::msg_packet_tag&);
 	void window_proc_for_packet(Display *, nana::detail::msg_packet_tag&);
 	void window_proc_for_xevent(Display*, XEvent&);
+
+	class accel_key_comparer
+	{
+	public:
+		bool operator()(const accel_key& a, const accel_key& b) const
+		{
+			auto va = a.case_sensitive ? a.key : std::tolower(a.key);
+			auto vb = b.case_sensitive ? b.key : std::tolower(b.key);
+
+			if(va < vb)
+				return true;
+			else if(va > vb)
+				return false;
+
+			if (a.case_sensitive != b.case_sensitive)
+				return b.case_sensitive;
+
+			if (a.alt != b.alt)
+				return b.alt;
+
+			if (a.ctrl != b.ctrl)
+				return b.ctrl;
+
+			return ((a.shift != b.shift) && b.shift);
+		}
+	};
+
+	struct accel_key_value
+	{
+		std::function<void()> command;
+	};
+
+	struct window_platform_assoc
+	{
+		std::map<accel_key, accel_key_value, accel_key_comparer> accel_commands;
+	};
 
 	//class bedrock defines a static object itself to implement a static singleton
 	//here is the definition of this object
@@ -139,7 +175,7 @@ namespace detail
 
 	//inc_window
 	//@biref: increament the number of windows
-	int bedrock::inc_window(unsigned tid)
+	int bedrock::inc_window(thread_t tid)
 	{
 		private_impl * impl = instance().impl_;
 		std::lock_guard<decltype(impl->mutex)> lock(impl->mutex);
@@ -148,7 +184,7 @@ namespace detail
 		return (cnt < 0 ? cnt = 1 : ++cnt);
 	}
 
-	bedrock::thread_context* bedrock::open_thread_context(unsigned tid)
+	bedrock::thread_context* bedrock::open_thread_context(thread_t tid)
 	{
 		if(0 == tid) tid = nana::system::this_thread_id();
 
@@ -169,7 +205,7 @@ namespace detail
 		return context;
 	}
 
-	bedrock::thread_context* bedrock::get_thread_context(unsigned tid)
+	bedrock::thread_context* bedrock::get_thread_context(thread_t tid)
 	{
 		if(0 == tid) tid = nana::system::this_thread_id();
 
@@ -188,7 +224,7 @@ namespace detail
 		return 0;
 	}
 
-	void bedrock::remove_thread_context(unsigned tid)
+	void bedrock::remove_thread_context(thread_t tid)
 	{
 		if(0 == tid) tid = nana::system::this_thread_id();
 
@@ -218,8 +254,26 @@ namespace detail
 	{
 		XKeyEvent xkey;
 		nana::detail::platform_spec::instance().read_keystate(xkey);
+		arg.alt = (xkey.state & Mod1Mask);
 		arg.ctrl = (xkey.state & ControlMask);
 		arg.shift = (xkey.state & ShiftMask);
+	}
+
+	void bedrock::delete_platform_assoc(window_platform_assoc* passoc)
+	{
+		delete passoc;
+	}
+
+	void bedrock::keyboard_accelerator(native_window_type wd, const accel_key& ackey, const std::function<void()>& fn)
+	{
+		auto misc = wd_manager().root_runtime(wd);
+		if (nullptr == misc)
+			return;
+
+		if (!misc->wpassoc)
+			misc->wpassoc = new window_platform_assoc;
+
+		misc->wpassoc->accel_commands[ackey].command = fn;
 	}
 
 	element_store& bedrock::get_element_store() const
@@ -245,22 +299,31 @@ namespace detail
 			_m_event_filter(evt_code, wd, thrd);
 		}
 
-		if(wd->other.upd_state == core_window_t::update_state::none)
-			wd->other.upd_state = core_window_t::update_state::lazy;
+		using update_state = basic_window::update_state;
+
+		if(wd->other.upd_state == update_state::none)
+			wd->other.upd_state = update_state::lazy;
 
 		_m_emit_core(evt_code, wd, false, arg, bForce__EmitInternal);
 
-		//A child of wd may not be drawn if it was out of wd's range before wd resized,
-		//so refresh all children of wd when a resized occurs.
-		if(ask_update || (event_code::resized == evt_code))
+		bool good_wd = false;
+		if(wd_manager().available(wd))
 		{
-			wd_manager().do_lazy_refresh(wd, false, (event_code::resized == evt_code));
+			//A child of wd may not be drawn if it was out of wd's range before wd resized,
+			//so refresh all children of wd when a resized occurs.
+			if(ask_update || (event_code::resized == evt_code) || (update_state::refreshed == wd->other.upd_state))
+			{
+				wd_manager().do_lazy_refresh(wd, false, (event_code::resized == evt_code));
+			}
+			else
+				wd->other.upd_state = update_state::none;
+
+			good_wd = true;
 		}
-		else if(wd_manager().available(wd))
-			wd->other.upd_state = core_window_t::update_state::none;
+
 
 		if(thrd) thrd->event_window = prev_wd;
-		return true;
+		return good_wd;
 	}
 
 	void assign_arg(arg_mouse& arg, basic_window* wd, unsigned msg, const XEvent& evt)
@@ -340,10 +403,10 @@ namespace detail
 			arg.distance = 120;
 			arg.which = arg_wheel::wheel::vertical;
 		}
-		
+
 	}
 
-	void timer_proc(unsigned tid)
+	void timer_proc(thread_t tid)
 	{
 		nana::detail::platform_spec::instance().timer_proc(tid);
 	}
@@ -438,8 +501,8 @@ namespace detail
 			keysym = keyboard::os_arrow_left + (keysym - XK_Left); break;
 		case XK_Insert:
 			keysym = keyboard::os_insert; break;
-		case XK_Delete:
-			keysym = keyboard::os_del; break;
+		case XK_Delete: case XK_KP_Delete:
+			keysym = keyboard::del; break;
 		case XK_Shift_L: case XK_Shift_R:	//shift
 			keysym = keyboard::os_shift; break;
 		case XK_Control_L: case XK_Control_R: //ctrl
@@ -479,6 +542,34 @@ namespace detail
 			}while(false);
 		}
 		return wchar_t(keysym);
+	}
+
+	bool translate_keyboard_accelerator(root_misc* misc, char os_code, const arg_keyboard& modifiers)
+	{
+		if(!misc->wpassoc)
+			return false;
+
+		auto lower_oc = std::tolower(os_code);
+
+		std::function<void()> command;
+
+		for(auto & accel : misc->wpassoc->accel_commands)
+		{
+			if(accel.first.key != (accel.first.case_sensitive ? os_code : lower_oc))
+				continue;
+
+			if(accel.first.alt == modifiers.alt && accel.first.ctrl == modifiers.ctrl && accel.first.shift == modifiers.shift)
+			{
+				command = accel.second.command;
+				break;
+			}
+		}
+
+		if(!command)
+			return false;
+		
+		command();
+		return true;
 	}
 
 	void window_proc_for_xevent(Display* /*display*/, XEvent& xevent)
@@ -525,7 +616,7 @@ namespace detail
 
 					arg.evt_code = event_code::mouse_move;
 					brock.emit(event_code::mouse_move, msgwnd, arg, true, &context);
-					
+
 					if (!wd_manager.available(hovered_wd))
 						hovered_wd = nullptr;
 				}
@@ -552,7 +643,7 @@ namespace detail
 					auto & cf = xevent.xconfigure;
 					wd_manager.size(msgwnd, nana::size{static_cast<unsigned>(cf.width), static_cast<unsigned>(cf.height)}, true, true);
 				}
-				
+
 				if(msgwnd->pos_native.x != xevent.xconfigure.x || msgwnd->pos_native.y != xevent.xconfigure.y)
 				{
 					msgwnd->pos_native.x = xevent.xconfigure.x;
@@ -573,7 +664,7 @@ namespace detail
 				pressed_wd = nullptr;
 				if(nullptr == msgwnd)
 					break;
-					
+
 				if ((msgwnd == msgwnd->root_widget->other.attribute.root->menubar) && brock.get_menu(msgwnd->root, true))
 					brock.erase_menu(true);
 				else
@@ -661,7 +752,7 @@ namespace detail
 						arg.which = arg_wheel::wheel::vertical;
 						assign_arg(arg, msgwnd, xevent);
 						draw_invoker(&drawer::mouse_wheel, msgwnd, arg, &context);
-						wd_manager.do_lazy_refresh(msgwnd, false); 
+						wd_manager.do_lazy_refresh(msgwnd, false);
 					}
 				}
 				else
@@ -691,13 +782,13 @@ namespace detail
 								draw_invoker(&drawer::click, msgwnd, click_arg, &context);
 							}
 						}
-					
+
 						//Do mouse_up, this handle may be closed by click handler.
 						if(wd_manager.available(msgwnd) && msgwnd->flags.enabled)
 						{
 							if(hit)
 								msgwnd->set_action(mouse_action::hovered);
-							
+
 							auto retain = msgwnd->annex.events_ptr;
 							auto evt_ptr = retain.get();
 
@@ -795,7 +886,7 @@ namespace detail
 				{
 					arg_mouse arg;
 					assign_arg(arg, msgwnd, message, xevent);
-					
+
 					if (mouse_action::pressed != msgwnd->flags.action)
 						msgwnd->set_action(mouse_action::hovered);
 
@@ -820,11 +911,18 @@ namespace detail
 			case Expose:
 				if(msgwnd->visible && (msgwnd->root_graph->empty() == false))
 				{
-					nana::detail::platform_scope_guard psg;
-					//Don't copy root_graph to the window directly, otherwise the edge nimbus effect will be missed.
-					::nana::rectangle update_area(xevent.xexpose.x, xevent.xexpose.y, xevent.xexpose.width, xevent.xexpose.height);
-					if (!update_area.empty())
-						msgwnd->drawer.map(reinterpret_cast<window>(msgwnd), true, &update_area);
+					nana::detail::platform_scope_guard lock;
+					if(msgwnd->is_draw_through())
+					{
+						msgwnd->other.attribute.root->draw_through();
+					}
+					else
+					{
+						//Don't copy root_graph to the window directly, otherwise the edge nimbus effect will be missed.
+						::nana::rectangle update_area(xevent.xexpose.x, xevent.xexpose.y, xevent.xexpose.width, xevent.xexpose.height);
+						if (!update_area.empty())
+							msgwnd->drawer.map(reinterpret_cast<window>(msgwnd), true, &update_area);
+					}
 				}
 				break;
 			case KeyPress:
@@ -840,6 +938,9 @@ namespace detail
 
 					if(msgwnd)
 					{
+						arg_keyboard modifiers_status;
+						brock.get_key_state(modifiers_status);
+
 						KeySym keysym;
 						Status status;
 						char fixbuf[33];
@@ -874,16 +975,20 @@ namespace detail
 
 						keybuf[len] = 0;
 						wchar_t os_code = 0;
+						bool accel_translated = false;
+
 						switch(status)
 						{
 						case XLookupKeySym:
 						case XLookupBoth:
 							os_code = os_code_from_keysym(keysym);
+							accel_translated = translate_keyboard_accelerator(root_runtime, os_code, modifiers_status);
+							if(accel_translated)
+								break;
+
 							if(os_code == keyboard::tab && (false == (msgwnd->flags.tab & detail::tab_type::eating))) //Tab
 							{
-								arg_keyboard argkey;
-								brock.get_key_state(argkey);
-								auto tstop_wd = wd_manager.tabstop(msgwnd, !argkey.shift);
+								auto tstop_wd = wd_manager.tabstop(msgwnd, !modifiers_status.shift);
 								if (tstop_wd)
 								{
                                     root_runtime->condition.ignore_tab = true;
@@ -898,9 +1003,9 @@ namespace detail
 								if((nullptr == pressed_wd) && (nullptr == pressed_wd_space))
 								{
 									arg_mouse arg;
-									arg.alt = false;
+									arg.alt = modifiers_status.alt;
 									arg.button = ::nana::mouse::left_button;
-									arg.ctrl = false;
+									arg.ctrl = modifiers_status.ctrl;
 									arg.evt_code = event_code::mouse_down;
 									arg.left_button = true;
 									arg.mid_button = false;
@@ -946,11 +1051,10 @@ namespace detail
 								if(keyboard::os_ctrl == os_code)
 									context.is_ctrl_pressed = true;
 
-								arg_keyboard arg;
+								arg_keyboard arg = modifiers_status;
 								arg.ignore = false;
 								arg.key = os_code;
 								arg.evt_code = event_code::key_press;
-								brock.get_key_state(arg);
 								arg.window_handle = reinterpret_cast<window>(msgwnd);
 
 								brock.emit(event_code::key_press, msgwnd, arg, true, &context);
@@ -972,16 +1076,19 @@ namespace detail
 							{
 								const wchar_t* charbuf;
 
-								nana::detail::charset_conv charset("UTF-32", "UTF-8");
+								nana::detail::charset_conv charset(NANA_UNICODE, "UTF-8");
 								const std::string& str = charset.charset(std::string(keybuf, keybuf + len));
-								charbuf = reinterpret_cast<const wchar_t*>(str.c_str()) + 1;
-								len = str.size() / sizeof(wchar_t) - 1;
+								charbuf = reinterpret_cast<const wchar_t*>(str.c_str());
+								len = str.size() / sizeof(wchar_t);
 
 								for(int i = 0; i < len; ++i)
 								{
-									arg_keyboard arg;
+									arg_keyboard arg = modifiers_status;
 									arg.ignore = false;
 									arg.key = charbuf[i];
+
+									// ignore Unicode BOM (it may or may not appear)
+                                    if (arg.key == 0xFEFF) continue;
 
 									//Only accept tab when it is not ignored.
 									if ((keyboard::tab == arg.key) && root_runtime->condition.ignore_tab)
@@ -1002,7 +1109,6 @@ namespace detail
 									}
 									arg.evt_code = event_code::key_char;
 									arg.window_handle = reinterpret_cast<window>(msgwnd);
-									brock.get_key_state(arg);
 									msgwnd->annex.events_ptr->key_char.emit(arg, reinterpret_cast<window>(msgwnd));
 									if(arg.ignore == false && wd_manager.available(msgwnd))
 										draw_invoker(&drawer::key_char, msgwnd, arg, &context);
@@ -1030,12 +1136,12 @@ namespace detail
 							context.is_ctrl_pressed = false;
 
                         if (('\t' == os_code) && root_runtime->condition.ignore_tab)
-                        { 
+                        {
                             root_runtime->condition.ignore_tab = false;
                         }
                         else
                         {
-                        
+
 						    msgwnd = brock.focus();
 						    if(msgwnd)
 						    {
@@ -1043,33 +1149,34 @@ namespace detail
 							    {
 									msgwnd->set_action(mouse_action::normal);
 
-								    arg_click click_arg;
-								    click_arg.mouse_args = nullptr;
-								    click_arg.window_handle = reinterpret_cast<window>(msgwnd);
+									auto retain = msgwnd->annex.events_ptr;
 
-								    auto retain = msgwnd->annex.events_ptr;
-								    if (brock.emit(event_code::click, msgwnd, click_arg, true, &context))
-							    	{
-									    arg_mouse arg;
-									    arg.alt = false;
-									    arg.button = ::nana::mouse::left_button;
-									    arg.ctrl = false;
-									    arg.evt_code = event_code::mouse_up;
-									    arg.left_button = true;
-									    arg.mid_button = false;
-									    arg.pos.x = 0;
-								    	arg.pos.y = 0;
-									    arg.window_handle = reinterpret_cast<window>(msgwnd);
+									arg_click click_arg;
+									click_arg.mouse_args = nullptr;
+									click_arg.window_handle = reinterpret_cast<window>(msgwnd);
 
-										draw_invoker(&drawer::mouse_up, msgwnd, arg, &context);
-									    wd_manager.do_lazy_refresh(msgwnd, false);
-								    }
-							    	pressed_wd_space = nullptr;
+									arg_mouse arg;
+									arg.alt = false;
+									arg.button = ::nana::mouse::left_button;
+									arg.ctrl = false;
+									arg.evt_code = event_code::mouse_up;
+									arg.left_button = true;
+									arg.mid_button = false;
+									arg.pos.x = 0;
+									arg.pos.y = 0;
+									arg.window_handle = reinterpret_cast<window>(msgwnd);
+
+									draw_invoker(&drawer::mouse_up, msgwnd, arg, &context);
+
+									if (brock.emit(event_code::click, msgwnd, click_arg, true, &context))
+										wd_manager.do_lazy_refresh(msgwnd, false);
+									
+									pressed_wd_space = nullptr;
 							    }
 							    else
 							    {
 								    arg_keyboard arg;
-                          
+
 								    arg.evt_code = event_code::key_release;
 								    arg.window_handle = reinterpret_cast<window>(msgwnd);
 								    arg.ignore = false;
@@ -1168,7 +1275,7 @@ namespace detail
 
 		auto & lock = wd_manager().internal_lock();
 		lock.revert();
-		
+
 		native_window_type owner_native{};
 		core_window_t * owner = 0;
 		if(condition_wd && is_modal)
@@ -1181,9 +1288,9 @@ namespace detail
 				owner = wd_manager().root(owner_native);
 				if(owner)
 					owner->flags.enabled = false;
-			}	
+			}
 		}
-		
+
 		nana::detail::platform_spec::instance().msg_dispatch(condition_wd ? reinterpret_cast<core_window_t*>(condition_wd)->root : 0);
 
 		if(owner_native)
@@ -1195,7 +1302,7 @@ namespace detail
 
 		//Before exit of pump_event, it should call the remove_trash_handle.
 		//Under Linux, if the windows are closed in other threads, all the widgets handles
-		//will be marked as deleted after exit of the event loop and in other threads. So the 
+		//will be marked as deleted after exit of the event loop and in other threads. So the
 		//handle should be deleted from trash before exit the pump_event.
 		auto thread_id = ::nana::system::this_thread_id();
 		wd_manager().call_safe_place(thread_id);
@@ -1280,7 +1387,7 @@ namespace detail
 	{
 		if (!wd_manager().available(wd))
 			return;
-	
+
 		wd->root_widget->other.attribute.root->state_cursor = nana::cursor::arrow;
 		wd->root_widget->other.attribute.root->state_cursor_window = nullptr;
 

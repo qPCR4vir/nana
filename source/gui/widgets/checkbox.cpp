@@ -1,7 +1,7 @@
 /*
  *	A CheckBox Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -78,7 +78,11 @@ namespace nana{ namespace drawerbase
 				}
 
 				//draw crook
+#ifdef _nana_std_has_string_view
+				auto txt_px = graph.text_extent_size(std::wstring_view( L"jN", 2 )).height + 2;
+#else
 				auto txt_px = graph.text_extent_size(L"jN", 2).height + 2;
+#endif
 				impl_->crook.draw(graph, wdg->bgcolor(), wdg->fgcolor(), rectangle(0, txt_px > 16 ? (txt_px - 16) / 2 : 0, 16, 16), API::element_state(*wdg));
 			}
 
@@ -163,12 +167,12 @@ namespace nana{ namespace drawerbase
 			return (get_drawer_trigger().impl()->crook.checked() != drawerbase::checkbox::crook_state::unchecked);
 		}
 
-		void checkbox::check(bool chk)
+		void checkbox::check(bool state)
 		{
 			using crook_state = drawerbase::checkbox::crook_state;
-			if (checked() != chk)
+			if (checked() != state)
 			{
-				get_drawer_trigger().impl()->crook.check(chk ? crook_state::checked : crook_state::unchecked);
+				get_drawer_trigger().impl()->crook.check(state ? crook_state::checked : crook_state::unchecked);
 				API::refresh_window(handle());
 
 				arg_checkbox arg(this);
@@ -296,7 +300,7 @@ namespace nana{ namespace drawerbase
 					return static_cast<std::size_t>(i - ui_container_.cbegin());
 			}
 
-			return ui_container_.size();
+			return npos;
 		}
 
 		std::size_t radio_group::size() const

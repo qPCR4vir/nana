@@ -82,10 +82,39 @@ namespace nana
 
 				bool check_value(const std::string& str) const override
 				{
+#ifdef __cpp_if_constexpr
+					auto i = str.c_str();
+					if ('+' == *i || '-' == *i)
+						++i;
+
+					if constexpr(std::is_same<T, int>::value)
+					{
+						for (; 0 != *i; ++i)
+						{
+							if (*i < '0' || '9' < *i)
+								return false;
+						}
+					}
+					else
+					{
+						bool dot = false;
+						for (; 0 != *i; ++i)
+						{
+							if (('.' == *i) && (!dot))
+							{
+								dot = true;
+								continue;
+							}
+
+							if (*i < '0' || '9' < *i)
+								return false;
+						}
+					}
+#else
 					if (str.empty())
 						return true;
 
-					auto size = str.size();
+					auto const size = str.size();
 					std::size_t pos = 0;
 					if (str[0] == '+' || str[0] == '-')
 						pos = 1;
@@ -115,6 +144,7 @@ namespace nana
 								return false;
 						}
 					}
+#endif
 					return true;
 				}
 
@@ -560,6 +590,12 @@ namespace nana
 				impl_->editor()->reset_caret();
 				API::dev::lazy_refresh();
 			}
+			
+			void drawer::dbl_click(graph_reference, const arg_mouse& arg)
+			{
+				if (impl_->mouse_button(arg, true))
+					API::dev::lazy_refresh();
+			}
 
 			void drawer::mouse_down(graph_reference, const arg_mouse& arg)
 			{
@@ -599,7 +635,10 @@ namespace nana
 			{
 				impl_->editor()->respond_char(arg);
 				if (impl_->editor()->try_refresh())
+				{
+					impl_->draw_spins();
 					API::dev::lazy_refresh();
+				}
 			}
 
 			void drawer::resized(graph_reference, const arg_resized&)
@@ -687,6 +726,16 @@ namespace nana
 		return range->range();
 	}
 
+	void spinbox::select(bool sel)
+	{
+		internal_scope_guard lock;
+		if (handle())
+		{
+			get_drawer_trigger().impl()->editor()->select(sel);
+			API::refresh_window(*this);
+		}
+	}
+
 	::std::string spinbox::value() const
 	{
 		internal_scope_guard lock;
@@ -725,7 +774,7 @@ namespace nana
 		modifier(to_utf8(prefix), to_utf8(suffix));
 	}
 
-	auto spinbox::_m_caption() const throw() -> native_string_type
+	auto spinbox::_m_caption() const noexcept -> native_string_type
 	{
 		internal_scope_guard lock;
 		auto editor = get_drawer_trigger().impl()->editor();

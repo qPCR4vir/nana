@@ -1,7 +1,7 @@
 /**
  *	A Textbox Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -185,7 +185,7 @@ namespace nana
 
         /// Appends an string. If `at_caret` is `true`, the string is inserted at the position of caret, otherwise, it is appended at end of the textbox.
 		textbox& append(const std::string& text, bool at_caret);
-
+        textbox& append(const std::wstring& text, bool at_caret);
 		/// Determines whether the text is line wrapped.
 		bool line_wrapped() const;
 		textbox& line_wrapped(bool);
@@ -276,9 +276,10 @@ namespace nana
 		std::size_t text_line_count() const noexcept;
 	protected:
 		//Overrides widget's virtual functions
-		native_string_type _m_caption() const throw() override;
+		native_string_type _m_caption() const noexcept override;
 		void _m_caption(native_string_type&&) override;
 		void _m_typeface(const paint::font&) override;
+		std::shared_ptr<scroll_operation_interface> _m_scroll_operation() override;
 	};
 }//end namespace nana
 #include <nana/pop_ignore_diagnostic>

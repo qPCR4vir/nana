@@ -61,6 +61,7 @@ namespace nana
 
 				void focus(graph_reference, const arg_focus&)	override;
 				void mouse_wheel(graph_reference, const arg_wheel&) override;
+				void dbl_click(graph_reference, const arg_mouse&) override;
 				void mouse_down(graph_reference, const arg_mouse&)	override;
 				void mouse_move(graph_reference, const arg_mouse&)	override;
 				void mouse_up(graph_reference, const arg_mouse& arg)	override;
@@ -102,6 +103,9 @@ namespace nana
 		std::pair<int, int> range_int() const;
 		std::pair<double, double> range_double() const;
 
+		/// Selects/unselects the text
+		void select(bool);
+
 		/// Gets the spined value
 		::std::string value() const;
 		void value(const ::std::string&);
@@ -112,7 +116,7 @@ namespace nana
 		void modifier(std::string prefix_utf8, std::string suffix_utf8);
 		void modifier(const std::wstring & prefix, const std::wstring& suffix);
 	private:
-		native_string_type _m_caption() const throw();
+		native_string_type _m_caption() const noexcept;
 		void _m_caption(native_string_type&&);
 	}; //end class spinbox
 }//end namespace nana

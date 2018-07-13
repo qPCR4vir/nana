@@ -1,7 +1,7 @@
 /**
  *	Predefined Symbols for C++
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2016-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2016-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -36,10 +36,15 @@
  *	- STD_TO_STRING_NOT_SUPPORTED (MinGW with GCC < 4.8)
  *	- STD_FILESYSTEM_NOT_SUPPORTED (GCC < 5.3) ....
  *	- CXX_NO_INLINE_NAMESPACE (Visual C++ < 2015)
- *	- _enable_std_make_unique (__cpluscplus < 201402)
- *	- _enable_std_put_time (GCC < 5)
- *  - _enable_std_clamp (Visual C++ < 2017)
-  */
+ *
+ *	There are two kinds of flags:
+ *	* _nana_std_xxx indicates that nana provides a standard-like class for workaround of lack of C++ support.
+ *  * _nana_std_has_xxx indicates that nana detects whether a C++ feature is supported. Nana doesn't provide a standard-like class for this missing feature.
+ *
+ *	- _nana_std_make_unique (__cpluscplus < 201402)
+ *	- _nana_std_put_time (GCC < 5)
+ *  - _nana_std_clamp (Visual C++ < 2017)
+ */
 
 #ifndef NANA_CXX_DEFINES_INCLUDED
 #define NANA_CXX_DEFINES_INCLUDED
@@ -68,9 +73,16 @@
 #	endif
 #endif
 
+// Set this to "UTF-32" at the command-line for big endian.
+#ifndef NANA_UNICODE
+    // much of the world runs intel compatible processors so default to LE.
+	#define NANA_UNICODE "UTF-32LE"
+#endif
+
 // Select platform  ......
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)	//Microsoft Windows
 	#define NANA_WINDOWS
+	typedef unsigned long thread_t;
 
 	// MINGW ...
 	#if defined(__MINGW32__) || defined(__MINGW64__) || defined(MINGW)
@@ -79,23 +91,22 @@
 
 #elif defined(APPLE)	//Mac OS X
 	//Symbols for MACOS
-
 	#define NANA_MACOS
+	#define NANA_POSIX
 	#define NANA_X11
-
+	typedef unsigned long thread_t;
+#elif defined(__FreeBSD__)
+	#define NANA_POSIX
+	#define NANA_X11
+	typedef unsigned long thread_t;
 #elif (defined(linux) || defined(__linux) || defined(__linux__) || defined(__GNU__) || defined(__GLIBC__)) && !defined(_CRAYC)	//Linux
 	#define NANA_LINUX
-	#define NANA_X11
-#else
-	static_assert(false, "Only Windows and Unix are supported now (Mac OS is experimental)");
-#endif
-
-//Define a symbol for POSIX operating system.
-#if defined(NANA_LINUX) || defined(NANA_MACOS)
 	#define NANA_POSIX
+	#define NANA_X11
+	typedef unsigned long thread_t;
+#else
+	static_assert(false, "Only Windows and Linux are supported now (Mac OS and BSD are experimental)");
 #endif
-
-
 
 // Select compiler ...
 #if defined(_MSC_VER)	//Microsoft Visual C++
@@ -139,7 +150,7 @@
 
 
 #	if ((__GNUC__ < 5)   )
-#		define _enable_std_put_time
+#		define _nana_std_put_time
 #	endif
 
 #   if ((__GNUC__ > 5) || ((__GNUC__ == 5) && (__GNUC_MINOR__ >= 3 ) ) )
@@ -171,7 +182,8 @@
 	#endif
 #endif
 
-//Assume the std::thread is not implement on MinGW
+//Assume the std::thread is not implemented on MinGW,
+//unless it was compiled with POSIX threading support.
 //But some toolchains may implement std::thread.
 #ifdef NANA_MINGW
 #	ifndef STD_THREAD_NOT_SUPPORTED
@@ -182,20 +194,38 @@
 
 //Detects the feature std::make_unique
 //std::make_unique has been provided by Visual C++ 2013 and later
-#undef _enable_std_make_unique
+#undef _nana_std_make_unique
 #if (defined(__clang__) && (__cplusplus < 201305L || (__cplusplus == 201305L && (__clang_major__ * 100 + __clang_minor__ < 304 )))) \
 	|| ((!defined(__clang__)) && defined(__GNUC__) && __cplusplus < 201300L)
-#	define _enable_std_make_unique
+#	define _nana_std_make_unique
 #endif
-
 
 //Detects the feature std::clamp
 //Visual C++ 2017 with /std:c++latest provides the std::clamp
-#undef _enable_std_clamp
+#undef _nana_std_clamp
 #if (defined(_MSC_VER) && ((!defined(_MSVC_LANG)) || _MSVC_LANG < 201403L))	\
 	|| (defined(__clang__) && (__cplusplus < 201406L))						\
 	|| (defined(__GNUC__) && (!defined(__clang__)) && (__cplusplus < 201703))
-#	define _enable_std_clamp
+#	define _nana_std_clamp
+#endif
+
+
+#undef _nana_std_optional
+#if ((defined(_MSC_VER) && (_MSC_VER >= 1912) && ((!defined(_MSVC_LANG)) || _MSVC_LANG < 201703))) ||	\
+	((__cplusplus < 201703L) || \
+		(defined(__clang__) && (__clang_major__ * 100 + __clang_minor__ < 400)) ||				\
+		(!defined(__clang__) && defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ < 701))	\
+	)
+#	define _nana_std_optional
+#endif
+
+#undef _nana_std_has_string_view
+#if ((defined(_MSC_VER) && (_MSC_VER >= 1912) && defined(_MSVC_LANG) && _MSVC_LANG >= 201703)) ||				\
+	((__cplusplus >= 201703L) && \
+		(defined(__clang__) && (__clang_major__ * 100 + __clang_minor__ >= 400) ||		\
+		(!defined(__clang__) && defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 701))) \
+	)
+#	define _nana_std_has_string_view
 #endif
 
 
@@ -219,6 +249,12 @@
 #ifdef __has_include
 #  if __has_include(<filesystem>)
 #    undef STD_FILESYSTEM_NOT_SUPPORTED
+#  endif
+#  if __has_include(<mutex>) 
+#    if !(defined(NANA_MINGW) && !defined(_GLIBCXX_HAS_GTHREADS))
+//See the comment above regarding MinGW's threading support
+#      undef STD_THREAD_NOT_SUPPORTED
+#    endif
 #  endif
 #endif
 

@@ -1,7 +1,7 @@
 /*
  *	A Treebox Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -28,6 +28,25 @@ namespace nana
 		namespace treebox
 		{
 			using node_type = trigger::node_type;
+
+			class exclusive_scroll_operation
+				: public scroll_operation_interface
+			{
+			public:
+				exclusive_scroll_operation(std::shared_ptr<nana::scroll<true>>& scroll_wdg)
+					:scroll_(scroll_wdg)
+				{}
+
+				bool visible(bool vert) const override
+				{
+					if (vert)
+						return !scroll_->empty();
+
+					return false;
+				}
+			private:
+				std::shared_ptr<nana::scroll<true>> scroll_;
+			};
 
 			bool no_sensitive_compare(const std::string& text, const char *pattern, std::size_t len)
 			{
@@ -214,7 +233,7 @@ namespace nana
 				struct shape_tag
 				{
 					nana::upoint border;
-					nana::scroll<true> scroll;
+					std::shared_ptr<nana::scroll<true>> scroll;
 
 					mutable std::map<std::string, node_image_tag> image_table;
 
@@ -261,6 +280,7 @@ namespace nana
 					shape.first = nullptr;
 					shape.indent_pixels = 10;
 					shape.offset_x = 0;
+					shape.scroll = std::make_shared<nana::scroll<true>>();
 
 					attr.auto_draw = true;
 
@@ -598,7 +618,7 @@ namespace nana
 					std::size_t max_allow = max_allowed();
 					std::size_t visual_items = visual_item_size();
 
-					auto & scroll = shape.scroll;
+					auto & scroll = *shape.scroll;
 					if(visual_items <= max_allow)
 					{
 						if(!scroll.empty())
@@ -618,7 +638,7 @@ namespace nana
 								adjust.scroll_timestamp = nana::system::timestamp();
 								adjust.timer.start();
 
-								shape.first = attr.tree_cont.advance_if(nullptr, shape.scroll.value(), pred_allow_child{});
+								shape.first = attr.tree_cont.advance_if(nullptr, shape.scroll->value(), pred_allow_child{});
 								draw(false, false, true);
 							});
 						}
@@ -641,7 +661,7 @@ namespace nana
 					if(!data.graph)
 						return 0;
 
-					return static_cast<int>(data.graph->width() - (shape.scroll.empty() ? 0 : shape.scroll.size().width));
+					return static_cast<int>(data.graph->width() - (shape.scroll->empty() ? 0 : shape.scroll->size().width));
 				}
 
 				unsigned node_w_pixels(const node_type *node) const
@@ -958,10 +978,14 @@ namespace nana
 					return *this;
 				}
 
+
 				std::size_t item_proxy::size() const
 				{
 					std::size_t n = 0;
-					for(auto child = node_->child; child; child = child->child)
+
+					//Fixed by ErrorFlynn
+					//this method incorrectly returned the number of levels beneath the nodes using child = child->child
+					for(auto child = node_->child; child; child = child->next)
 						++n;
 
 					return n;
@@ -1139,7 +1163,11 @@ namespace nana
 
 				virtual unsigned item_height(graph_reference graph) const override
 				{
+#ifdef _nana_std_has_string_view
+					return graph.text_extent_size(std::wstring_view{ L"jH{", 3 }).height + 8;
+#else
 					return graph.text_extent_size(L"jH{", 3).height + 8;
+#endif
 				}
 
 				virtual unsigned item_width(graph_reference graph, const item_attribute_t& attr) const override
@@ -1825,7 +1853,6 @@ namespace nana
 					item_locator nl(impl_, xpos, arg.pos.x, arg.pos.y);
 					impl_->attr.tree_cont.for_each<item_locator&>(shape.first, nl);
 
-					bool has_redraw = false;
 
 					auto & node_state = impl_->node_state;
 					node_state.pressed_node = nl.node();
@@ -1834,21 +1861,17 @@ namespace nana
 					{
 						if(impl_->set_expanded(node_state.pressed_node, !node_state.pressed_node->value.second.expanded))
 							impl_->make_adjust(node_state.pressed_node, 0);
-
-						has_redraw = true;	//btw, don't select the node
 					}
-					
-					if ((!has_redraw) && (node_state.selected != node_state.pressed_node))
+					else if (node_state.selected != node_state.pressed_node)
 					{
 						impl_->set_selected(node_state.pressed_node);
-						has_redraw = true;
 					}
+					else
+						return;
 
-					if(has_redraw)
-					{
-						impl_->draw(true);
-						API::dev::lazy_refresh();
-					}
+					
+					impl_->draw(true);
+					API::dev::lazy_refresh();
 				}
 
 				void trigger::mouse_up(graph_reference, const arg_mouse& arg)
@@ -1902,7 +1925,7 @@ namespace nana
 
 				void trigger::mouse_wheel(graph_reference, const arg_wheel& arg)
 				{
-					auto & scroll = impl_->shape.scroll;
+					auto & scroll = *impl_->shape.scroll;
 					if (scroll.empty())
 						return;
 
@@ -1936,10 +1959,10 @@ namespace nana
 					impl_->draw(false);
 					API::dev::lazy_refresh();
 					impl_->show_scroll();
-					if(!impl_->shape.scroll.empty())
+					if(!impl_->shape.scroll->empty())
 					{
 						nana::size s = impl_->data.graph->size();
-						impl_->shape.scroll.move(rectangle{ static_cast<int>(s.width) - 16, 0, 16, s.height });
+						impl_->shape.scroll->move(rectangle{ static_cast<int>(s.width) - 16, 0, 16, s.height });
 					}
 				}
 
@@ -2213,6 +2236,12 @@ namespace nana
 		treebox::item_proxy treebox::selected() const
 		{
 			return item_proxy(const_cast<drawer_trigger_t*>(&get_drawer_trigger()), get_drawer_trigger().selected());
+		}
+
+		std::shared_ptr<scroll_operation_interface> treebox::_m_scroll_operation()
+		{
+			internal_scope_guard lock;
+			return std::make_shared<drawerbase::treebox::exclusive_scroll_operation>(get_drawer_trigger().impl()->shape.scroll);
 		}
 	//end class treebox
 }//end namespace nana

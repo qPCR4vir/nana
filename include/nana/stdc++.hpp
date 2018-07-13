@@ -1,7 +1,7 @@
 /**
  *	Standard Library for C++11/14/17
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2017-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -11,6 +11,9 @@
  *
  *	@brief Implement the lack support of standard library.
  */
+
+#ifndef NANA_STDCXX_INCLUDED
+#define NANA_STDCXX_INCLUDED
 
 #include "c++defines.hpp"
 
@@ -83,7 +86,7 @@ namespace std
 }
 #endif
 
-#ifdef _enable_std_make_unique
+#ifdef _nana_std_make_unique
 	// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3656.htm
 
 #include <cstddef>
@@ -121,9 +124,9 @@ namespace std {
 	typename _Unique_if<T>::_Known_bound
 		make_unique(Args&&...) = delete;
 }
-#endif //_enable_std_make_unique
+#endif //_nana_std_make_unique
 
-#ifdef _enable_std_put_time
+#ifdef _nana_std_put_time
 #include <ctime>
 #include <string>
 namespace std
@@ -141,9 +144,9 @@ namespace std
 	//template<>
 	//std::wstring put_time<wchar_t, std::wstring>(const std::tm* tmb, const wchar_t* fmt);
 }
-#endif  // _enable_std_put_time
+#endif  // _nana_std_put_time
 
-#if defined(_enable_std_clamp)
+#if defined(_nana_std_clamp)
 namespace std
 {
 	//<algorithm> since C++17
@@ -154,3 +157,5 @@ namespace std
 	}
 }
 #endif
+
+#endif // NANA_STDCXX_INCLUDED

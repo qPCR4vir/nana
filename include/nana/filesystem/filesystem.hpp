@@ -1,7 +1,7 @@
 /**
  *	A ISO C++ filesystem Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2016 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -53,13 +53,68 @@
 
 #undef  NANA_USING_BOOST_FILESYSTEM
 #define NANA_USING_BOOST_FILESYSTEM 1
+#   include <chrono>
 #   include <boost/filesystem.hpp>
+// dont include generic_u8string
+// http://www.boost.org/doc/libs/1_66_0/boost/filesystem/path.hpp
+// enable directory_iterator C++11 range-base for 
+// http://www.boost.org/doc/libs/1_66_0/boost/filesystem/operations.hpp
+// but travis come with an oooold version of boost
+// NOT enable directory_iterator C++11 range-base for
+// http://www.boost.org/doc/libs/1_54_0/boost/filesystem/operations.hpp
+namespace boost
+{
+	namespace filesystem
+	{
+
+		//  enable directory_iterator C++11 range-base for statement use  --------------------//
+
+		//  begin() and end() are only used by a range-based for statement in the context of
+		//  auto - thus the top-level const is stripped - so returning const is harmless and
+		//  emphasizes begin() is just a pass through.
+		inline const directory_iterator& begin(const directory_iterator& iter) BOOST_NOEXCEPT
+		{
+			return iter;
+		}
+
+		inline directory_iterator end(const directory_iterator&) BOOST_NOEXCEPT
+		{
+			return directory_iterator();
+		}
+
+	}  // namespace filesystem
+}   
+
 
 // add boost::filesystem into std::experimental::filesystem
 namespace std {
 	namespace experimental {
 		namespace filesystem {
 			using namespace boost::filesystem;
+			using file_time_type = std::chrono::time_point<std::chrono::system_clock>;
+
+			enum class file_type {
+				none = boost::filesystem::file_type::status_unknown,
+				not_found = boost::filesystem::file_type::file_not_found,
+				regular = boost::filesystem::file_type::regular_file,
+				directory = boost::filesystem::file_type::directory_file,
+				symlink = boost::filesystem::file_type::symlink_file,
+				block = boost::filesystem::file_type::block_file,
+				character = boost::filesystem::file_type::character_file,
+				fifo = boost::filesystem::file_type::fifo_file,
+				socket = boost::filesystem::file_type::socket_file,
+				unknown = boost::filesystem::file_type::type_unknown,
+			};
+			/// enable directory_iterator range-based for statements
+			//inline directory_iterator begin(directory_iterator iter) noexcept
+			//{
+			//	return iter;
+			//}
+
+			//inline directory_iterator end(const directory_iterator&) noexcept
+			//{
+			//	return {};
+			//}
 		} // filesystem
 	} // experimental
 } // std

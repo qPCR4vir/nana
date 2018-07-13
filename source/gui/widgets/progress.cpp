@@ -1,6 +1,6 @@
 /*
  *	A Progress Indicator Implementation
- *	Copyright(C) 2003-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -91,19 +91,30 @@ namespace nana
 				{
 					return value_px_;
 				}
+
+				bool value_px_sync()
+				{
+					if (widget_)
+					{
+						auto value_px = (widget_->size().width - border_px * 2);
+
+						//avoid overflow
+						if (value_ < max_)
+							value_px = static_cast<unsigned>(value_px * (double(value_) / double(max_)));
+
+						if (value_px != value_px_)
+						{
+							value_px_ = value_px;
+							return true;
+						}
+					}
+					return false;
+				}
 			private:
 				void _m_try_refresh()
 				{
-					if (nullptr == widget_)
-						return;
-
-					auto value_px = (widget_->size().width - border_px * 2) * value_ / max_;
-
-					if (value_px != value_px_)
-					{
-						value_px_ = value_px;
+					if (value_px_sync())
 						API::refresh_window(*widget_);
-					}
 				}
 			private:
 				nana::progress * widget_{ nullptr };
@@ -144,6 +155,9 @@ namespace nana
 				auto rt_bground = rt_val;
 				if (false == progress_->unknown(nullptr))
 				{
+					//Sync the value_px otherwise the progress is incorrect when it is resized.
+					progress_->value_px_sync();
+
 					rt_bground.x = static_cast<int>(progress_->value_px()) + static_cast<int>(border_px);
 					rt_bground.width -= progress_->value_px();
 

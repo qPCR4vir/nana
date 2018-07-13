@@ -1,7 +1,7 @@
 /*
  *	Window Manager Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -16,11 +16,11 @@
 #include <nana/gui/detail/events_operation.hpp>
 #include <nana/gui/detail/window_manager.hpp>
 #include <nana/gui/detail/window_layout.hpp>
-#include "window_register.hpp"
 #include <nana/gui/detail/native_window_interface.hpp>
-#include <nana/gui/detail/inner_fwd_implement.hpp>
 #include <nana/gui/layout_utility.hpp>
 #include <nana/gui/detail/effects_renderer.hpp>
+#include "window_register.hpp"
+#include "inner_fwd_implement.hpp"
 
 #include <stdexcept>
 #include <algorithm>
@@ -140,10 +140,12 @@ namespace nana
 		//struct root_misc
 		root_misc::root_misc(root_misc&& other):
 			window(other.window),
+			wpassoc(other.wpassoc),
 			root_graph(std::move(other.root_graph)),
 			shortkeys(std::move(other.shortkeys)),
 			condition(std::move(other.condition))
 		{
+			other.wpassoc = nullptr;	//moved-from
 		}
 
 		root_misc::root_misc(basic_window * wd, unsigned width, unsigned height)
@@ -154,6 +156,11 @@ namespace nana
 			condition.pressed = nullptr;
 			condition.pressed_by_space = nullptr;
 			condition.hovered = nullptr;
+		}
+
+		root_misc::~root_misc()
+		{
+			bedrock::delete_platform_assoc(wpassoc);
 		}
 		//end struct root_misc
 
@@ -219,8 +226,6 @@ namespace detail
 			Key first;
 			Value second;
 
-			key_value_rep() = default;
-
 			key_value_rep(const Key& k)
 				: first(k), second{}
 			{
@@ -259,14 +264,6 @@ namespace detail
 	};
 
 	//class window_manager
-			struct window_handle_deleter
-			{
-				void operator()(basic_window* wd) const
-				{
-					delete wd;
-				}
-			};
-			
 			//struct wdm_private_impl
 			struct window_manager::wdm_private_impl
 			{
@@ -283,10 +280,10 @@ namespace detail
 			//class revertible_mutex
 			struct thread_refcount
 			{
-				unsigned tid;	//Thread ID
+				thread_t tid;	//Thread ID
 				std::vector<unsigned> callstack_refs;
 
-				thread_refcount(unsigned thread_id, unsigned refs)
+				thread_refcount(thread_t thread_id, unsigned refs)
 					: tid(thread_id)
 				{
 					callstack_refs.push_back(refs);
@@ -297,7 +294,7 @@ namespace detail
 			{
 				std::recursive_mutex mutex;
 
-				unsigned thread_id;	//Thread ID
+				thread_t thread_id;	//Thread ID
 				unsigned refs;	//Ref count
 
 				std::vector<thread_refcount> records;
@@ -506,7 +503,7 @@ namespace detail
 				if (impl_->wd_register.available(owner))
 				{
 					if (owner->flags.destroying)
-						throw std::runtime_error("the specified owner is destory");
+						throw std::runtime_error("the specified owner is destoryed");
 
 #ifndef WIDGET_FRAME_DEPRECATED
 					native = (category::flags::frame == owner->other.category ?
@@ -845,7 +842,7 @@ namespace detail
 			std::lock_guard<mutex_type> lock(mutex_);
 			if (!impl_->wd_register.available(wd))
 				return false;
-				
+
 			auto & brock = bedrock::instance();
 			bool moved = false;
 			const bool size_changed = (r.width != wd->dimension.width || r.height != wd->dimension.height);
@@ -916,12 +913,12 @@ namespace detail
 		//			window again, otherwise, it causes an infinite loop, because when a root_widget is resized,
 		//			window_manager will call the function.
 		bool window_manager::size(core_window_t* wd, nana::size sz, bool passive, bool ask_update)
-		{	
+		{
 			//Thread-Safe Required!
 			std::lock_guard<mutex_type> lock(mutex_);
 			if (!impl_->wd_register.available(wd))
 				return false;
-			
+
 			auto & brock = bedrock::instance();
 			if (sz != wd->dimension)
 			{
@@ -953,24 +950,46 @@ namespace detail
 			if (wd->dimension == sz)
 				return false;
 
+			//Before resiz the window, creates the new graphics
+			paint::graphics graph;
+			paint::graphics root_graph;
+			if (category::flags::lite_widget != wd->other.category)
+			{
+				//If allocation fails, here throws std::bad_alloc.
+				graph.make(sz);
+				graph.typeface(wd->drawer.graphics.typeface());
+				if (category::flags::root == wd->other.category)
+					root_graph.make(sz);
+			}
+
+			auto pre_sz = wd->dimension;
+
 			wd->dimension = sz;
 
 			if(category::flags::lite_widget != wd->other.category)
 			{
 				bool graph_state = wd->drawer.graphics.empty();
-				wd->drawer.graphics.make(sz);
+				wd->drawer.graphics.swap(graph);
 
 				//It shall make a typeface_changed() call when the graphics state is changing.
-				//Because when a widget is created with zero-size, it may get some wrong result in typeface_changed() call
+				//Because when a widget is created with zero-size, it may get some wrong results in typeface_changed() call
 				//due to the invaliable graphics object.
 				if(graph_state != wd->drawer.graphics.empty())
 					wd->drawer.typeface_changed();
 
 				if(category::flags::root == wd->other.category)
 				{
-					wd->root_graph->make(sz);
+					//wd->root_graph->make(sz);
+					wd->root_graph->swap(root_graph);
 					if(false == passive)
-						native_interface::window_size(wd->root, sz + nana::size(wd->extra_width, wd->extra_height));
+						if (!native_interface::window_size(wd->root, sz + nana::size(wd->extra_width, wd->extra_height)))
+						{
+							wd->dimension = pre_sz;
+							wd->drawer.graphics.swap(graph);
+							wd->root_graph->swap(root_graph);
+							wd->drawer.typeface_changed();
+							return false;
+						}
 				}
 #ifndef WIDGET_FRAME_DEPRECATED
 				else if(category::flags::frame == wd->other.category)
@@ -1156,7 +1175,7 @@ namespace detail
 		}
 
 		bool window_manager::set_parent(core_window_t* wd, core_window_t* newpa)
-		{	
+		{
 			//Thread-Safe Required!
 			std::lock_guard<mutex_type> lock(mutex_);
 			if (!impl_->wd_register.available(wd))
@@ -1236,7 +1255,7 @@ namespace detail
 			//The menubar token window will be redirected to the prev focus window when the new
 			//focus window is a menubar.
 			//The focus window will be restored to the prev focus which losts the focus becuase of
-			//memberbar. 
+			//memberbar.
 			if (prev_focus && (wd == wd->root_widget->other.attribute.root->menubar))
 				wd = prev_focus;
 
@@ -1384,7 +1403,7 @@ namespace detail
 						return tabs.front();
 				}
 			}
-			else if (tabs.size() > 1)	//at least 2 elments in tabs are required when moving backward. 
+			else if (tabs.size() > 1)	//at least 2 elments in tabs are required when moving backward.
 			{
 				auto i = std::find(tabs.begin(), end, wd);
 				if (i != end)
@@ -1430,7 +1449,7 @@ namespace detail
 			return nullptr;
 		}
 
-		void window_manager::remove_trash_handle(unsigned tid)
+		void window_manager::remove_trash_handle(thread_t tid)
 		{
 			//Thread-Safe Required!
 			std::lock_guard<mutex_type> lock(mutex_);
@@ -1552,7 +1571,7 @@ namespace detail
 			}
 		}
 
-		void window_manager::call_safe_place(unsigned thread_id)
+		void window_manager::call_safe_place(thread_t thread_id)
 		{
 			std::lock_guard<mutex_type> lock(mutex_);
 
@@ -1589,7 +1608,7 @@ namespace detail
 
 			bool established = (for_new && (wdpa != for_new));
 			decltype(for_new->root_widget->other.attribute.root) pa_root_attr = nullptr;
-			
+
 			if (established)
 				pa_root_attr = for_new->root_widget->other.attribute.root;
 
@@ -1724,7 +1743,7 @@ namespace detail
 				wd->root = for_new->root;
 				wd->root_graph = for_new->root_graph;
 				wd->root_widget = for_new->root_widget;
-				
+
 				wd->pos_owner.x = wd->pos_owner.y = 0;
 
 				auto delta_pos = wd->pos_root - for_new->pos_root;
