@@ -103,6 +103,9 @@ namespace nana
 		std::pair<int, int> range_int() const;
 		std::pair<double, double> range_double() const;
 
+		/// Selects/unselects the text
+		void select(bool);
+
 		/// Gets the spined value
 		::std::string value() const;
 		void value(const ::std::string&);
@@ -113,7 +116,7 @@ namespace nana
 		void modifier(std::string prefix_utf8, std::string suffix_utf8);
 		void modifier(const std::wstring & prefix, const std::wstring& suffix);
 	private:
-		native_string_type _m_caption() const throw();
+		native_string_type _m_caption() const noexcept;
 		void _m_caption(native_string_type&&);
 	}; //end class spinbox
 }//end namespace nana

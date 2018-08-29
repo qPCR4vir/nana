@@ -1,7 +1,7 @@
 /**
  *	A Bedrock Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -27,6 +27,7 @@ namespace detail
 	struct	basic_window;
 	class	window_manager;
 
+	struct window_platform_assoc;
 	
 	/// @brief	fundamental core component, it provides an abstraction to the OS platform and some basic functions.
 	class bedrock
@@ -45,10 +46,10 @@ namespace detail
 		~bedrock();
 		void pump_event(window, bool is_modal);
 		void flush_surface(core_window_t*, bool forced, const rectangle* update_area = nullptr);
-		static int inc_window(unsigned tid = 0);
-		thread_context* open_thread_context(unsigned tid = 0);
-		thread_context* get_thread_context(unsigned tid = 0);
-		void remove_thread_context(unsigned tid = 0);
+		static int inc_window(thread_t tid = 0);
+		thread_context* open_thread_context(thread_t tid = 0);
+		thread_context* get_thread_context(thread_t tid = 0);
+		void remove_thread_context(thread_t tid = 0);
 		static bedrock& instance();
 
 		core_window_t* focus();
@@ -72,7 +73,12 @@ namespace detail
 		void map_through_widgets(core_window_t*, native_drawable_type);
 
 		//Closes the windows which are associated with the specified thread. If the given thread_id is 0, it closes all windows
-		void close_thread_window(unsigned thread_id);
+		void close_thread_window(thread_t thread_id);
+
+	public:
+		//Platform-dependent functions
+		static void delete_platform_assoc(window_platform_assoc*);
+		void keyboard_accelerator(native_window_type, const accel_key&, const std::function<void()>&);
 	public:
 		void event_expose(core_window_t *, bool exposed);
 		void event_move(core_window_t*, int x, int y);

@@ -1,7 +1,7 @@
 /**
  *	A Textbox Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -16,6 +16,8 @@
 #include <nana/gui/widgets/widget.hpp>
 #include "skeletons/textbase_export_interface.hpp"
 #include "skeletons/text_editor_part.hpp"
+
+#include <nana/optional.hpp>
 
 namespace nana
 {
@@ -173,6 +175,13 @@ namespace nana
 		/// Read the text from a specified line with a set offset. It returns true for success.
 		bool getline(std::size_t line_index,std::size_t offset,std::string& text) const;
 
+		/// Read the text from a specified line; returns an empty optional on failure
+		std::optional<std::string> getline(std::size_t pos) const;
+
+		///Read the text from a specified line with a set offset. Returns an empty optional for
+		/// failure.
+		std::optional<std::string> getline(std::size_t line_index, std::size_t offset) const;
+
 		/// Gets the caret position
 		/// Returns true if the caret is in the area of display, false otherwise.
 		bool caret_pos(point& pos, bool text_coordinate) const;
@@ -276,9 +285,10 @@ namespace nana
 		std::size_t text_line_count() const noexcept;
 	protected:
 		//Overrides widget's virtual functions
-		native_string_type _m_caption() const throw() override;
+		native_string_type _m_caption() const noexcept override;
 		void _m_caption(native_string_type&&) override;
 		void _m_typeface(const paint::font&) override;
+		std::shared_ptr<scroll_operation_interface> _m_scroll_operation() override;
 	};
 }//end namespace nana
 #include <nana/pop_ignore_diagnostic>

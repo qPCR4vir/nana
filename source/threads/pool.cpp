@@ -1,6 +1,6 @@
 /*
  *	A Thread Pool Implementation
- *	Copyright(C) 2003-2016 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -29,7 +29,7 @@
 #if defined(NANA_WINDOWS)
 	#include <windows.h>
 	#include <process.h>
-#elif defined(NANA_LINUX) || defined(NANA_MACOS)
+#elif defined(NANA_POSIX)
 	#include <pthread.h>
 #endif
 
@@ -351,20 +351,22 @@ namespace threads
 			}container_;
 		};//end class impl
 
-		pool::pool()
-			: impl_(new impl(4))
+#ifndef STD_THREAD_NOT_SUPPORTED
+		pool::pool(unsigned thread_number)
+			: impl_(new impl(thread_number ? thread_number : std::thread::hardware_concurrency()))
 		{
 		}
+#else
+		pool::pool(unsigned thread_number)
+			: impl_(new impl(0))
+		{
+		}
+#endif
 
 		pool::pool(pool&& other)
 			: pool()
 		{
 			std::swap(impl_, other.impl_);
-		}
-
-		pool::pool(std::size_t thread_number)
-			: impl_(new impl(thread_number))
-		{
 		}
 
 		pool& pool::operator=(pool&& other)

@@ -1,7 +1,7 @@
 /*
  *	Nana GUI Programming Interface Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -19,6 +19,11 @@
 #include <nana/gui/detail/native_window_interface.hpp>
 #include <nana/gui/widgets/widget.hpp>
 #include <nana/gui/detail/events_operation.hpp>
+
+#include "../../source/detail/platform_abstraction.hpp"
+#ifdef NANA_X11
+#	include "../../source/detail/posix/platform_spec.hpp"
+#endif
 
 namespace nana
 {
@@ -50,6 +55,19 @@ namespace nana
 	}
 namespace API
 {
+#ifdef NANA_X11
+	//Some platform specific functions for X11
+	namespace x11
+	{
+		/// Returns the connection to the X server
+		const void* get_display()
+		{
+			auto & spec = nana::detail::platform_spec::instance();
+			return spec.open_display();			
+		}
+	}
+#endif
+
 	using basic_window = ::nana::detail::basic_window;
 	using interface_type = ::nana::detail::native_interface;
 
@@ -242,7 +260,7 @@ namespace API
 			}
 		}
 
-		::nana::detail::native_string_type window_caption(window wd) throw()
+		::nana::detail::native_string_type window_caption(window wd) noexcept
 		{
 			auto const iwd = reinterpret_cast<basic_window*>(wd);
 			internal_scope_guard isg;
@@ -375,8 +393,13 @@ namespace API
 		{
 			if (shortkey)
 			{
+#ifdef _nana_std_has_string_view
+				auto off_x = (shortkey_position ? graph.text_extent_size(std::string_view{ text.c_str(), shortkey_position }).width : 0);
+				auto key_px = static_cast<int>(graph.text_extent_size(std::wstring_view{ &shortkey, 1 }).width);
+#else
 				auto off_x = (shortkey_position ? graph.text_extent_size(text.c_str(), shortkey_position).width : 0);
 				auto key_px = static_cast<int>(graph.text_extent_size(&shortkey, 1).width);
+#endif
 
 				unsigned ascent, descent, inleading;
 				graph.text_metrics(ascent, descent, inleading);
@@ -389,7 +412,6 @@ namespace API
 			}
 		}
 	}//end namespace dev
-
 
 	widget* get_widget(window wd)
 	{
@@ -647,7 +669,7 @@ namespace API
 		internal_scope_guard lock;
 		if(restrict::wd_manager().available(iwd) && (iwd->other.category == category::flags::root))
 		{
-			auto owner = interface_type::get_owner_window(iwd->root);
+			auto owner = interface_type::get_window(iwd->root, window_relationship::owner);
 			if(owner)
 				return reinterpret_cast<window>(restrict::wd_manager().root(owner));
 		}
@@ -790,8 +812,14 @@ namespace API
 			return{};
 
 		auto sz = window_size(wd);
-		sz.width += iwd->extra_width;
-		sz.height += iwd->extra_height;
+
+		if(category::flags::root == iwd->other.category)
+		{
+			auto fm_extents = interface_type::window_frame_extents(iwd->root);
+			sz.width += fm_extents.left + fm_extents.right;
+			sz.height += fm_extents.top + fm_extents.bottom;
+		}
+
 		return sz;
 	}
 
@@ -803,22 +831,34 @@ namespace API
 		{
 			if (category::flags::root == iwd->other.category)
 			{
+				auto fm_extents = interface_type::window_frame_extents(iwd->root);
+
 				size inner_size = sz;
-				if (inner_size.width < iwd->extra_width)
+
+				if (inner_size.width < static_cast<unsigned>(fm_extents.left + fm_extents.right))
 					inner_size.width = 0;
 				else
-					inner_size.width -= iwd->extra_width;
+					inner_size.width -= static_cast<unsigned>(fm_extents.left + fm_extents.right);
 
-				if (inner_size.height < iwd->extra_height)
+				if (inner_size.height < static_cast<unsigned>(fm_extents.top + fm_extents.bottom))
 					inner_size.height = 0;
 				else
-					inner_size.height -= iwd->extra_height;
+					inner_size.height -= static_cast<unsigned>(fm_extents.top + fm_extents.bottom);			
 
 				window_size(wd, inner_size);
 			}
 			else
 				window_size(wd, sz);
 		}
+	}
+
+	std::optional<rectangle> window_rectangle(window wd)
+	{
+		auto iwd = reinterpret_cast<basic_window*>(wd);
+		internal_scope_guard lock;
+		if (restrict::wd_manager().available(iwd))
+			return rectangle(iwd->pos_owner, iwd->dimension);
+		return{};
 	}
 
 	bool get_window_rectangle(window wd, rectangle& r)
@@ -1450,7 +1490,7 @@ namespace API
 		restrict::wd_manager().set_safe_place(reinterpret_cast<basic_window*>(wd), std::move(fn));
 	}
 
-	optional<std::pair<size, size>> content_extent(window wd, unsigned limited_px, bool limit_width)
+	std::optional<std::pair<size, size>> content_extent(window wd, unsigned limited_px, bool limit_width)
 	{
 		auto iwd = reinterpret_cast<basic_window*>(wd);
 		internal_scope_guard lock;
@@ -1472,6 +1512,11 @@ namespace API
 		}
 		
 		return{};
+	}
+
+	unsigned screen_dpi(bool x_requested)
+	{
+		return ::nana::platform_abstraction::screen_dpi(x_requested);
 	}
 }//end namespace API
 }//end namespace nana

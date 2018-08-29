@@ -1,7 +1,7 @@
 /**
 *	Definition of General Events
 *	Nana C++ Library(http://www.nanapro.org)
-*	Copyright(C) 2003-2016 Jinhao(cnjinhao@hotmail.com)
+*	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
 *
 *	Distributed under the Boost Software License, Version 1.0.
 *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -133,11 +133,25 @@ namespace nana
 		/// Creates an event handler at the beginning of event chain
 		template<typename Function>
 		event_handle connect_front(Function && fn)
-		{	
+		{
+#ifdef __cpp_if_constexpr
+			if constexpr(std::is_invocable_v<Function, arg_reference>)
+			{
+				return _m_emplace(new docker{ this, fn, false }, true);
+			}
+			else if constexpr(std::is_invocable_v<Function>)
+			{
+				return _m_emplace(new docker{ this, [fn](arg_reference) {
+					fn();
+				}, false }, true);
+			}
+#else
 			using prototype = typename std::remove_reference<Function>::type;
 			return _m_emplace(new docker(this, factory<prototype, std::is_bind_expression<prototype>::value>::build(std::forward<Function>(fn)), false), true);
+#endif
 		}
 
+#ifndef __cpp_if_constexpr
 		/// It will not get called if stop_propagation() was called.
 		event_handle connect(void (*fn)(arg_reference))
 		{
@@ -145,13 +159,27 @@ namespace nana
 				fn(arg);
 			});
 		}
+#endif
 
 		/// It will not get called if stop_propagation() was called, because it is set at the end of the chain..
 		template<typename Function>
 		event_handle connect(Function && fn)
 		{
+#ifdef __cpp_if_constexpr
+			if constexpr(std::is_invocable_v<Function, arg_reference>)
+			{
+				return _m_emplace(new docker{ this, fn, false }, false);
+			}
+			else if constexpr(std::is_invocable_v<Function>)
+			{
+				return _m_emplace(new docker{ this, [fn](arg_reference) mutable{
+					fn();
+				}, false }, false);
+			}
+#else
 			using prototype = typename std::remove_reference<Function>::type;
 			return _m_emplace(new docker(this, factory<prototype, std::is_bind_expression<prototype>::value>::build(std::forward<Function>(fn)), false), false);
+#endif
 		}
 
 		/// It will not get called if stop_propagation() was called.
@@ -164,10 +192,22 @@ namespace nana
 		/// It will get called because it is unignorable.
         template<typename Function>
 		event_handle connect_unignorable(Function && fn, bool in_front = false)
-		{			
+		{
+#ifdef __cpp_if_constexpr
+			if constexpr(std::is_invocable_v<Function, arg_reference>)
+			{
+				return _m_emplace(new docker{ this, fn, true }, in_front);
+			}
+			else if constexpr(std::is_invocable_v<Function>)
+			{
+				return _m_emplace(new docker{ this, [fn](arg_reference) mutable{
+					fn();
+				}, true }, in_front);
+			}
+#else
 			using prototype = typename std::remove_reference<Function>::type;
-
 			return _m_emplace(new docker(this, factory<prototype, std::is_bind_expression<prototype>::value>::build(std::forward<Function>(fn)), true), in_front);
+#endif
 		}
 
 		void emit(arg_reference& arg, window window_handle)
@@ -210,6 +250,8 @@ namespace nana
 			}
 		}
 	private:
+
+#ifndef __cpp_if_constexpr
 		template<typename Fn, bool IsBind>
 		struct factory
 		{
@@ -385,6 +427,7 @@ namespace nana
 				};
 			}
 		};
+#endif
 	};
  
 	struct arg_mouse
@@ -460,8 +503,9 @@ namespace nana
 		::nana::window window_handle;	///< A handle to the event window
 		mutable wchar_t key;	///< the key corresponding to the key pressed
 		mutable bool ignore;	    ///< this member is only available for key_char event, set 'true' to ignore the input.
-		bool ctrl;	                ///< keyboard Ctrl is pressed?
-		bool shift;	                ///< keyboard Shift is pressed
+		bool alt;					///< it is set to indicate the modifier key Alt just prior to the event.
+		bool ctrl;	                ///< it is set to indicate the modifier key Ctrl just prior to the event.
+		bool shift;	                ///< it is set to indicate the modifier key Shift just prior to the event.
 	};
 
 	struct arg_move : public event_arg

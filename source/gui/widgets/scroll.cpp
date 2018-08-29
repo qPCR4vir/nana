@@ -1,7 +1,7 @@
 /*
  *	A Scroll Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2014 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0. 
  *	(See accompanying file LICENSE_1_0.txt or copy at 
@@ -20,9 +20,15 @@ namespace nana
 		namespace scroll
 		{
 		//struct metrics_type
-			metrics_type::metrics_type()
-				:peak(1), range(1), step(1), value(0),
-				what(buttons::none), pressed(false), scroll_length(0), scroll_pos(0)
+			metrics_type::metrics_type():
+				peak(1),
+				range(1),
+				step(1),
+				value(0),
+				what(buttons::none),
+				pressed(false),
+				scroll_length(0),
+				scroll_pos(0)
 			{}
 		//end struct metrics_type
 
@@ -93,12 +99,14 @@ namespace nana
 
 					//Check scroll_area to avoiding division by zero.
 					if (scroll_area)
-						metrics_.value = pos * value_max / scroll_area;
+						metrics_.value = static_cast<std::size_t>(pos * (static_cast<double>(value_max) / scroll_area));	//converting to double to avoid overflow.
 
-					if(metrics_.value < value_max)
+					if (metrics_.value < value_max)
 					{
-						int selfpos = static_cast<int>(metrics_.value * scroll_area / value_max);
-						int nextpos = static_cast<int>((metrics_.value + 1) * scroll_area / value_max);
+						//converting to double to avoid overflow.
+						auto const px_per_value = static_cast<double>(scroll_area) / value_max;
+						int selfpos = static_cast<int>(metrics_.value * px_per_value);
+						int nextpos = static_cast<int>((metrics_.value + 1) * px_per_value);
 
 						if(selfpos != nextpos && (pos - selfpos > nextpos - pos))
 							++metrics_.value;

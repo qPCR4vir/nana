@@ -1,7 +1,7 @@
 /*
  *	Platform Specification Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -13,13 +13,14 @@
  *	This file should not be included by any header files.
  */
 
-#if defined(NANA_LINUX) || defined(NANA_MACOS)
+#if defined(NANA_POSIX)
 
 #ifndef NANA_DETAIL_PLATFORM_SPEC_HPP
 #define NANA_DETAIL_PLATFORM_SPEC_HPP
 
 #include <nana/push_ignore_diagnostic>
 
+#include <atomic>
 #include <thread>
 #include <mutex>
 #include <memory>
@@ -132,6 +133,7 @@ namespace detail
 		Atom wm_change_state;
 		Atom wm_delete_window;
 		//ext
+		Atom net_frame_extents;
 		Atom net_wm_state;
 		Atom net_wm_state_skip_taskbar;
 		Atom net_wm_state_fullscreen;
@@ -186,7 +188,7 @@ namespace detail
 	public:
 		int error_code;
 	public:
-		typedef void (*timer_proc_type)(unsigned tid);
+		typedef void (*timer_proc_type)(thread_t tid);
 		typedef void (*event_proc_type)(Display*, msg_packet_tag&);
 		typedef ::nana::event_code		event_code;
 		typedef ::nana::native_window_type	native_window_type;
@@ -213,6 +215,9 @@ namespace detail
 		const atombase_tag & atombase() const;
 
 		void make_owner(native_window_type owner, native_window_type wd);
+
+		// Cancel the ownership
+		bool umake_owner(native_window_type child);
 		native_window_type get_owner(native_window_type) const;
 		void remove(native_window_type);
 
@@ -235,7 +240,7 @@ namespace detail
 		Window grab(Window);
 		void set_timer(std::size_t id, std::size_t interval, void (*timer_proc)(std::size_t id));
 		void kill_timer(std::size_t id);
-		void timer_proc(unsigned tid);
+		void timer_proc(thread_t tid);
 
 		//Message dispatcher
 		void msg_insert(native_window_type);
@@ -264,7 +269,7 @@ namespace detail
 		std::recursive_mutex xlib_locker_;
 		struct caret_holder_tag
 		{
-			volatile bool exit_thread;
+			std::atomic<bool> exit_thread;
 			std::unique_ptr<std::thread> thr;
 			std::map<native_window_type, caret_rep*> carets;
 		}caret_holder_;
@@ -319,6 +324,5 @@ namespace detail
 // .h ward
 #endif
 
-//#if defined(NANA_LINUX) || defined(NANA_MACOS)
 #endif
 

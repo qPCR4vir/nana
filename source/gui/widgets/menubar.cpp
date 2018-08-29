@@ -89,11 +89,18 @@ namespace nana
 
 					if (shortkey && shortkey < 0x61)
 						shortkey += (0x61 - 0x41);
+
+#ifdef _nana_std_has_emplace_return_type
+					auto & last = items.emplace_back(new item_type{std::move(transformed_text), shortkey, shortkey_pos});
+					API::refresh_window(*widget_ptr);
+					return last->menu_obj;
+#else
 					items.emplace_back(new item_type{ std::move(transformed_text), shortkey, shortkey_pos });
 
 					API::refresh_window(*widget_ptr);
 
 					return this->items.back()->menu_obj;
+#endif
 				}
 				
 				bool cancel()
@@ -624,6 +631,13 @@ namespace nana
 		std::size_t menubar::length() const
 		{
 			return get_drawer_trigger().ess().items.size();
+		}
+		
+		void menubar::clear()
+		{
+			internal_scope_guard lock;
+			get_drawer_trigger().ess().items.clear();
+			API::refresh_window(handle());
 		}
 
 		bool menubar::cancel()

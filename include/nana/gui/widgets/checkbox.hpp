@@ -1,7 +1,7 @@
 /**
  *	A CheckBox Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2016 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0. 
  *	(See accompanying file LICENSE_1_0.txt or copy at 
@@ -79,7 +79,9 @@ namespace drawerbase
 		void element_set(const char* name);
 		void react(bool want);		///< Enables the reverse check while clicking on the checkbox.
 		bool checked() const;
-		void check(bool chk);
+
+		/// Checks/unchecks the checkbox
+		void check(bool state);
 
 		/// \brief With the radio mode, users make a choice among a set of mutually exclusive, 
 		/// related options. Users can choose one and only one option. 
@@ -100,6 +102,7 @@ namespace drawerbase
 			event_handle eh_keyboard;
 		};
 	public:
+		constexpr static const std::size_t npos = static_cast<std::size_t>(-1);
 		~radio_group();
 		void add(checkbox&);
 		std::size_t checked() const;       ///< Retrieves the index of the checkbox which is checked.

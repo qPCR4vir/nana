@@ -1,7 +1,7 @@
 /*
  *	Platform Specification Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Nana Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -206,7 +206,7 @@ namespace detail
 			}
 		}
 	};
-	
+
 	class timer_runner
 	{
 		typedef void (*timer_proc_t)(std::size_t id);
@@ -214,7 +214,7 @@ namespace detail
 		struct timer_tag
 		{
 			std::size_t id;
-			unsigned tid;
+			thread_t tid;
 			std::size_t interval;
 			std::size_t timestamp;
 			timer_proc_t proc;
@@ -250,7 +250,7 @@ namespace detail
 				i->second.proc = proc;
 				return;
 			}
-			unsigned tid = nana::system::this_thread_id();
+			auto tid = nana::system::this_thread_id();
 			threadmap_[tid].timers.insert(id);
 
 			timer_tag & tag = holder_[id];
@@ -272,7 +272,7 @@ namespace detail
 			if(i != holder_.end())
 			{
 				auto tid = i->second.tid;
-				
+
 				auto ig = threadmap_.find(tid);
 				if(ig != threadmap_.end())	//Generally, the ig should not be the end of threadmap_
 				{
@@ -295,7 +295,7 @@ namespace detail
 			return (holder_.empty());
 		}
 
-		void timer_proc(unsigned tid)
+		void timer_proc(thread_t tid)
 		{
 			is_proc_handling_ = true;
 			auto i = threadmap_.find(tid);
@@ -329,7 +329,7 @@ namespace detail
 		}
 	private:
 		bool is_proc_handling_;
-		std::map<unsigned, timer_group> threadmap_;
+		std::map<thread_t, timer_group> threadmap_;
 		std::map<std::size_t, timer_tag> holder_;
 	};
 
@@ -339,8 +339,8 @@ namespace detail
 		string.tab_pixels = 0;
 		string.whitespace_pixels = 0;
 #if defined(NANA_USE_XFT)
-		conv_.handle = ::iconv_open("UTF-8", "UTF-32");
-		conv_.code = "UTF-32";
+		conv_.handle = ::iconv_open("UTF-8", NANA_UNICODE);
+		conv_.code = NANA_UNICODE;
 #endif
 	}
 
@@ -486,6 +486,7 @@ namespace detail
 		atombase_.wm_protocols = ::XInternAtom(display_, "WM_PROTOCOLS", False);
 		atombase_.wm_change_state = ::XInternAtom(display_, "WM_CHANGE_STATE", False);
 		atombase_.wm_delete_window = ::XInternAtom(display_, "WM_DELETE_WINDOW", False);
+		atombase_.net_frame_extents = ::XInternAtom(display_, "_NET_FRAME_EXTENTS", False);
 		atombase_.net_wm_state = ::XInternAtom(display_, "_NET_WM_STATE", False);
 		atombase_.net_wm_state_skip_taskbar = ::XInternAtom(display_, "_NET_WM_STATE_SKIP_TASKBAR", False);
 		atombase_.net_wm_state_fullscreen = ::XInternAtom(display_, "_NET_WM_STATE_FULLSCREEN", False);
@@ -588,16 +589,59 @@ namespace detail
 	}
 
 	//There are three members make_owner(), get_owner() and remove(),
-	//they are maintain a table to discribe the owner of windows because the feature in X11, the
+	//they are maintain a table to discribe the owner of windows because of the feature in X11, the
 	//owner of top level window must be RootWindow.
 	void platform_spec::make_owner(native_window_type owner, native_window_type wd)
 	{
-		platform_scope_guard psg;
+		platform_scope_guard lock;
 		wincontext_[wd].owner = owner;
-		window_context_t & context = wincontext_[owner];
-		if(context.owned == 0)
-			context.owned = new std::vector<native_window_type>;
-		context.owned->push_back(wd);
+		
+		auto& owner_ctx = wincontext_[owner];
+		if(!owner_ctx.owned)
+			owner_ctx.owned = new std::vector<native_window_type>;
+		owner_ctx.owned->push_back(wd);
+	}
+
+	bool platform_spec::umake_owner(native_window_type child)
+	{
+		platform_scope_guard lock;
+
+		auto i = wincontext_.find(child);
+		if(i == wincontext_.end())
+			return false;
+
+		if(i->second.owner)
+		{
+			auto u = wincontext_.find(i->second.owner);
+			if(u != wincontext_.end())
+			{
+				auto * owned = u->second.owned;
+				if(owned)
+				{
+					auto j = std::find(owned->begin(), owned->end(), child);
+					if(j != owned->end())
+						owned->erase(j);
+
+					if(owned->empty())
+					{
+						delete owned;
+						u->second.owned = nullptr;
+						//The owner owns no child. If it is not a child of other owners,
+						//remove it.
+						if(nullptr == u->second.owner)
+							wincontext_.erase(u);
+					}
+				}
+			}
+
+			i->second.owner = nullptr;
+		}
+
+		//Don't remove the ownerships which the child is a owner window.
+		if(nullptr == i->second.owned)
+			wincontext_.erase(i);
+
+		return true;
 	}
 
 	native_window_type platform_spec::get_owner(native_window_type wd) const
@@ -610,37 +654,28 @@ namespace detail
 	void platform_spec::remove(native_window_type wd)
 	{
 		msg_dispatcher_->erase(reinterpret_cast<Window>(wd));
-		platform_scope_guard psg;
-		auto i = wincontext_.find(wd);
-		if(i == wincontext_.end()) return;
 
-		if(i->second.owner)
+		platform_scope_guard lock;
+		if(umake_owner(wd))
 		{
-			auto u = wincontext_.find(i->second.owner);
-			if(u != wincontext_.end())
+			auto i = wincontext_.find(wd);
+			if(i != wincontext_.end())
 			{
-				auto * vec = u->second.owned;
-				if(vec)
+				if(i->second.owned)
 				{
-					auto j = std::find(vec->begin(), vec->end(), i->first);
-					if(j != vec->end())
-						vec->erase(j);
+					set_error_handler();
+					auto & wd_manager = detail::bedrock::instance().wd_manager();
+					for(auto u = i->second.owned->rbegin(); u != i->second.owned->rend(); ++u)
+						wd_manager.close(wd_manager.root(*u));
+
+					rev_error_handler();
+
+					delete i->second.owned;
 				}
+
+				wincontext_.erase(i);
 			}
 		}
-
-		auto * vec = i->second.owned;
-		if(vec)
-		{
-			set_error_handler();
-			auto & wd_manager = detail::bedrock::instance().wd_manager();
-			for(auto u = vec->rbegin(); u != vec->rend(); ++u)
-				wd_manager.close(wd_manager.root(*u));
-
-			rev_error_handler();
-		}
-		delete vec;
-		wincontext_.erase(i);
 		iconbase_.erase(wd);
 	}
 
@@ -723,7 +758,7 @@ namespace detail
 							::XFree(attr);
 						}
 						else
-							addr->input_context = ::XCreateIC(addr->input_method, 
+							addr->input_context = ::XCreateIC(addr->input_method,
 											XNInputStyle, (XIMPreeditNothing | XIMStatusNothing),
 											XNClientWindow, reinterpret_cast<Window>(wd),
 											XNFocusWindow, reinterpret_cast<Window>(wd), nullptr);
@@ -794,7 +829,7 @@ namespace detail
 							XSetWindowAttributes new_attr;
 
 							//Don't remove the KeyPress and KeyRelease mask(0x3), otherwise the window will not receive
-							//Keyboard events after destroying caret 
+							//Keyboard events after destroying caret
 							new_attr.event_mask = (attr.your_event_mask & ~(addr->input_context_event_mask & (~0x3)));
 							::XChangeWindowAttributes(display_, reinterpret_cast<Window>(wd), CWEventMask, &new_attr);
 						}
@@ -966,7 +1001,7 @@ namespace detail
 		}
 	}
 
-	void platform_spec::timer_proc(unsigned tid)
+	void platform_spec::timer_proc(thread_t tid)
 	{
 		std::lock_guard<decltype(timer_.mutex)> lock(timer_.mutex);
 		if(timer_.runner)
@@ -1066,7 +1101,7 @@ namespace detail
 	//		2 = msg_dispatcher should ignore the msg, because the XEvent is processed by _m_msg_filter
 	int platform_spec::_m_msg_filter(XEvent& evt, msg_packet_tag& msg)
 	{
-		auto & bedrock = detail::bedrock::instance();	
+		auto & bedrock = detail::bedrock::instance();
 
 		platform_spec & self = instance();
 		if(KeyPress == evt.type || KeyRelease == evt.type)

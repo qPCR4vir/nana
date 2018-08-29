@@ -1,7 +1,7 @@
 /**
  *	A Bedrock Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -20,11 +20,11 @@
 #include <nana/system/platform.hpp>
 #include <nana/system/timepiece.hpp>
 #include <nana/gui.hpp>
-#include <nana/gui/detail/inner_fwd_implement.hpp>
 #include <nana/gui/detail/native_window_interface.hpp>
 #include <nana/gui/layout_utility.hpp>
 #include <nana/gui/detail/element_store.hpp>
 #include <nana/gui/detail/color_schemes.hpp>
+#include "inner_fwd_implement.hpp"
 
 #include <iostream>	//use std::cerr
 
@@ -176,10 +176,16 @@ namespace detail
 		{
 			struct thread_context_cache
 			{
-				unsigned tid{ 0 };
+				thread_t tid{ 0 };
 				thread_context *object{ nullptr };
 			}tcontext;
 		}cache;
+	};
+
+	struct window_platform_assoc
+	{
+		HACCEL accel{ nullptr };	///< A handle to a Windows keyboard accelerator object.
+		std::map<int, std::function<void()>> accel_commands;
 	};
 
 	//class bedrock defines a static object itself to implement a static singleton
@@ -245,7 +251,7 @@ namespace detail
 
 
 	/// @brief increament the number of windows in the thread id
-	int bedrock::inc_window(unsigned tid)
+	int bedrock::inc_window(thread_t tid)
 	{
 		//impl refers to the object of private_impl, the object is created when bedrock is creating.
 		private_impl * impl = instance().impl_;
@@ -255,7 +261,7 @@ namespace detail
 		return (cnt < 0 ? cnt = 1 : ++cnt);
 	}
 
-	auto bedrock::open_thread_context(unsigned tid) -> thread_context*
+	auto bedrock::open_thread_context(thread_t tid) -> thread_context*
 	{
 		if(0 == tid) tid = nana::system::this_thread_id();
 		std::lock_guard<decltype(impl_->mutex)> lock(impl_->mutex);
@@ -269,7 +275,7 @@ namespace detail
 		return context;
 	}
 
-	auto bedrock::get_thread_context(unsigned tid) -> thread_context *
+	auto bedrock::get_thread_context(thread_t tid) -> thread_context *
 	{
 		if(0 == tid) tid = nana::system::this_thread_id();
 
@@ -289,7 +295,7 @@ namespace detail
 		return nullptr;
 	}
 
-	void bedrock::remove_thread_context(unsigned tid)
+	void bedrock::remove_thread_context(thread_t tid)
 	{
 		if(0 == tid) tid = nana::system::this_thread_id();
 
@@ -345,9 +351,28 @@ namespace detail
 		}
 	}
 
+	void process_msg(bedrock* brock, MSG& msg)
+	{
+		if (WM_KEYFIRST <= msg.message && msg.message <= WM_KEYLAST)
+		{
+			auto misc = brock->wd_manager().root_runtime(reinterpret_cast<native_window_type>(msg.hwnd));
+			if (misc && misc->wpassoc && misc->wpassoc->accel)
+			{
+				if (::TranslateAccelerator(msg.hwnd, misc->wpassoc->accel, &msg))
+					return;
+			}
+		}
+
+		auto menu_wd = brock->get_menu(reinterpret_cast<native_window_type>(msg.hwnd), true);
+		if (menu_wd) interior_helper_for_menu(msg, menu_wd);
+
+		::TranslateMessage(&msg);
+		::DispatchMessage(&msg);
+	}
+
 	void bedrock::pump_event(window condition_wd, bool is_modal)
 	{
-		const unsigned tid = ::GetCurrentThreadId();
+		thread_t tid = ::GetCurrentThreadId();
 		auto context = this->open_thread_context(tid);
 		if(0 == context->window_count)
 		{
@@ -383,12 +408,7 @@ namespace detail
 							if (msg.message == WM_QUIT)   break;
 							if ((WM_KEYFIRST <= msg.message && msg.message <= WM_KEYLAST) || !::IsDialogMessage(native_handle, &msg))
 							{
-								auto menu_wd = get_menu(reinterpret_cast<native_window_type>(msg.hwnd), true);
-								if (menu_wd) interior_helper_for_menu(msg, menu_wd);
-
-								::TranslateMessage(&msg);
-								::DispatchMessage(&msg);
-
+								process_msg(this, msg);
 								wd_manager().remove_trash_handle(tid);
 							}
 						}
@@ -400,11 +420,7 @@ namespace detail
 					{
 						if (-1 != ::GetMessage(&msg, 0, 0, 0))
 						{
-							auto menu_wd = get_menu(reinterpret_cast<native_window_type>(msg.hwnd), true);
-							if (menu_wd) interior_helper_for_menu(msg, menu_wd);
-
-							::TranslateMessage(&msg);
-							::DispatchMessage(&msg);
+							process_msg(this, msg);
 						}
 
 						wd_manager().call_safe_place(tid);
@@ -419,13 +435,7 @@ namespace detail
 				while(context->window_count)
 				{
 					if(-1 != ::GetMessage(&msg, 0, 0, 0))
-					{
-						auto menu_wd = get_menu(reinterpret_cast<native_window_type>(msg.hwnd), true);
-						if(menu_wd) interior_helper_for_menu(msg, menu_wd);
-
-						::TranslateMessage(&msg);
-						::DispatchMessage(&msg);
-					}
+						process_msg(this, msg);
 
 					wd_manager().call_safe_place(tid);
 					wd_manager().remove_trash_handle(tid);
@@ -635,6 +645,7 @@ namespace detail
 
 		switch(msg)
 		{
+		case WM_COMMAND:
 		case WM_DESTROY:
 		case WM_SHOWWINDOW:
 		case WM_SIZING:
@@ -786,6 +797,17 @@ namespace detail
 
 			switch (message)
 			{
+			case WM_COMMAND:
+				if ((1 == HIWORD(wParam)) && root_runtime->wpassoc)
+				{
+					auto i = root_runtime->wpassoc->accel_commands.find(LOWORD(wParam));
+					if (i != root_runtime->wpassoc->accel_commands.end())
+					{
+						auto fn = i->second;
+						fn();
+					}
+				}
+				break;
 			case WM_IME_STARTCOMPOSITION:
 				if (msgwnd->other.attribute.root->ime_enabled)
 				{
@@ -1473,38 +1495,40 @@ namespace detail
 							{
 								msgwnd->set_action(mouse_action::normal);
 
+								auto retain = msgwnd->annex.events_ptr;
+
 								arg_click click_arg;
 								click_arg.mouse_args = nullptr;
 								click_arg.window_handle = reinterpret_cast<window>(msgwnd);
 
-								auto retain = msgwnd->annex.events_ptr;
-								if (brock.emit(event_code::click, msgwnd, click_arg, true, &context))
-								{
-									arg_mouse arg;
-									arg.alt = false;
-									arg.button = ::nana::mouse::left_button;
-									arg.ctrl = false;
-									arg.evt_code = event_code::mouse_up;
-									arg.left_button = true;
-									arg.mid_button = false;
-									arg.pos.x = 0;
-									arg.pos.y = 0;
-									arg.window_handle = reinterpret_cast<window>(msgwnd);
+								arg_mouse arg;
+								arg.alt = false;
+								arg.button = ::nana::mouse::left_button;
+								arg.ctrl = false;
+								arg.evt_code = event_code::mouse_up;
+								arg.left_button = true;
+								arg.mid_button = false;
+								arg.pos.x = 0;
+								arg.pos.y = 0;
+								arg.window_handle = reinterpret_cast<window>(msgwnd);
 
-									draw_invoker(&drawer::mouse_up, msgwnd, arg, &context);
+								draw_invoker(&drawer::mouse_up, msgwnd, arg, &context);
+
+								if (brock.emit(event_code::click, msgwnd, click_arg, true, &context))
 									wd_manager.do_lazy_refresh(msgwnd, false);
-								}
+								
 								pressed_wd_space = nullptr;
 							}
 							else
 							{
-								arg_keyboard arg;
-								arg.evt_code = event_code::key_release;
-								arg.window_handle = reinterpret_cast<window>(msgwnd);
-								arg.key = translate_virtual_key(wParam);
-								brock.get_key_state(arg);
-								arg.ignore = false;
-								brock.emit(event_code::key_release, msgwnd, arg, true, &context);
+								arg_keyboard keyboard_arg;
+								keyboard_arg.evt_code = event_code::key_release;
+								keyboard_arg.window_handle = reinterpret_cast<window>(msgwnd);
+								keyboard_arg.key = translate_virtual_key(wParam);
+								brock.get_key_state(keyboard_arg);
+								keyboard_arg.ignore = false;
+
+								brock.emit(event_code::key_release, msgwnd, keyboard_arg, true, &context);
 							}
 						}
 					}
@@ -1578,8 +1602,56 @@ namespace detail
 
 	void bedrock::get_key_state(arg_keyboard& kb)
 	{
+		kb.alt = (0 != (::GetKeyState(VK_MENU) & 0x80));
 		kb.ctrl = (0 != (::GetKeyState(VK_CONTROL) & 0x80));
 		kb.shift = (0 != (::GetKeyState(VK_SHIFT) & 0x80));
+	}
+
+	void bedrock::delete_platform_assoc(window_platform_assoc* passoc)
+	{
+		delete passoc;
+	}
+
+	//Generates an identitifer for an accel key.
+	std::pair<int, WORD> id_accel_key(const accel_key& key)
+	{
+		std::pair<int, WORD> ret;
+
+		//Use virt-key for non-case sensitive
+		if (!key.case_sensitive)
+			ret.second = static_cast<WORD>(std::tolower(key.key) - 'a' + 0x41);
+
+		ret.first = ret.second | int(key.case_sensitive ? (1 << 8) : 0) | int(key.alt ? (1 << 9) : 0) | int(key.ctrl ? (1 << 10) : 0) | int(key.shift ? (1 << 11) : 0);
+		return ret;
+	}
+
+	void bedrock::keyboard_accelerator(native_window_type wd, const accel_key& key, const std::function<void()>& fn)
+	{
+		auto misc = wd_manager().root_runtime(wd);
+		if (nullptr == misc)
+			return;
+		
+		if (!misc->wpassoc)
+			misc->wpassoc = new window_platform_assoc;
+
+		auto idkey = id_accel_key(key);
+
+		misc->wpassoc->accel_commands[idkey.first] = fn;
+
+		auto accel_size = ::CopyAcceleratorTable(misc->wpassoc->accel, nullptr, 0);
+
+		std::unique_ptr<ACCEL[]> accels(new ACCEL[accel_size + 1]);
+		
+		if (accel_size)
+			::CopyAcceleratorTable(misc->wpassoc->accel, accels.get(), accel_size);
+
+		auto p = accels.get() + accel_size;
+		p->cmd = idkey.first;
+		p->fVirt = (key.case_sensitive ? 0 : FVIRTKEY) | (key.alt ? FALT : 0) | (key.ctrl ? FCONTROL : 0) | (key.shift ? FSHIFT : 0);
+		p->key = idkey.second;
+
+		::DestroyAcceleratorTable(misc->wpassoc->accel);
+		misc->wpassoc->accel = ::CreateAcceleratorTable(accels.get(), accel_size + 1);
 	}
 
 	element_store& bedrock::get_element_store() const

@@ -1,7 +1,7 @@
 /**
  *	Platform Specification Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -97,6 +97,18 @@ namespace detail
 			if(fn_unin)
 				fn_unin();
 			::FreeLibrary(ole32_);
+		}
+	}
+
+	void platform_spec::co_initializer::task_mem_free(void* p)
+	{
+		if (ole32_)
+		{
+			using CoTaskMemFree_t = void (__stdcall *)(LPVOID pv);
+
+			CoTaskMemFree_t free_fn = reinterpret_cast<CoTaskMemFree_t>(::GetProcAddress(ole32_, "CoTaskMemFree"));
+			if (free_fn)
+				free_fn(p);
 		}
 	}
 

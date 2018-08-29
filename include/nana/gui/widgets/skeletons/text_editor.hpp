@@ -1,7 +1,7 @@
 /*
  *	A text editor implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0. 
  *	(See accompanying file LICENSE_1_0.txt or copy at 
@@ -191,14 +191,14 @@ namespace nana{	namespace widgets
 			void draw_corner();
 			void render(bool focused);
 		public:
-			void put(std::wstring);
+			void put(std::wstring, bool perform_event);
 			void put(wchar_t);
 			void copy() const;
 			void cut();
 			void paste();
-			void enter(bool record_undo = true);
+			void enter(bool record_undo, bool perform_event);
 			void del();
-			void backspace(bool record_undo = true);
+			void backspace(bool record_undo, bool perform_event);
 			void undo(bool reverse);
 			void set_undo_queue_length(std::size_t len);
 			void move_ns(bool to_north);	//Moves up and down
@@ -219,6 +219,8 @@ namespace nana{	namespace widgets
 			const skeletons::textbase<char_type>& textbase() const;
 
 			bool try_refresh();
+
+			std::shared_ptr<scroll_operation_interface> scroll_operation() const;
 		private:
 			nana::color _m_draw_colored_area(paint::graphics& graph, const std::pair<std::size_t,std::size_t>& row, bool whole_line);
 			std::vector<upoint> _m_render_text(const ::nana::color& text_color);
@@ -241,9 +243,9 @@ namespace nana{	namespace widgets
 			void _m_reset();
 
 			//Inserts text at position where the caret is
-			::nana::upoint _m_put(::std::wstring);
+			::nana::upoint _m_put(::std::wstring, bool perform_event);
 
-			::nana::upoint _m_erase_select();
+			::nana::upoint _m_erase_select(bool perform_event);
 
 			::std::wstring _m_make_select_string() const;
 			static bool _m_resolve_text(const ::std::wstring&, std::vector<std::pair<std::size_t, std::size_t>> & lines);

@@ -1,7 +1,7 @@
 /*
  *	A Textbox Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -377,6 +377,27 @@ namespace drawerbase {
 			return false;
 		}
 
+		std::optional<std::string> textbox::getline(std::size_t pos) const
+		{
+			auto result = std::string{};
+			if ( getline(pos, result) )
+			{
+				return { std::move(result) };
+			}
+			return {};
+		}
+
+		std::optional<std::string> textbox::getline(std::size_t line_index, std::size_t offset) const
+		{
+			auto result = std::string{};
+			if ( getline(line_index, offset, result) )
+			{
+				return { std::move(result) };
+			}
+			return {};
+		}
+
+
 		/// Gets the caret position
 		bool textbox::caret_pos(point& pos, bool text_coordinate) const
 		{
@@ -428,7 +449,7 @@ namespace drawerbase {
 				if(at_caret == false)
 					editor->move_caret_end(false);
 
-				editor->put(to_wstring(text));
+				editor->put(to_wstring(text), true);
 
 				editor->try_refresh();
 				API::update_window(this->handle());
@@ -445,7 +466,7 @@ namespace drawerbase {
                 if(at_caret == false)
                     editor->move_caret_end(false);
 
-                editor->put(text);
+                editor->put(text, true);
 
                 editor->try_refresh();
                 API::update_window(this->handle());
@@ -785,7 +806,7 @@ namespace drawerbase {
 		}
 
 		//Override _m_caption for caption()
-		auto textbox::_m_caption() const throw() -> native_string_type
+		auto textbox::_m_caption() const noexcept -> native_string_type
 		{
 			internal_scope_guard lock;
 			auto editor = get_drawer_trigger().editor();
@@ -815,6 +836,16 @@ namespace drawerbase {
 			auto editor = get_drawer_trigger().editor();
 			if(editor)
 				editor->reset_caret_pixels();
+		}
+
+		std::shared_ptr<scroll_operation_interface> textbox::_m_scroll_operation()
+		{
+			internal_scope_guard lock;
+			auto editor = get_drawer_trigger().editor();
+			if (editor)
+				return editor->scroll_operation();
+
+			return {};
 		}
 	//end class textbox
 }//end namespace nana
