@@ -150,11 +150,12 @@ namespace nana{	namespace drawerbase
 
 			if (false == cite_.draw(graph, attr_.bgcolor, attr_.fgcolor, ::nana::rectangle{ graph.size() }, e_state))
 			{
-				if (!API::is_transparent_background(*wdg_))
-				{
+				if (API::is_transparent_background(*wdg_))
+					API::dev::copy_transparent_background(*wdg_, graph);
+				else
 					_m_draw_background(graph);
-					_m_draw_border(graph);
-				}
+
+				_m_draw_border(graph);
 			}
 			_m_draw_title(graph, eb);
 		}
@@ -378,7 +379,12 @@ namespace nana{	namespace drawerbase
 
 		void trigger::icon(const nana::paint::image& img)
 		{
-			if(img.empty())	return;
+			if(img.empty())
+			{
+				delete attr_.icon;
+				attr_.icon = nullptr;
+				return;
+			}
 
 			if(nullptr == attr_.icon)
 				attr_.icon = new paint::image;

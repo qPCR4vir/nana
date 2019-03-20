@@ -1,7 +1,7 @@
 /*
  *	A Message Box Class
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2017 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -1228,9 +1228,10 @@ namespace nana
 		impl->browse.events().click.connect_unignorable([wd, impl](const arg_click&)
 		{
 			impl->fbox.owner(wd);
-			if (impl->fbox.show())
+			auto files = impl->fbox.show();
+			if(!files.empty())
 			{
-				impl->value = impl->fbox.file();
+				impl->value = files.front().u8string();
 				impl->path_edit.caption(impl->value);
 			}
 		});
@@ -1294,7 +1295,7 @@ namespace nana
         min_width_entry_field_pixels_ = pixels;
 	}
 
-#ifndef _nana_cxx_folding_expression
+#ifndef __cpp_fold_expressions
 	void inputbox::_m_fetch_args(std::vector<abstract_content*>&)
 	{}
 #endif

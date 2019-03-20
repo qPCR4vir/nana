@@ -1,7 +1,7 @@
 /*
  *	A Bedrock Implementation
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2003-2018 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2003-2019 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
@@ -12,7 +12,6 @@
 
 #include "../../detail/platform_spec_selector.hpp"
 #if defined(NANA_POSIX) && defined(NANA_X11)
-#include <nana/gui/detail/bedrock_pi_data.hpp>
 #include <nana/gui/detail/event_code.hpp>
 #include <nana/system/platform.hpp>
 #include <nana/gui/detail/native_window_interface.hpp>
@@ -22,10 +21,15 @@
 #include <errno.h>
 #include <algorithm>
 
+#include "bedrock_types.hpp"
+
 namespace nana
 {
 namespace detail
 {
+	//Declarations of helper functions defined in native_window_interface.cpp
+	void x11_apply_exposed_position(native_window_type wd);
+
 #pragma pack(1)
 		union event_mask
 		{
@@ -48,38 +52,6 @@ namespace detail
 			}wheel;
 		};
 #pragma pack()
-
-	struct bedrock::thread_context
-	{
-		unsigned event_pump_ref_count{0};
-
-		int		window_count{0};	//The number of windows
-		core_window_t* event_window{nullptr};
-		bool	is_alt_pressed{false};
-		bool	is_ctrl_pressed{false};
-
-		struct platform_detail_tag
-		{
-			native_window_type	motion_window;
-			nana::point		motion_pointer_pos;
-		}platform;
-
-		struct cursor_tag
-		{
-			core_window_t * window;
-			native_window_type native_handle;
-			nana::cursor predef_cursor;
-			Cursor handle;
-		}cursor;
-
-		thread_context()
-		{
-			cursor.window = nullptr;
-			cursor.native_handle = nullptr;
-			cursor.predef_cursor = nana::cursor::arrow;
-			cursor.handle = 0;
-		}
-	};
 
 	struct bedrock::private_impl
 	{
@@ -243,13 +215,7 @@ namespace detail
 	{
 		return bedrock_object;
 	}
-
-	bedrock::core_window_t* bedrock::focus()
-	{
-		core_window_t* wd = wd_manager().root(native_interface::get_focus_window());
-		return (wd ? wd->other.attribute.root->focus : 0);
-	}
-
+	
 	void bedrock::get_key_state(arg_keyboard& arg)
 	{
 		XKeyEvent xkey;
@@ -284,46 +250,6 @@ namespace detail
 	void bedrock::map_through_widgets(core_window_t*, native_drawable_type)
 	{
 		//No implementation for Linux
-	}
-
-	bool bedrock::emit(event_code evt_code, core_window_t* wd, const ::nana::event_arg& arg, bool ask_update, thread_context* thrd, const bool bForce__EmitInternal)
-	{
-		if(wd_manager().available(wd) == false)
-			return false;
-
-		core_window_t * prev_wd = nullptr;
-		if(thrd)
-		{
-			prev_wd = thrd->event_window;
-			thrd->event_window = wd;
-			_m_event_filter(evt_code, wd, thrd);
-		}
-
-		using update_state = basic_window::update_state;
-
-		if(wd->other.upd_state == update_state::none)
-			wd->other.upd_state = update_state::lazy;
-
-		_m_emit_core(evt_code, wd, false, arg, bForce__EmitInternal);
-
-		bool good_wd = false;
-		if(wd_manager().available(wd))
-		{
-			//A child of wd may not be drawn if it was out of wd's range before wd resized,
-			//so refresh all children of wd when a resized occurs.
-			if(ask_update || (event_code::resized == evt_code) || (update_state::refreshed == wd->other.upd_state))
-			{
-				wd_manager().do_lazy_refresh(wd, false, (event_code::resized == evt_code));
-			}
-			else
-				wd->other.upd_state = update_state::none;
-
-			good_wd = true;
-		}
-
-
-		if(thrd) thrd->event_window = prev_wd;
-		return good_wd;
 	}
 
 	void assign_arg(arg_mouse& arg, basic_window* wd, unsigned msg, const XEvent& evt)
@@ -415,10 +341,10 @@ namespace detail
 	{
 		switch(msg.kind)
 		{
-		case nana::detail::msg_packet_tag::kind_xevent:
+		case nana::detail::msg_packet_tag::pkt_family::xevent:
 			window_proc_for_xevent(display, msg.u.xevent);
 			break;
-		case nana::detail::msg_packet_tag::kind_mouse_drop:
+		case nana::detail::msg_packet_tag::pkt_family::mouse_drop:
 			window_proc_for_packet(display, msg);
 			break;
 		default: break;
@@ -438,8 +364,9 @@ namespace detail
 
 			switch(msg.kind)
 			{
-			case nana::detail::msg_packet_tag::kind_mouse_drop:
+			case nana::detail::msg_packet_tag::pkt_family::mouse_drop:
 				msgwd = brock.wd_manager().find_window(native_window, {msg.u.mouse_drop.x, msg.u.mouse_drop.y});
+
 				if(msgwd)
 				{
 					arg_dropfiles arg;
@@ -570,6 +497,62 @@ namespace detail
 		
 		command();
 		return true;
+	}
+
+	void x_lookup_chars(const root_misc* rruntime, basic_window * msgwd, char* keybuf, std::size_t keybuf_len, const arg_keyboard& modifiers_status)
+	{
+		if (!msgwd->flags.enabled)
+			return;
+
+		static auto& brock = detail::bedrock::instance();
+		auto & wd_manager = brock.wd_manager();
+
+		auto& context = *brock.get_thread_context(msgwd->thread_id);
+
+		auto const native_window = rruntime->window->root;
+		
+
+		nana::detail::charset_conv charset(NANA_UNICODE, "UTF-8");
+		const std::string& str = charset.charset(std::string(keybuf, keybuf + keybuf_len));
+		auto const charbuf = reinterpret_cast<const wchar_t*>(str.c_str());
+		auto const len = str.size() / sizeof(wchar_t);
+
+		for(std::size_t i = 0; i < len; ++i)
+		{
+			arg_keyboard arg = modifiers_status;
+			arg.ignore = false;
+			arg.key = charbuf[i];
+
+			// ignore Unicode BOM (it may or may not appear)
+			if (arg.key == 0xFEFF) continue;
+
+			//Only accept tab when it is not ignored.
+			if ((keyboard::tab == arg.key) && rruntime->condition.ignore_tab)
+				continue;
+
+			if(context.is_alt_pressed)
+			{
+				arg.ctrl = arg.shift = false;
+				arg.evt_code = event_code::shortkey;
+				brock.shortkey_occurred(true);
+				auto shr_wd = wd_manager.find_shortkey(native_window, arg.key);
+				if(shr_wd)
+				{
+					arg.window_handle = reinterpret_cast<window>(shr_wd);
+					brock.emit(event_code::shortkey, shr_wd, arg, true, &context);
+				}
+				continue;
+			}
+			
+			arg.evt_code = event_code::key_char;
+			arg.window_handle = reinterpret_cast<window>(msgwd);
+			msgwd->annex.events_ptr->key_char.emit(arg, reinterpret_cast<window>(msgwd));
+			if(arg.ignore == false && wd_manager.available(msgwd))
+				draw_invoker(&drawer::key_char, msgwd, arg, &context);
+		}
+
+		if(brock.shortkey_occurred(false))
+			context.is_alt_pressed = false;
 	}
 
 	void window_proc_for_xevent(Display* /*display*/, XEvent& xevent)
@@ -905,13 +888,21 @@ namespace detail
 				break;
 			case MapNotify:
 			case UnmapNotify:
+				if(xevent.type == MapNotify)
+					x11_apply_exposed_position(native_window);
+
 				brock.event_expose(msgwnd, (xevent.type == MapNotify));
 				context.platform.motion_window = nullptr;
 				break;
 			case Expose:
 				if(msgwnd->visible && (msgwnd->root_graph->empty() == false))
 				{
-					nana::detail::platform_scope_guard lock;
+					nana::internal_scope_guard lock;
+					//Don't lock this scope using platform-scope-guard. Because it would cause the platform-scope-lock to be locked
+					//before the internal-scope-guard, and the order of locking would cause dead-lock.
+					//
+					//Locks this scope using internal-scope-guard is correct and safe. In the scope, the Xlib functions aren't called
+					//directly.
 					if(msgwnd->is_draw_through())
 					{
 						msgwnd->other.attribute.root->draw_through();
@@ -1071,52 +1062,10 @@ namespace detail
 								wd_manager.do_lazy_refresh(msgwnd, false);
 								break;
 							}
+							x_lookup_chars(root_runtime, msgwnd, keybuf, len, modifiers_status);
+							break;
 						case XLookupChars:
-							if (msgwnd->flags.enabled)
-							{
-								const wchar_t* charbuf;
-
-								nana::detail::charset_conv charset(NANA_UNICODE, "UTF-8");
-								const std::string& str = charset.charset(std::string(keybuf, keybuf + len));
-								charbuf = reinterpret_cast<const wchar_t*>(str.c_str());
-								len = str.size() / sizeof(wchar_t);
-
-								for(int i = 0; i < len; ++i)
-								{
-									arg_keyboard arg = modifiers_status;
-									arg.ignore = false;
-									arg.key = charbuf[i];
-
-									// ignore Unicode BOM (it may or may not appear)
-                                    if (arg.key == 0xFEFF) continue;
-
-									//Only accept tab when it is not ignored.
-									if ((keyboard::tab == arg.key) && root_runtime->condition.ignore_tab)
-										continue;
-
-									if(context.is_alt_pressed)
-									{
-										arg.ctrl = arg.shift = false;
-										arg.evt_code = event_code::shortkey;
-										brock.shortkey_occurred(true);
-										auto shr_wd = wd_manager.find_shortkey(native_window, arg.key);
-										if(shr_wd)
-										{
-											arg.window_handle = reinterpret_cast<window>(shr_wd);
-											brock.emit(event_code::shortkey, shr_wd, arg, true, &context);
-										}
-										continue;
-									}
-									arg.evt_code = event_code::key_char;
-									arg.window_handle = reinterpret_cast<window>(msgwnd);
-									msgwnd->annex.events_ptr->key_char.emit(arg, reinterpret_cast<window>(msgwnd));
-									if(arg.ignore == false && wd_manager.available(msgwnd))
-										draw_invoker(&drawer::key_char, msgwnd, arg, &context);
-								}
-
-								if(brock.shortkey_occurred(false))
-									context.is_alt_pressed = false;
-							}
+							x_lookup_chars(root_runtime, msgwnd, keybuf, len, modifiers_status);
 							break;
 						}
 
@@ -1223,10 +1172,12 @@ namespace detail
 			default:
 				if(message == ClientMessage)
 				{
-					auto & atoms = nana::detail::platform_spec::instance().atombase();
-					if(atoms.wm_protocols == xevent.xclient.message_type)
+					auto & spec = ::nana::detail::platform_spec::instance();
+					auto & xclient = xevent.xclient;
+					auto & atoms = spec.atombase();
+					if(atoms.wm_protocols == xclient.message_type)
 					{
-						if(msgwnd->flags.enabled && (atoms.wm_delete_window == static_cast<Atom>(xevent.xclient.data.l[0])))
+						if(msgwnd->flags.enabled && (atoms.wm_delete_window == static_cast<Atom>(xclient.data.l[0])))
 						{
 							arg_unload arg;
 							arg.window_handle = reinterpret_cast<window>(msgwnd);
@@ -1281,7 +1232,7 @@ namespace detail
 		if(condition_wd && is_modal)
 		{
 			native_window_type modal = reinterpret_cast<core_window_t*>(condition_wd)->root;
-			owner_native = native_interface::get_owner_window(modal);
+			owner_native = native_interface::get_window(modal, window_relationship::owner);
 			if(owner_native)
 			{
 				native_interface::enable_window(owner_native, false);
@@ -1317,20 +1268,6 @@ namespace detail
 		}
 
 	}//end bedrock::event_loop
-
-	void bedrock::thread_context_destroy(core_window_t * wd)
-	{
-		bedrock::thread_context * thr = get_thread_context(0);
-		if(thr && thr->event_window == wd)
-			thr->event_window = nullptr;
-	}
-
-	void bedrock::thread_context_lazy_refresh()
-	{
-		thread_context* thrd = get_thread_context(0);
-		if(thrd && thrd->event_window)
-			thrd->event_window->other.upd_state = core_window_t::update_state::refreshed;
-	}
 
 	//Dynamically set a cursor for a window
 	void bedrock::set_cursor(core_window_t* wd, nana::cursor cur, thread_context* thrd)
@@ -1400,32 +1337,6 @@ namespace detail
 		auto rev_wd = wd_manager().find_window(native_handle, pos);
 		if (rev_wd)
 			set_cursor(rev_wd, rev_wd->predef_cursor, thrd);
-	}
-
-	void bedrock::_m_event_filter(event_code event_id, core_window_t * wd, thread_context * thrd)
-	{
-		auto not_state_cur = (wd->root_widget->other.attribute.root->state_cursor == nana::cursor::arrow);
-
-		switch(event_id)
-		{
-		case event_code::mouse_enter:
-			if (not_state_cur)
-				set_cursor(wd, wd->predef_cursor, thrd);
-			break;
-		case event_code::mouse_leave:
-			if (not_state_cur && (wd->predef_cursor != cursor::arrow))
-				set_cursor(wd, nana::cursor::arrow, thrd);
-			break;
-		case event_code::destroy:
-			if (wd->root_widget->other.attribute.root->state_cursor_window == wd)
-				undefine_state_cursor(wd, thrd);
-
-			if(wd == thrd->cursor.window)
-				set_cursor(wd, cursor::arrow, thrd);
-			break;
-		default:
-			break;
-		}
 	}
 }//end namespace detail
 }//end namespace nana
