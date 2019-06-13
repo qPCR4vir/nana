@@ -3689,6 +3689,12 @@ namespace nana
 	{}
 	//end class place
 
+#if NANA_EDIT_PLACE
+    place::edit::edit(place &target){}
+#else
+    place::edit::edit(place &target){}
+#endif
+
 }//end namespace nana
 
 #include <nana/pop_ignore_diagnostic>

@@ -15,6 +15,11 @@
 
 #ifndef NANA_GUI_PLACE_HPP
 #define NANA_GUI_PLACE_HPP
+
+
+#define NANA_EDIT_PLACE 1
+
+
 #include <nana/push_ignore_diagnostic>
 #include <nana/gui/basis.hpp>
 #include <memory>
@@ -79,7 +84,6 @@ namespace nana
 	{
 		struct implement;
 
-
 		class field_interface
 		{
 			field_interface(const field_interface&) = delete;
@@ -117,7 +121,16 @@ namespace nana
 			std::string field;          ///< posible field where the error ocurred.  
 			std::string::size_type pos; ///< posible position in the div_text where the error ocurred. npos if unknown
 		};
-        ///  reference to a field manipulator which refers to a field object created by place 
+
+        class edit
+        {
+          public:
+             explicit edit(place &target);
+        };
+
+        friend class edit;
+
+        ///  reference to a field manipulator which refers to a field object created by place
 		using field_reference = field_interface &;
 
 		place();
