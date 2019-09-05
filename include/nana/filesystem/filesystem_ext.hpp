@@ -35,7 +35,8 @@ namespace filesystem_ext
 
 std::filesystem::path path_user();    ///< extention ?
 
-													/// workaround Boost not having path.generic_u8string() - a good point for http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0251r0.pdf
+/*
+	/// workaround Boost not having path.generic_u8string() - a good point for http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0251r0.pdf
 inline std::u8string generic_u8string(const std::filesystem::path& p)
 {
 #if NANA_USING_BOOST_FILESYSTEM
@@ -44,6 +45,7 @@ inline std::u8string generic_u8string(const std::filesystem::path& p)
 	return p.generic_u8string();
 #endif
 }
+*/
 
 inline bool is_directory(const std::filesystem::directory_entry& dir) noexcept
 {
