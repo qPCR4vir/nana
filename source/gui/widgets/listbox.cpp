@@ -2414,7 +2414,7 @@ namespace nana
 					return new_where;
 				}
 
-				bool calc_where(const point& pos) noexcept
+				bool change_in_where(const point& pos) noexcept
 				{
 					auto new_where = where(pos);
 					if (new_where == pointer_where)
@@ -3673,12 +3673,10 @@ namespace nana
 
 					auto & ptr_where = essence_->pointer_where;
 
-					auto first_disp = essence_->first_display();
+                    index_pair first_disp = essence_->first_display();
 
-					point item_coord{
-						essence_->item_xpos(visual_r),
-						visual_r.y - static_cast<int>(origin.y % item_height_px)
-					};
+					point item_coord{  essence_->item_xpos(visual_r),
+						              visual_r.y - static_cast<int>(origin.y % item_height_px) };
 
 					essence_->inline_buffered_table.swap(essence_->inline_table);
 
@@ -4208,7 +4206,8 @@ namespace nana
 					using parts = essence::parts;
 
 					//Don't deselect the items if the listbox is draggable
-					if ((operation_states::msup_deselect == essence_->operation.state) && API::dev::window_draggable(arg.window_handle))
+					if (     (operation_states::msup_deselect == essence_->operation.state)
+					       && API::dev::window_draggable(arg.window_handle))
 						essence_->operation.state = operation_states::none;
 
 					bool need_refresh = false;
@@ -4224,7 +4223,7 @@ namespace nana
 
 							//Start to move a header column or resize a header column(depends on item_spliter_)
 							drawer_header_->grab(pos_in_header, true);
-							
+
 							essence_->lister.wd_ptr()->set_capture(true);
 							need_refresh = true;
 						}
@@ -4232,25 +4231,26 @@ namespace nana
 
                     if(essence_->ptr_state == item_state::grabbed)
 					{
-						// moving a grabbed header 
+						// moving a grabbed header
 						need_refresh = drawer_header_->grab_move(pos_in_header);
 					}
-					else if(essence_->calc_where(arg.pos))
+					else if(essence_->change_in_where(arg.pos))
 					{
 						essence_->ptr_state = item_state::highlighted;
 						need_refresh = true;
 					}
 
-					//Detects column splitter
-					if(essence_->header.attrib().resizable &&
-						(essence_->pointer_where.first == parts::header) &&
-						drawer_header_->detect_splitter(arg.pos.x))
+					if (    essence_->header.attrib().resizable
+					    && (essence_->pointer_where.first == parts::header)
+					    && 	drawer_header_->detect_splitter(arg.pos.x))
 					{
+                        // Detects column splitter: we are hovering a header splitter
 						essence_->lister.wd_ptr()->cursor(cursor::size_we);
 					}
 					else if(essence_->ptr_state != item_state::grabbed)
 					{
-						if((drawer_header_->splitter() != npos) || (essence_->lister.wd_ptr()->cursor() == cursor::size_we))
+						if(   (drawer_header_->splitter() != npos)    // some splitter was selected
+						   || (essence_->lister.wd_ptr()->cursor() == cursor::size_we))
 						{
 							essence_->lister.wd_ptr()->cursor(cursor::arrow);
 							drawer_header_->cancel_splitter();
