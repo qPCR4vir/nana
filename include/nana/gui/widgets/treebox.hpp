@@ -23,7 +23,7 @@
 #include "detail/compset.hpp"
 #include "detail/tree_cont.hpp"
 #include <nana/gui/timer.hpp>
-#include <nana/any.hpp>
+#include <any>
 #include <nana/pat/cloneable.hpp>
 #include <stdexcept>
 
@@ -115,7 +115,7 @@ namespace nana
 					treebox_node_type& operator=(const treebox_node_type&);
 
 					::std::string text;
-					nana::any value;
+					std::any value;
 					bool expanded;
 					checkstate checked;
 					::std::string img_idstr;
@@ -312,8 +312,8 @@ namespace nana
 				// Undocumented methods for internal use
 				trigger::node_type * _m_node() const;
 			private:
-				nana::any& _m_value();
-				const nana::any& _m_value() const;
+				std::any& _m_value();
+				const std::any& _m_value() const;
 			private:
 				trigger * trigger_{nullptr};
 				trigger::node_type * node_{nullptr};

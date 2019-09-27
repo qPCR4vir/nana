@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<FileVersion major="1" minor="0" />
+	<ActiveTarget name="Debug" />
+	<File name="..\source\gui\detail\window_manager.cpp" open="1" top="1" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4608" topLine="404" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\widgets\form.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="24" />
+		</Cursor>
+	</File>
+	<File name="..\source\paint\detail\native_paint_interface.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="6108" topLine="159" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\widgets\skeletons\content_view.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="490" topLine="510" />
+		</Cursor>
+	</File>
+	<File name="..\source\paint\graphics.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="10848" topLine="443" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\widgets\checkbox.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="285" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\place.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="22040" topLine="919" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\place_parts.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="10716" topLine="431" />
+		</Cursor>
+	</File>
+	<File name="..\include\nana\c++defines.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1865" topLine="36" />
+		</Cursor>
+	</File>
+	<File name="..\source\unicode_bidi.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="22266" topLine="611" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\widgets\combox.cpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1533" topLine="36" />
+		</Cursor>
+	</File>
+	<File name="..\include\nana\verbose_preprocessor.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="883" topLine="6" />
+		</Cursor>
+	</File>
+	<File name="..\source\paint\text_renderer.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="899" topLine="23" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\detail\basic_window.cpp" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="9045" topLine="410" />
+		</Cursor>
+	</File>
+	<File name="..\include\nana\gui\detail\window_manager.hpp" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4557" topLine="122" />
+		</Cursor>
+	</File>
+	<File name="..\include\nana\unicode_bidi.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="44" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\widgets\menubar.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1894" topLine="75" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\detail\events_operation.cpp" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2007" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="..\include\nana\gui\widgets\skeletons\textbase.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="5983" topLine="253" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\widgets\skeletons\text_editor.cpp" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="25424" topLine="957" />
+		</Cursor>
+	</File>
+	<File name="..\include\nana\paint\graphics.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="552" topLine="6" />
+		</Cursor>
+	</File>
+	<File name="..\include\nana\gui\widgets\listbox.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="25324" topLine="926" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\widgets\group.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4621" topLine="12" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\widgets\tabbar.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="38101" topLine="1495" />
+		</Cursor>
+	</File>
+	<File name="..\include\nana\deploy.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1540" topLine="12" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\element.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="40954" topLine="1265" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\widgets\categorize.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="17664" topLine="691" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\filebox.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="39172" topLine="1537" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\widgets\label.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="23534" topLine="614" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\dragdrop.cpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="8856" topLine="391" />
+		</Cursor>
+	</File>
+	<File name="..\include\nana\std_mutex.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="538" topLine="6" />
+		</Cursor>
+	</File>
+	<File name="..\include\nana\stdc++.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="610" topLine="54" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\msgbox.cpp" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="660" topLine="21" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\widgets\button.cpp" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="7146" topLine="353" />
+		</Cursor>
+	</File>
+	<File name="..\source\charset.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="11498" topLine="453" />
+		</Cursor>
+	</File>
+	<File name="..\source\basic_types.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="7003" topLine="262" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\programming_interface.cpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="7350" topLine="266" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\widgets\listbox.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="7961" topLine="297" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\widgets\menu.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="30028" topLine="1153" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\detail\window_layout.cpp" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="6481" topLine="288" />
+		</Cursor>
+	</File>
+	<File name="..\include\nana\config.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2278" topLine="13" />
+		</Cursor>
+	</File>
+	<File name="main.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="75" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="..\source\detail\posix\theme.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1609" topLine="51" />
+		</Cursor>
+	</File>
+	<File name="..\source\gui\widgets\date_chooser.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="27" />
+		</Cursor>
+	</File>
+	<File name="..\source\detail\platform_abstraction.cpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="11312" topLine="471" />
+		</Cursor>
+	</File>
+	<File name="..\source\deploy.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2415" topLine="105" />
+		</Cursor>
+	</File>
+	<File name="..\include\nana\gui\widgets\combox.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3122" topLine="97" />
+		</Cursor>
+	</File>
+</CodeBlocks_layout_file>

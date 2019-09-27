@@ -17,7 +17,7 @@
 #include "bedrock_types.hpp"
 #include <nana/gui/detail/event_code.hpp>
 #include <nana/system/platform.hpp>
-#include <nana/system/timepiece.hpp>
+//#include <nana/system/timepiece.hpp>	//deprecated
 #include <nana/gui/compact.hpp>
 #include <nana/gui/msgbox.hpp>
 #include <nana/gui/detail/native_window_interface.hpp>

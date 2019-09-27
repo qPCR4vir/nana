@@ -15,7 +15,7 @@
 
 #include <nana/gui/widgets/widget.hpp>
 #include <nana/pat/cloneable.hpp>
-#include <nana/any.hpp>
+#include <any>
 #include <nana/push_ignore_diagnostic>
 
 namespace nana
@@ -49,7 +49,7 @@ namespace nana
 			{
 			public:
 				virtual ~event_agent_interface(){}
-				virtual void selected(::nana::any&) = 0;
+				virtual void selected(::std::any&) = 0;
 			};
 
 			template<typename T>
@@ -61,7 +61,7 @@ namespace nana
 					: widget_(wdg)
 				{}
 
-				void selected(::nana::any & var)
+				void selected(::std::any & var)
 				{
 					auto vp = any_cast<T>(&var);
 
@@ -109,8 +109,8 @@ namespace nana
 				trigger();
 				~trigger();
 
-				void insert(const ::std::string&, nana::any);
-				bool childset(const ::std::string&, nana::any);
+				void insert(const ::std::string&, std::any);
+				bool childset(const ::std::string&, std::any);
 				bool childset_erase(const ::std::string&);
 				bool clear();
 
@@ -129,7 +129,7 @@ namespace nana
 					_m_event_agent_ready();
 				}
 
-				nana::any & value() const;
+				std::any & value() const;
 			private:
 				void _m_event_agent_ready() const;
 			private:

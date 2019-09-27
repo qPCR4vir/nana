@@ -138,24 +138,19 @@ checkbox& group::add_option(std::string text)
 {
     _THROW_IF_EMPTY()
 
-#ifdef _nana_std_has_emplace_return_type
     auto & opt = impl_->options.emplace_back(new checkbox { handle() });
-#else
-    impl_->options.emplace_back(new checkbox(handle()));
-    auto & opt = impl_->options.back();
-#endif
 
-		opt->transparent(true);
-		opt->caption(std::move(text));
-		impl_->place_content[field_options] << *opt;
-		impl_->place_content.field_display(field_options, true);
-		impl_->place_content.collocate();
+    opt->transparent(true);
+    opt->caption(std::move(text));
+    impl_->place_content[field_options] << *opt;
+    impl_->place_content.field_display(field_options, true);
+    impl_->place_content.collocate();
 
-		if (impl_->radio_logic)
-			impl_->radio_logic->add(*opt);
+    if (impl_->radio_logic)
+        impl_->radio_logic->add(*opt);
 
-		return *impl_->options.back();
-	}
+    return *impl_->options.back();
+}
 
 	group& group::caption_align(align position)
 	{

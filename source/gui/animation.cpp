@@ -13,7 +13,6 @@
 
 #include <nana/gui/animation.hpp>
 #include <nana/gui/drawing.hpp>
-#include <nana/system/timepiece.hpp>
 #include <nana/system/platform.hpp>
 
 #include <vector>
@@ -21,6 +20,7 @@
 #include <map>
 #include <algorithm>
 #include <atomic>
+#include <chrono>
 
 #if defined(STD_THREAD_NOT_SUPPORTED)
     #include <nana/std_thread.hpp>
@@ -456,11 +456,11 @@ namespace nana
 				thr->interval = 1000.0 / double(p->fps);
 				thr->thread = std::make_shared<std::thread>([thr]()
 				{
-					nana::system::timepiece tmpiece;
 					while (true)
 					{
 						thr->active = 0;
-						tmpiece.start();
+
+						auto tmbegin = std::chrono::high_resolution_clock::now();
 
 						{
 							std::lock_guard<decltype(thr->mutex)> lock(thr->mutex);
@@ -485,7 +485,7 @@ namespace nana
 
 						if (thr->active)
 						{
-							thr->performance_parameter = tmpiece.calc();
+							thr->performance_parameter = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - tmbegin).count());
 							if (thr->performance_parameter < thr->interval)
 								nana::system::sleep(static_cast<unsigned>(thr->interval - thr->performance_parameter));
 						}

@@ -17,7 +17,7 @@
 #include <nana/gui/widgets/widget.hpp>
 #include <nana/gui/detail/event_code.hpp>
 #include <nana/system/platform.hpp>
-#include <nana/system/timepiece.hpp>
+//#include <nana/system/timepiece.hpp>	//deprecated
 #include <nana/gui/detail/native_window_interface.hpp>
 #include <nana/gui/layout_utility.hpp>
 #include <nana/gui/detail/element_store.hpp>

@@ -52,10 +52,6 @@
 //# You can change that default if you change one of the following
 //# (please don't define more than one of the _XX_FORCE options):
 //
-//#define BOOST_FILESYSTEM_AVAILABLE // "Is Boost filesystem available?"
-//#define BOOST_FILESYSTEM_FORCE     // "Force use of Boost filesystem if available (over ISO and nana)
-//#define STD_FILESYSTEM_FORCE       // "Use of STD filesystem?(a compilation error will occur if not available)" OFF)
-//#define NANA_FILESYSTEM_FORCE      // "Force nana filesystem over ISO and boost?" OFF)
 //
 //	Make sure you (cmake?) provide the following where correspond (please find the correct values):
 //	set CMAKE_BOOST_FILESYSTEM_INCLUDE_ROOT "Where to find <boost/filesystem.hpp>?" "../")
@@ -95,7 +91,7 @@
 
 ///////////////////
 //  Support for NANA_AUTOMATIC_GUI_TESTING
-//	  Will cause the program to self-test the GUI. A default automatic GUI test 
+//	  Will cause the program to self-test the GUI. A default automatic GUI test
 //    will be added to all programs which don't have yet one defined. This default test will simple
 //    wait 10 sec. (time to construct, show and execute the GUI) and then exit normally.
 //

@@ -258,7 +258,6 @@ namespace API
 		if (nullptr == general_evt)
 			throw std::invalid_argument("API::events(): bad parameter window handle, no events object or invalid window handle.");
 
-#ifdef __cpp_if_constexpr
 		if constexpr(std::is_same_v<event_type, ::nana::general_events>)
 		{
 			return *general_evt;
@@ -270,15 +269,6 @@ namespace API
 				throw std::invalid_argument("API::events(): bad template parameter Widget, the widget type and window handle do not match.");
 			return *widget_evt;
 		}
-#else
-		if (std::is_same<::nana::general_events, event_type>::value)
-			return *static_cast<event_type*>(general_evt);
-
-		auto * widget_evt = dynamic_cast<event_type*>(general_evt);
-		if (nullptr == widget_evt)
-			throw std::invalid_argument("API::events(): bad template parameter Widget, the widget type and window handle do not match.");
-		return *widget_evt;
-#endif
 	}
 
 	template<typename EventArg, typename std::enable_if<std::is_base_of< ::nana::event_arg, EventArg>::value>::type* = nullptr>
@@ -305,7 +295,6 @@ namespace API
 		if (nullptr == wdg_colors)
 			throw std::invalid_argument("API::scheme(): bad parameter window handle, no events object or invalid window handle.");
 
-#ifdef __cpp_if_constexpr
 		if constexpr(std::is_same<::nana::widget_geometrics, scheme_type>::value)
 		{
 			return *static_cast<scheme_type*>(wdg_colors);
@@ -317,15 +306,6 @@ namespace API
 				throw std::invalid_argument("API::scheme(): bad template parameter Widget, the widget type and window handle do not match.");
 			return *comp_wdg_colors;
 		}
-#else
-		if (std::is_same<::nana::widget_geometrics, scheme_type>::value)
-			return *static_cast<scheme_type*>(wdg_colors);
-
-		auto * comp_wdg_colors = dynamic_cast<scheme_type*>(wdg_colors);
-		if (nullptr == comp_wdg_colors)
-			throw std::invalid_argument("API::scheme(): bad template parameter Widget, the widget type and window handle do not match.");
-		return *comp_wdg_colors;
-#endif
 	}
 
 	point window_position(window);

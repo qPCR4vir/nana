@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="cb-dev-proj" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/cb-dev-proj" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-std=c++2a" />
+					<Add directory="D:/nana-dev-c++20/include" />
+				</Compiler>
+				<Linker>
+					<Add library="comdlg32" />
+					<Add library="gdi32" />
+					<Add library="ole32" />
+					<Add library="uuid" />
+					<Add library="stdc++fs" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/cb-dev-proj" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+		</Compiler>
+		<Unit filename="../include/nana/audio/detail/audio_device.hpp" />
+		<Unit filename="../include/nana/audio/detail/audio_stream.hpp" />
+		<Unit filename="../include/nana/audio/detail/buffer_preparation.hpp" />
+		<Unit filename="../include/nana/audio/player.hpp" />
+		<Unit filename="../include/nana/basic_types.hpp" />
+		<Unit filename="../include/nana/c++defines.hpp" />
+		<Unit filename="../include/nana/charset.hpp" />
+		<Unit filename="../include/nana/concepts.hpp" />
+		<Unit filename="../include/nana/config.hpp" />
+		<Unit filename="../include/nana/datetime.hpp" />
+		<Unit filename="../include/nana/deploy.hpp" />
+		<Unit filename="../include/nana/filesystem/filesystem_ext.hpp" />
+		<Unit filename="../include/nana/fwd.hpp" />
+		<Unit filename="../include/nana/gui.hpp" />
+		<Unit filename="../include/nana/gui/animation.hpp" />
+		<Unit filename="../include/nana/gui/basis.hpp" />
+		<Unit filename="../include/nana/gui/compact.hpp" />
+		<Unit filename="../include/nana/gui/detail/bedrock.hpp" />
+		<Unit filename="../include/nana/gui/detail/color_schemes.hpp" />
+		<Unit filename="../include/nana/gui/detail/drawer.hpp" />
+		<Unit filename="../include/nana/gui/detail/element_store.hpp" />
+		<Unit filename="../include/nana/gui/detail/event_code.hpp" />
+		<Unit filename="../include/nana/gui/detail/events_holder.hpp" />
+		<Unit filename="../include/nana/gui/detail/events_operation.hpp" />
+		<Unit filename="../include/nana/gui/detail/general_events.hpp" />
+		<Unit filename="../include/nana/gui/detail/inner_fwd.hpp" />
+		<Unit filename="../include/nana/gui/detail/internal_scope_guard.hpp" />
+		<Unit filename="../include/nana/gui/detail/native_window_interface.hpp" />
+		<Unit filename="../include/nana/gui/detail/widget_content_measurer_interface.hpp" />
+		<Unit filename="../include/nana/gui/detail/widget_geometrics.hpp" />
+		<Unit filename="../include/nana/gui/detail/widget_notifier_interface.hpp" />
+		<Unit filename="../include/nana/gui/detail/window_layout.hpp" />
+		<Unit filename="../include/nana/gui/detail/window_manager.hpp" />
+		<Unit filename="../include/nana/gui/dragdrop.hpp" />
+		<Unit filename="../include/nana/gui/dragger.hpp" />
+		<Unit filename="../include/nana/gui/drawing.hpp" />
+		<Unit filename="../include/nana/gui/effects.hpp" />
+		<Unit filename="../include/nana/gui/element.hpp" />
+		<Unit filename="../include/nana/gui/filebox.hpp" />
+		<Unit filename="../include/nana/gui/layout_utility.hpp" />
+		<Unit filename="../include/nana/gui/msgbox.hpp" />
+		<Unit filename="../include/nana/gui/notifier.hpp" />
+		<Unit filename="../include/nana/gui/place.hpp" />
+		<Unit filename="../include/nana/gui/programming_interface.hpp" />
+		<Unit filename="../include/nana/gui/screen.hpp" />
+		<Unit filename="../include/nana/gui/state_cursor.hpp" />
+		<Unit filename="../include/nana/gui/timer.hpp" />
+		<Unit filename="../include/nana/gui/tooltip.hpp" />
+		<Unit filename="../include/nana/gui/widgets/button.hpp" />
+		<Unit filename="../include/nana/gui/widgets/categorize.hpp" />
+		<Unit filename="../include/nana/gui/widgets/checkbox.hpp" />
+		<Unit filename="../include/nana/gui/widgets/combox.hpp" />
+		<Unit filename="../include/nana/gui/widgets/date_chooser.hpp" />
+		<Unit filename="../include/nana/gui/widgets/detail/compset.hpp" />
+		<Unit filename="../include/nana/gui/widgets/detail/inline_widget.hpp" />
+		<Unit filename="../include/nana/gui/widgets/detail/inline_widget_manager.hpp" />
+		<Unit filename="../include/nana/gui/widgets/detail/tree_cont.hpp" />
+		<Unit filename="../include/nana/gui/widgets/detail/widget_iterator.hpp" />
+		<Unit filename="../include/nana/gui/widgets/float_listbox.hpp" />
+		<Unit filename="../include/nana/gui/widgets/form.hpp" />
+		<Unit filename="../include/nana/gui/widgets/group.hpp" />
+		<Unit filename="../include/nana/gui/widgets/label.hpp" />
+		<Unit filename="../include/nana/gui/widgets/listbox.hpp" />
+		<Unit filename="../include/nana/gui/widgets/menu.hpp" />
+		<Unit filename="../include/nana/gui/widgets/menubar.hpp" />
+		<Unit filename="../include/nana/gui/widgets/panel.hpp" />
+		<Unit filename="../include/nana/gui/widgets/picture.hpp" />
+		<Unit filename="../include/nana/gui/widgets/progress.hpp" />
+		<Unit filename="../include/nana/gui/widgets/scroll.hpp" />
+		<Unit filename="../include/nana/gui/widgets/skeletons/text_editor.hpp" />
+		<Unit filename="../include/nana/gui/widgets/skeletons/text_editor_part.hpp" />
+		<Unit filename="../include/nana/gui/widgets/skeletons/text_token_stream.hpp" />
+		<Unit filename="../include/nana/gui/widgets/skeletons/textbase.hpp" />
+		<Unit filename="../include/nana/gui/widgets/skeletons/textbase_export_interface.hpp" />
+		<Unit filename="../include/nana/gui/widgets/slider.hpp" />
+		<Unit filename="../include/nana/gui/widgets/spinbox.hpp" />
+		<Unit filename="../include/nana/gui/widgets/tabbar.hpp" />
+		<Unit filename="../include/nana/gui/widgets/textbox.hpp" />
+		<Unit filename="../include/nana/gui/widgets/toolbar.hpp" />
+		<Unit filename="../include/nana/gui/widgets/treebox.hpp" />
+		<Unit filename="../include/nana/gui/widgets/widget.hpp" />
+		<Unit filename="../include/nana/internationalization.hpp" />
+		<Unit filename="../include/nana/key_type.hpp" />
+		<Unit filename="../include/nana/paint/detail/image_impl_interface.hpp" />
+		<Unit filename="../include/nana/paint/detail/image_process_provider.hpp" />
+		<Unit filename="../include/nana/paint/detail/native_paint_interface.hpp" />
+		<Unit filename="../include/nana/paint/detail/ptdefs.hpp" />
+		<Unit filename="../include/nana/paint/graphics.hpp" />
+		<Unit filename="../include/nana/paint/image.hpp" />
+		<Unit filename="../include/nana/paint/image_process_interface.hpp" />
+		<Unit filename="../include/nana/paint/image_process_selector.hpp" />
+		<Unit filename="../include/nana/paint/pixel_buffer.hpp" />
+		<Unit filename="../include/nana/paint/text_renderer.hpp" />
+		<Unit filename="../include/nana/pat/abstract_factory.hpp" />
+		<Unit filename="../include/nana/pat/cloneable.hpp" />
+		<Unit filename="../include/nana/std_condition_variable.hpp" />
+		<Unit filename="../include/nana/std_mutex.hpp" />
+		<Unit filename="../include/nana/std_thread.hpp" />
+		<Unit filename="../include/nana/stdc++.hpp" />
+		<Unit filename="../include/nana/system/dataexch.hpp" />
+		<Unit filename="../include/nana/system/platform.hpp" />
+		<Unit filename="../include/nana/system/shared_wrapper.hpp" />
+		<Unit filename="../include/nana/threads/pool.hpp" />
+		<Unit filename="../include/nana/traits.hpp" />
+		<Unit filename="../include/nana/unicode_bidi.hpp" />
+		<Unit filename="../include/nana/verbose_preprocessor.hpp" />
+		<Unit filename="../source/audio/detail/audio_device.cpp" />
+		<Unit filename="../source/audio/detail/audio_stream.cpp" />
+		<Unit filename="../source/audio/detail/buffer_preparation.cpp" />
+		<Unit filename="../source/audio/player.cpp" />
+		<Unit filename="../source/basic_types.cpp" />
+		<Unit filename="../source/charset.cpp" />
+		<Unit filename="../source/datetime.cpp" />
+		<Unit filename="../source/deploy.cpp" />
+		<Unit filename="../source/detail/mswin/platform_spec.hpp" />
+		<Unit filename="../source/detail/platform_abstraction.cpp" />
+		<Unit filename="../source/detail/platform_abstraction.hpp" />
+		<Unit filename="../source/detail/platform_abstraction_types.hpp" />
+		<Unit filename="../source/detail/platform_spec_posix.cpp" />
+		<Unit filename="../source/detail/platform_spec_selector.hpp" />
+		<Unit filename="../source/detail/platform_spec_windows.cpp" />
+		<Unit filename="../source/detail/posix/msg_dispatcher.hpp" />
+		<Unit filename="../source/detail/posix/msg_packet.hpp" />
+		<Unit filename="../source/detail/posix/platform_spec.hpp" />
+		<Unit filename="../source/detail/posix/theme.cpp" />
+		<Unit filename="../source/detail/posix/theme.hpp" />
+		<Unit filename="../source/detail/posix/xdnd_protocol.hpp" />
+		<Unit filename="../source/filesystem/filesystem.cpp" />
+		<Unit filename="../source/gui/animation.cpp" />
+		<Unit filename="../source/gui/basis.cpp" />
+		<Unit filename="../source/gui/detail/basic_window.cpp" />
+		<Unit filename="../source/gui/detail/basic_window.hpp" />
+		<Unit filename="../source/gui/detail/bedrock_pi.cpp" />
+		<Unit filename="../source/gui/detail/bedrock_posix.cpp" />
+		<Unit filename="../source/gui/detail/bedrock_types.hpp" />
+		<Unit filename="../source/gui/detail/bedrock_windows.cpp" />
+		<Unit filename="../source/gui/detail/color_schemes.cpp" />
+		<Unit filename="../source/gui/detail/drawer.cpp" />
+		<Unit filename="../source/gui/detail/dynamic_drawing_object.hpp" />
+		<Unit filename="../source/gui/detail/effects_renderer.hpp" />
+		<Unit filename="../source/gui/detail/element_store.cpp" />
+		<Unit filename="../source/gui/detail/events_operation.cpp" />
+		<Unit filename="../source/gui/detail/inner_fwd_implement.hpp" />
+		<Unit filename="../source/gui/detail/native_window_interface.cpp" />
+		<Unit filename="../source/gui/detail/window_layout.cpp" />
+		<Unit filename="../source/gui/detail/window_manager.cpp" />
+		<Unit filename="../source/gui/detail/window_register.hpp" />
+		<Unit filename="../source/gui/dragdrop.cpp" />
+		<Unit filename="../source/gui/dragger.cpp" />
+		<Unit filename="../source/gui/drawing.cpp" />
+		<Unit filename="../source/gui/effects.cpp" />
+		<Unit filename="../source/gui/element.cpp" />
+		<Unit filename="../source/gui/filebox.cpp" />
+		<Unit filename="../source/gui/layout_utility.cpp" />
+		<Unit filename="../source/gui/msgbox.cpp" />
+		<Unit filename="../source/gui/notifier.cpp" />
+		<Unit filename="../source/gui/place.cpp" />
+		<Unit filename="../source/gui/place_parts.hpp" />
+		<Unit filename="../source/gui/programming_interface.cpp" />
+		<Unit filename="../source/gui/screen.cpp" />
+		<Unit filename="../source/gui/state_cursor.cpp" />
+		<Unit filename="../source/gui/timer.cpp" />
+		<Unit filename="../source/gui/tooltip.cpp" />
+		<Unit filename="../source/gui/widgets/button.cpp" />
+		<Unit filename="../source/gui/widgets/categorize.cpp" />
+		<Unit filename="../source/gui/widgets/checkbox.cpp" />
+		<Unit filename="../source/gui/widgets/combox.cpp" />
+		<Unit filename="../source/gui/widgets/date_chooser.cpp" />
+		<Unit filename="../source/gui/widgets/float_listbox.cpp" />
+		<Unit filename="../source/gui/widgets/form.cpp" />
+		<Unit filename="../source/gui/widgets/group.cpp" />
+		<Unit filename="../source/gui/widgets/label.cpp" />
+		<Unit filename="../source/gui/widgets/listbox.cpp" />
+		<Unit filename="../source/gui/widgets/menu.cpp" />
+		<Unit filename="../source/gui/widgets/menubar.cpp" />
+		<Unit filename="../source/gui/widgets/panel.cpp" />
+		<Unit filename="../source/gui/widgets/picture.cpp" />
+		<Unit filename="../source/gui/widgets/progress.cpp" />
+		<Unit filename="../source/gui/widgets/scroll.cpp" />
+		<Unit filename="../source/gui/widgets/skeletons/content_view.cpp" />
+		<Unit filename="../source/gui/widgets/skeletons/content_view.hpp" />
+		<Unit filename="../source/gui/widgets/skeletons/text_editor.cpp" />
+		<Unit filename="../source/gui/widgets/slider.cpp" />
+		<Unit filename="../source/gui/widgets/spinbox.cpp" />
+		<Unit filename="../source/gui/widgets/tabbar.cpp" />
+		<Unit filename="../source/gui/widgets/textbox.cpp" />
+		<Unit filename="../source/gui/widgets/toolbar.cpp" />
+		<Unit filename="../source/gui/widgets/treebox.cpp" />
+		<Unit filename="../source/gui/widgets/widget.cpp" />
+		<Unit filename="../source/gui/wvl.cpp" />
+		<Unit filename="../source/internationalization.cpp" />
+		<Unit filename="../source/paint/detail/image_bmp.hpp" />
+		<Unit filename="../source/paint/detail/image_ico.hpp" />
+		<Unit filename="../source/paint/detail/image_ico_resource.hpp" />
+		<Unit filename="../source/paint/detail/image_jpeg.hpp" />
+		<Unit filename="../source/paint/detail/image_pixbuf.hpp" />
+		<Unit filename="../source/paint/detail/image_png.hpp" />
+		<Unit filename="../source/paint/detail/image_process_provider.cpp" />
+		<Unit filename="../source/paint/detail/image_processor.hpp" />
+		<Unit filename="../source/paint/detail/native_paint_interface.cpp" />
+		<Unit filename="../source/paint/graphics.cpp" />
+		<Unit filename="../source/paint/image.cpp" />
+		<Unit filename="../source/paint/image_accessor.hpp" />
+		<Unit filename="../source/paint/image_process_selector.cpp" />
+		<Unit filename="../source/paint/pixel_buffer.cpp" />
+		<Unit filename="../source/paint/text_renderer.cpp" />
+		<Unit filename="../source/paint/truetype.hpp" />
+		<Unit filename="../source/stdc++.cpp" />
+		<Unit filename="../source/system/dataexch.cpp" />
+		<Unit filename="../source/system/platform.cpp" />
+		<Unit filename="../source/system/shared_wrapper.cpp" />
+		<Unit filename="../source/threads/pool.cpp" />
+		<Unit filename="../source/unicode_bidi.cpp" />
+		<Unit filename="main.cpp" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

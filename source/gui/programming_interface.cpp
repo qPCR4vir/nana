@@ -64,7 +64,7 @@ namespace API
 		const void* get_display()
 		{
 			auto & spec = nana::detail::platform_spec::instance();
-			return spec.open_display();			
+			return spec.open_display();
 		}
 	}
 #endif
@@ -95,7 +95,7 @@ namespace API
 			if (is_window(wd))
 			{
 				//Use a copy, because enumerating function may close a child window and the original children container would be changed,
-				//in the situation, the walking thorugh directly to the wd->children would cause error. 
+				//in the situation, the walking thorugh directly to the wd->children would cause error.
 				auto children = wd->children;
 
 				for (auto child : children)
@@ -220,7 +220,7 @@ namespace API
 			if (is_window(wd))
 				return wd->set_events(gep);
 			return false;
-			
+
 		}
 
 		void set_scheme(window wd, widget_geometrics* wdg_geom)
@@ -359,7 +359,7 @@ namespace API
 
 			if (bground_mode::basic != API::effects_bground_mode(wd))
 				return false;
-			
+
 			wd->other.glass_buffer.paste(src_r, graph, dst_pt.x, dst_pt.y);
 			return true;
 		}
@@ -373,13 +373,8 @@ namespace API
 		{
 			if (shortkey)
 			{
-#ifdef _nana_std_has_string_view
 				auto off_x = (shortkey_position ? graph.text_extent_size(std::string_view{ text.c_str(), shortkey_position }).width : 0);
 				auto key_px = static_cast<int>(graph.text_extent_size(std::wstring_view{ &shortkey, 1 }).width);
-#else
-				auto off_x = (shortkey_position ? graph.text_extent_size(text.c_str(), shortkey_position).width : 0);
-				auto key_px = static_cast<int>(graph.text_extent_size(&shortkey, 1).width);
-#endif
 
 				unsigned ascent, descent, inleading;
 				graph.text_metrics(ascent, descent, inleading);
@@ -432,7 +427,7 @@ namespace API
 		restrict::bedrock.close_thread_window(nana::system::this_thread_id());
 	}
 
-	//close all windows  
+	//close all windows
 	void exit_all()
 	{
 		internal_scope_guard lock;
@@ -808,7 +803,7 @@ namespace API
 				if (inner_size.height < static_cast<unsigned>(fm_extents.top + fm_extents.bottom))
 					inner_size.height = 0;
 				else
-					inner_size.height -= static_cast<unsigned>(fm_extents.top + fm_extents.bottom);			
+					inner_size.height -= static_cast<unsigned>(fm_extents.top + fm_extents.bottom);
 
 				window_size(wd, inner_size);
 			}
@@ -1213,7 +1208,7 @@ namespace API
 	}
 
 	std::unique_ptr<caret_interface> open_caret(window window_handle, bool disable_throw)
-	{		
+	{
 		auto p = new caret_proxy{ window_handle };
 		if (disable_throw)
 			p->disable_throw();
@@ -1290,7 +1285,7 @@ namespace API
 		internal_scope_guard lock;
 		if (is_window(wd))
 			return nana::detail::window_layout::read_visual_rectangle(wd, r);
-		
+
 		return false;
 	}
 
@@ -1448,7 +1443,7 @@ namespace API
 			if (extent)
 				return std::make_pair(extent.value(), extent.value() + wd->annex.content_measurer->extension());
 		}
-		
+
 		return{};
 	}
 

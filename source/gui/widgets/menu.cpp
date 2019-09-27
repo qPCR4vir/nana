@@ -133,7 +133,7 @@ namespace nana
 						img.stretch(rectangle{ img.size() }, graph, rectangle{ pos, ::nana::size(image_px, image_px) });
 						return;
 					}
-					
+
 					//Stretches menu icon only when it doesn't fit, center it otherwise.
 					//Contributed by kmribti(pr#102)
 					img.paste(graph, {
@@ -497,7 +497,7 @@ namespace nana
 							{
 								if (end)
 									break;
-								
+
 								end = true;
 								pos = lastpos;
 							}
@@ -518,7 +518,7 @@ namespace nana
 						refresh(*graph_);
 						return true;
 					}
-					
+
 					return false;
 				}
 
@@ -754,7 +754,7 @@ namespace nana
 			public:
 				using item_type = menu_builder::item_type;
 
-				
+
 				menu_window(window wd, bool is_wd_parent_menu, const point& pos, menu_builder& mbuilder, menu_type& menu_data)
 					//add a is_wd_parent_menu to determine whether the menu wants the focus.
 					//if a submenu gets the focus, the program may cause a crash error when the submenu is being destroyed
@@ -827,7 +827,7 @@ namespace nana
 					timer_.start();
 
 					show();
-					
+
 					if (want_focus_)
 					{
 						event_focus_ = events.focus.connect_unignorable([this](const arg_focus& arg)
@@ -910,7 +910,7 @@ namespace nana
 					auto * menu = object->get_drawer_trigger().data();
 					if ((npos == active) || !menu)
 						return;
-					
+
 					menu_item_type & item = *(menu->items.at(active));
 
 					if ((!item.flags.enabled) || item.flags.splitter || item.linked.menu_ptr)
@@ -1167,13 +1167,7 @@ namespace nana
 
 			std::unique_ptr<item_type> item{ new item_type{ std::move(text_utf8), handler } };
 
-			items.emplace(
-#ifdef _MSC_VER
-				items.cbegin() + pos,
-#else
-				items.begin() + pos,
-#endif
-				std::move(item));
+			items.emplace(items.cbegin() + pos, std::move(item));
 
 			return item_proxy{ pos, this};
 		}
@@ -1237,7 +1231,7 @@ namespace nana
 			std::unique_ptr<menu> guard{new menu};
 			if (impl_->mbuilder.set_linkage(index, guard->impl_->mbuilder.data(), true))
 				return guard.release();
-			
+
 			return nullptr;
 		}
 

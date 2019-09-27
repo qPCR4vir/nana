@@ -141,11 +141,11 @@ namespace nana
 
 					nana::align alignment{ nana::align::left };
 
-					std::function<bool(const std::string&,  nana::any*,
-							           const std::string&,  nana::any*,        bool reverse)> weak_ordering;
+					std::function<bool(const std::string&,  std::any*,
+							           const std::string&,  std::any*,        bool reverse)> weak_ordering;
 
 					std::shared_ptr<paint::font> font;	///< The exclusive column font
-					
+
 					column(const column&) = default;
 
 					column& operator=(const column& other)
@@ -162,9 +162,9 @@ namespace nana
 							font = other.font;
 						}
 						return *this;
-					
+
 					}
-					
+
 					column(column&& other):
 						caption(std::move(other.caption)),
                         width_px(other.width_px),
@@ -312,12 +312,7 @@ namespace nana
 
 				size_type create(essence* ess, native_string_type&& text, unsigned pixels)
 				{
-#ifdef _nana_std_has_emplace_return_type
 					return cont_.emplace_back(ess, std::move(text), pixels, static_cast<size_type>(cont_.size())).index;
-#else
-					cont_.emplace_back(ess, std::move(text), pixels, static_cast<size_type>(cont_.size()));
-                    return cont_.back().index;
-#endif
 				}
 
 				void clear()
@@ -461,7 +456,7 @@ namespace nana
 								return m;
 						}
 					}
-					
+
 					return cont_[pos];
 				}
 
@@ -547,7 +542,7 @@ namespace nana
 
 					return pos;
 				}
-                
+
 
 				/// move col to view pos
 				void move_to_view_pos (size_type col, size_type view, bool front) noexcept
@@ -571,25 +566,15 @@ namespace nana
 				{
 					if ((from == to) || (from >= cont_.size()) || (to >= cont_.size()))
 						return;
-					
-#ifdef _MSC_VER
+
 					for (auto i = cont_.cbegin(); i != cont_.cend(); ++i)
-#else
-					for (auto i = cont_.begin(); i != cont_.end(); ++i)
-#endif
 					{
 						if (from == i->index)
 						{
 							auto col_from = *i;
 							cont_.erase(i);
 
-							//A workaround for old libstdc++, that some operations of vector
-							//don't accept const iterator.
-#ifdef _MSC_VER
 							for (auto u = cont_.cbegin(); u != cont_.cend(); ++u)
-#else
-							for (auto u = cont_.begin(); u != cont_.end(); ++u)
-#endif
 							{
 								if (to == u->index)
 								{
@@ -624,7 +609,7 @@ namespace nana
 					bool checked	:1;
 				}flags;
 
-				mutable std::unique_ptr<nana::any> anyobj;
+				mutable std::unique_ptr<std::any> anyobj;
 
 				item_data() noexcept
 				{
@@ -637,7 +622,7 @@ namespace nana
 						fgcolor(r.fgcolor),
 						img(r.img),
 						flags(r.flags),
-						anyobj(r.anyobj ? new nana::any(*r.anyobj) : nullptr)
+						anyobj(r.anyobj ? new std::any(*r.anyobj) : nullptr)
 				{}
 
 				item_data(container&& cont)
@@ -661,7 +646,7 @@ namespace nana
 							cells = std::make_unique<container>(*r.cells);
 
 						flags = r.flags;
-						anyobj.reset(r.anyobj ? new nana::any(*r.anyobj) : nullptr);
+						anyobj.reset(r.anyobj ? new std::any(*r.anyobj) : nullptr);
 						bgcolor = r.bgcolor;
 						fgcolor = r.fgcolor;
 						img = r.img;
@@ -731,7 +716,7 @@ namespace nana
 					for (std::size_t i = 0; i < items.size(); ++i)
 						sorted.push_back(i);
 				}
-				
+
 				std::vector<cell> cells(size_type pos) const
 				{
 					if (model_ptr)
@@ -764,14 +749,14 @@ namespace nana
 				using container = std::list<category_t>;
 				using item_type = item_data;
 
-				std::function<std::function<bool(const ::std::string&, ::nana::any*,
-								const ::std::string&, ::nana::any*, bool reverse)>(std::size_t) > fetch_ordering_comparer;
+				std::function<std::function<bool(const ::std::string&, ::std::any*,
+								const ::std::string&, ::std::any*, bool reverse)>(std::size_t) > fetch_ordering_comparer;
 
 				struct sort_attributes
 				{
 					std::size_t	column;		///< The position of the column to be sorted
 					bool		resort;
-					bool		reverse;	
+					bool		reverse;
 				};
 
 				es_lister()
@@ -795,7 +780,7 @@ namespace nana
 					return widget_;
 				}
 
-				nana::any * anyobj(const index_pair& id, bool allocate_if_empty) const
+				std::any * anyobj(const index_pair& id, bool allocate_if_empty) const
 				{
 					auto& catobj = *get(id.cat);
 					if(id.item < catobj.items.size())
@@ -807,7 +792,7 @@ namespace nana
 
 						if (allocate_if_empty)
 						{
-							item.anyobj.reset(new ::nana::any);
+							item.anyobj.reset(new ::std::any);
 							return item.anyobj.get();
 						}
 					}
@@ -822,7 +807,7 @@ namespace nana
 					arg_listbox arg{ item };
 
 					auto & events = wd_ptr()->events();
-					
+
 					if (for_selection)
 						events.selected.emit(arg, wd_ptr()->handle());
 					else
@@ -888,7 +873,7 @@ namespace nana
 
 									return weak_ordering_comp(mx_cells[sort_attrs_.column].text, mx.anyobj.get(), my_cells[sort_attrs_.column].text, my.anyobj.get(), sort_attrs_.reverse);
 								}
-								
+
 								auto & mx = cat.items[x];
 								auto & my = cat.items[y];
 
@@ -1020,13 +1005,7 @@ namespace nana
 		        /// will use the key to insert new cat before the first cat with compare less than the key, or at the end of the list of cat and return a ref to that new cat.  ?
 				category_t* create_category(std::shared_ptr<nana::detail::key_interface>& ptr)
 				{
-					//A workaround for old version of libstdc++
-					//Some operations of vector provided by libstdc++ don't accept const iterator.
-#ifdef _MSC_VER
 					for (auto i = categories_.cbegin(); i != categories_.cend(); ++i)
-#else
-					for (auto i = categories_.begin(); i != categories_.end(); ++i)
-#endif
 					{
 						if (i->key_ptr)
 						{
@@ -1044,29 +1023,16 @@ namespace nana
 						}
 					}
 
-#ifdef _nana_std_has_emplace_return_type
 					auto & last_cat = categories_.emplace_back();
 					last_cat.key_ptr = ptr;
 					return &last_cat;
-#else
-					categories_.emplace_back();
-					categories_.back().key_ptr = ptr;
-					return &(categories_.back());
-#endif
 				}
-                
+
 				/// Inserts a new category at position specified by pos
 				category_t* create_category(native_string_type&& text, std::size_t pos = nana::npos)
 				{
 					if (::nana::npos == pos)
-					{
-#ifdef _nana_std_has_emplace_return_type
 						return &categories_.emplace_back(std::move(text));
-#else
-						categories_.emplace_back(std::move(text));
-						return &categories_.back();
-#endif
-					}
 
 					return &(*categories_.emplace(this->get(pos), std::move(text)));
 				}
@@ -1126,7 +1092,7 @@ namespace nana
 						throw std::out_of_range("listbox: invalid element position");
 					return target;
 				}
-				
+
 				index_pair index_cast_noexcept(const index_pair& from, bool from_display_order, const index_pair& default_value = index_pair{npos, npos}) const noexcept
 				{
 					if (from.cat < categories_.size())
@@ -1273,7 +1239,7 @@ namespace nana
 				{
 					const auto cat_size = categories_.size();
 					index_pair dpos{ npos, npos };
-		
+
 					if (pos.cat >= cat_size || (pos.item != npos && pos.item >= size_item(pos.cat)))
 						return dpos;
 
@@ -1307,7 +1273,7 @@ namespace nana
 						}
 						return index_pair{ dpos.cat, npos };
 					}
-					
+
 					//Backward
 					n = -n;
 					dpos = pos;
@@ -1463,19 +1429,10 @@ namespace nana
 				void erase()
 				{
 					//Do not remove the first category.
-
 					this->erase(0);
 
 					if (categories_.size() > 1)
-					{
-						//A workaround for old version of libstdc++
-						//Some operations of vector provided by libstdc++ don't accept const iterator.
-#ifdef _MSC_VER
 						categories_.erase(++categories_.cbegin(), categories_.cend());
-#else
-						categories_.erase(++categories_.begin(), categories_.end());
-#endif
-					}
 				}
 
 				bool expand(size_type cat, bool exp) noexcept
@@ -1559,7 +1516,7 @@ namespace nana
 					//Return the pos if it is good
 					if (this->good(pos))
 						return pos;
-					
+
 					while(pos.cat < this->categories_.size())
 					{
 						if ((pos.npos == pos.item) && !ignore_category)
@@ -1583,7 +1540,7 @@ namespace nana
 				std::vector<std::pair<index_pair, bool>> select_display_range_if(index_pair fr_abs, index_pair to_dpl, bool deselect_others, Pred pred)
 				{
 					fr_abs = find_next_good(fr_abs, true);
-					
+
 					if (to_dpl.empty())
 					{
 						if (fr_abs.empty())
@@ -1591,7 +1548,7 @@ namespace nana
 
 						to_dpl = this->last();
 					}
-					
+
 
 					auto fr_dpl = (fr_abs.is_category() ? fr_abs : this->index_cast(fr_abs, false));	//Converts an absolute position to display position
                     if (fr_dpl > to_dpl)
@@ -1643,7 +1600,7 @@ namespace nana
 
 					if (deselect_others)
 					{
-						//Deselects the already selected which is out of range [begin, last] 
+						//Deselects the already selected which is out of range [begin, last]
 						for (auto index : already_selected)
 						{
 							auto disp_order = this->index_cast(index, false);	//converts an absolute position to a display position
@@ -1933,7 +1890,7 @@ namespace nana
 
 					return index_pair{ npos, npos };
                 }
-				
+
 				bool good(size_type cat) const noexcept
 				{
 					return (cat < categories_.size());
@@ -2033,7 +1990,7 @@ namespace nana
 					bool	deselect_when_start_to_move;
 
 					point	screen_pos;
-					point	begin_position;	///< Logical position to the 
+					point	begin_position;	///< Logical position to the
 					point	end_position;
 					index_pairs already_selected;
 					index_pairs selections;
@@ -2059,7 +2016,7 @@ namespace nana
 				{
 					pointer_where.first = parts::unknown;
 
-					lister.fetch_ordering_comparer = [this](std::size_t pos) -> std::function<bool(const std::string&, nana::any*, const std::string&, nana::any*, bool reverse)>
+					lister.fetch_ordering_comparer = [this](std::size_t pos) -> std::function<bool(const std::string&, std::any*, const std::string&, std::any*, bool reverse)>
 					{
 						return header.at(pos).weak_ordering;
 					};
@@ -2074,7 +2031,7 @@ namespace nana
 				{
 					if (abs_pos.is_category())
 						return lister.cat_status(abs_pos.cat, for_selection);
-					
+
 					auto & flags = lister.get(abs_pos.cat)->items.at(abs_pos.item).flags;
 					return (for_selection ? flags.selected : flags.checked);
 				}
@@ -2085,7 +2042,7 @@ namespace nana
 
 					auto r = this->content_area();
 					r.y += head_px;
-					
+
 					if (r.height <= head_px)
 						r.height = 0;
 					else
@@ -2238,11 +2195,7 @@ namespace nana
 
 								//Deselects the items which are in mouse_selection.selections but not in selections.
 								//Eq to mouse_selection.selections = selections
-#ifdef _MSC_VER
 								for (auto i = mouse_selection.selections.cbegin(); i != mouse_selection.selections.cend();)
-#else
-								for(auto i = mouse_selection.selections.begin(); i != mouse_selection.selections.end();)
-#endif
 								{
 									auto & selpos = *i;
 									if (selections.cend() == std::find_if(selections.cbegin(), selections.cend(), /*pred_mouse_selection{ *i }*/[&selpos](const std::pair<index_pair, bool>& m){
@@ -2314,7 +2267,7 @@ namespace nana
 				size_type count_of_exposed(bool with_rest) const
 				{
 					auto lister_s = this->content_view->view_area().height;
-					return (lister_s / item_height()) + (with_rest && 
+					return (lister_s / item_height()) + (with_rest &&
 						listbox_ptr->scroll_operation()->visible(true) && (lister_s % item_height()) ? 1 : 0);
 				}
 
@@ -2454,7 +2407,7 @@ namespace nana
 					{
 						r.x = 2;
 						r.width -= (r.width > 4 ? 4 : r.width);
-						
+
 						r.y = 1;
 						r.height -= (r.height > 2 ? 2 : r.height);
 					}
@@ -2710,12 +2663,7 @@ namespace nana
 
 			oresolver& oresolver::operator<<(std::nullptr_t)
 			{
-#ifdef _nana_std_has_emplace_return_type
 				cells_.emplace_back().text.assign(1, wchar_t{});
-#else
-				cells_.emplace_back();
-				cells_.back().text.assign(1, wchar_t(0));	//means invalid cell
-#endif
 				return *this;
 			}
 
@@ -2849,7 +2797,7 @@ namespace nana
 			unsigned es_lister::column_content_pixels(size_type pos) const
 			{
 				unsigned max_px = 0;
-				
+
 				std::unique_ptr<paint::graphics> graph_helper;
 				auto graph = ess_->graph;
 				if (graph->empty())
@@ -3228,7 +3176,7 @@ namespace nana
 						first=false;
 					else
  						list_str += (to_utf8(cat.text) + exp_opt.endl);
-	
+
 					std::vector<cell> model_cells;
 
 					auto const pcell = (cat.model_ptr ? &model_cells : nullptr);
@@ -3241,7 +3189,7 @@ namespace nana
 							//Test if the category have a model set.
 							if (pcell)
 								cat.model_ptr->container()->to_cells(i).swap(model_cells);
-							
+
 							list_str += (item.to_string(exp_opt, pcell) + exp_opt.endl);
 						}
 					}
@@ -3655,7 +3603,7 @@ namespace nana
 					{
 						rectangle r{ point{ visual_r.x + static_cast<int>(header_w + header_margin) - origin.x, visual_r.y },
 							size{ visual_r.width + origin.x - header_w, visual_r.height } };
-						
+
 						if (!API::dev::copy_transparent_background(essence_->listbox_ptr->handle(), r, *essence_->graph, r.position()))
 							essence_->graph->rectangle(r, true);
 					}
@@ -3871,14 +3819,14 @@ namespace nana
 
 				/// Draws an item
 				void _m_draw_item(const category_t& cat,
-					              const index_pair& item_pos, 
+					              const index_pair& item_pos,
 								  const point& coord,
 					              const int txtoff,						///< below y to print the text
-					              unsigned header_width,				///< width of all visible columns, in pixel 
+					              unsigned header_width,				///< width of all visible columns, in pixel
 					              const nana::rectangle& content_r,		///< the rectangle where the full list content have to be drawn
 					              const std::vector<size_type>& seqs,	///< columns to print
-					              nana::color bgcolor, 
-					              nana::color fgcolor, 
+					              nana::color bgcolor,
+					              nana::color fgcolor,
 					              item_state state
 					)
 				{
@@ -4001,7 +3949,7 @@ namespace nana
 
 									inline_wdg->inline_ptr->notify_status(status_type::selected, item.flags.selected);
 									inline_wdg->inline_ptr->notify_status(status_type::checked, item.flags.checked);
-									
+
 									inline_wdg->indicator->attach(item_pos, inline_wdg);
 
 									//To reduce the memory usage, the cells may not be allocated
@@ -4224,7 +4172,7 @@ namespace nana
 
 							//Start to move a header column or resize a header column(depends on item_spliter_)
 							drawer_header_->grab(pos_in_header, true);
-							
+
 							essence_->lister.wd_ptr()->set_capture(true);
 							need_refresh = true;
 						}
@@ -4232,7 +4180,7 @@ namespace nana
 
                     if(essence_->ptr_state == item_state::grabbed)
 					{
-						// moving a grabbed header 
+						// moving a grabbed header
 						need_refresh = drawer_header_->grab_move(pos_in_header);
 					}
 					else if(essence_->calc_where(arg.pos))
@@ -4662,7 +4610,7 @@ namespace nana
 
 								essence_->content_view->move_origin(origin - essence_->content_view->origin());
 							}
-						
+
 							if (!target_idx.is_category())
 								item_proxy::from_display(essence_, target_idx).select(true);
 							else if (!list.single_status(true))	//not selected
@@ -4724,7 +4672,7 @@ namespace nana
 									list.scroll_into_view(pos, view_action::auto_view);
 								}
 							}
-							
+
 						}
 						break;
 					default:
@@ -4943,7 +4891,6 @@ namespace nana
 				}
 
 				//Behavior of Iterator's value_type
-#ifdef _nana_std_has_string_view
 				bool item_proxy::operator==(std::string_view sv) const
 				{
 					return (text(0) == sv);
@@ -4953,27 +4900,6 @@ namespace nana
 				{
 					return (text(0) == to_utf8(sv));
 				}
-#else
-				bool item_proxy::operator==(const char * s) const
-				{
-					return this->operator==(std::string(s));
-				}
-
-				bool item_proxy::operator==(const wchar_t * s) const
-				{
-					return this->operator==(std::wstring(s));
-				}
-
-				bool item_proxy::operator==(const std::string& s) const
-				{
-					return (text(0) == s);
-				}
-
-				bool item_proxy::operator==(const std::wstring& s) const
-				{
-					return (text(0) == to_utf8(s));
-				}
-#endif
 
 				item_proxy & item_proxy::operator=(const item_proxy& rhs)
 				{
@@ -5061,12 +4987,12 @@ namespace nana
 					return cat_->cells(pos_.item);
 				}
 
-				nana::any * item_proxy::_m_value(bool alloc_if_empty)
+				std::any * item_proxy::_m_value(bool alloc_if_empty)
 				{
 					return ess_->lister.anyobj(pos_, alloc_if_empty);
 				}
 
-				const nana::any * item_proxy::_m_value() const
+				const std::any * item_proxy::_m_value() const
 				{
 					return ess_->lister.anyobj(pos_, false);
 				}
@@ -5400,7 +5326,7 @@ namespace nana
 						es_lister::throw_if_immutable_model(cat_->model_ptr.get());
 
 						auto container = cat_->model_ptr->container();
-	
+
 						auto item_index = container->size();
 						cat_->items.emplace_back();
 						container->emplace_back();
@@ -5533,7 +5459,7 @@ namespace nana
 			}
 			else
 				cat_pos = cats - 1;
-			
+
 			index_pair pos(cat_pos);
 			if (to_bottom)
 			{
@@ -5651,7 +5577,7 @@ namespace nana
 			internal_scope_guard lock;
 			auto & ess = _m_ess();
 			ess.lister.insert(pos, std::move(text), this->column_size());
-			
+
 			if (!empty())
 			{
 				auto & item = ess.lister.at(pos);
@@ -5730,7 +5656,7 @@ namespace nana
 
 			if (drawerbase::listbox::essence::parts::list == _where.first)
 				return ess.lister.advance(ess.first_display(), static_cast<int>(_where.second));
-	
+
 			return index_pair{ npos, npos };
 		}
 
@@ -5902,7 +5828,7 @@ namespace nana
 			ess.calc_content_size();
 			ess.update();
 		}
-		
+
 		void listbox::erase(index_pairs indexes)
 		{
 			internal_scope_guard lock;
@@ -5947,7 +5873,7 @@ namespace nana
 			ess.content_view->sync(false);
 
 			ess.lister.sort();
-			
+
 			ess.update();
 		}
 
@@ -5989,7 +5915,7 @@ namespace nana
 			_m_ess().header.attrib().sortable = enable;
 		}
 
-		void listbox::set_sort_compare(size_type col, std::function<bool(const std::string&, nana::any*, const std::string&, nana::any*, bool reverse)> strick_ordering)
+		void listbox::set_sort_compare(size_type col, std::function<bool(const std::string&, std::any*, const std::string&, std::any*, bool reverse)> strick_ordering)
 		{
 			internal_scope_guard lock;
 			_m_ess().header.at(col).weak_ordering = std::move(strick_ordering);
@@ -6179,7 +6105,7 @@ namespace nana
 			return get_drawer_trigger().ess();
 		}
 
-		nana::any* listbox::_m_anyobj(size_type cat, size_type index, bool allocate_if_empty) const
+		std::any* listbox::_m_anyobj(size_type cat, size_type index, bool allocate_if_empty) const
 		{
 			return _m_ess().lister.anyobj(index_pair{cat, index}, allocate_if_empty);
 		}
@@ -6249,12 +6175,12 @@ namespace nana
 									  index_pair row, bool reverse,
 									  std::function<bool(const std::string &cell1, size_type col1,
 														 const std::string &cell2, size_type col2,
-														 const nana::any *rowval,
+														 const std::any *rowval,
 														 bool reverse)> comp)
 		{
 			if (last_col <= first_col || last_col >= column_size())
 				return;
-			
+
 			std::vector<size_type> new_idx;
 			for(size_type i=first_col; i<=last_col; ++i) new_idx.push_back(i);
 

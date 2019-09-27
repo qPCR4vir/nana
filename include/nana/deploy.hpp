@@ -22,10 +22,7 @@
 #include <nana/charset.hpp>
 
 #include <stdexcept>
-
-#ifdef _nana_std_has_string_view
 #include <string_view>
-#endif
 
 namespace nana
 {
@@ -36,27 +33,14 @@ namespace nana
 
 		using std::runtime_error::runtime_error;
 
-#if defined(_MSC_VER)
-#	if (_MSC_VER < 1900)
-		//A workaround for lack support of C++11 inheriting constructors  for VC2013
-		explicit utf8_Error(const std::string& msg);
-#	endif
-#endif
-
 		void emit();
 	};
 
-	
+
 	/// Checks whether a specified text is utf8 encoding
-#ifdef _nana_std_has_string_view
 	bool is_utf8(std::string_view str);
 	void throw_not_utf8(std::string_view str);
-#else
-	bool is_utf8(const char* str, std::size_t len);
-	void throw_not_utf8(const std::string& text);
-	void throw_not_utf8(const char*, std::size_t len);
-	void throw_not_utf8(const char*);
-#endif
+
 
 	/// this text needed change, it needed review ??
 	bool review_utf8(const std::string& text);
@@ -66,13 +50,8 @@ namespace nana
 
 	const std::string& to_utf8(const std::string&);
 
-#ifdef _nana_std_has_string_view
 	std::string to_utf8(std::wstring_view sv);
 	std::wstring to_wstring(std::string_view utf8_str);
-#else
-	std::string to_utf8(const std::wstring&);
-	std::wstring to_wstring(const std::string& utf8_str);
-#endif
 
 	const std::wstring& to_wstring(const std::wstring& wstr);
 	std::wstring&& to_wstring(std::wstring&& wstr);
