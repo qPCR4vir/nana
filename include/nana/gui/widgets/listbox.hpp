@@ -3,8 +3,8 @@
  *	Nana C++ Library(http://www.nanapro.org)
  *	Copyright(C) 2003-2019 Jinhao(cnjinhao@hotmail.com)
  *
- *	Distributed under the Boost Software License, Version 1.0. 
- *	(See accompanying file LICENSE_1_0.txt or copy at 
+ *	Distributed under the Boost Software License, Version 1.0.
+ *	(See accompanying file LICENSE_1_0.txt or copy at
  *	http://www.boost.org/LICENSE_1_0.txt)
  *
  *	@file: nana/gui/widgets/listbox.hpp
@@ -279,7 +279,7 @@ namespace nana
 				{
 					container_.emplace_back();
 				}
-			
+
 				void assign(std::size_t pos, const std::vector<cell>& cells) override
 				{
 					container_.at(pos) = translator_.to_value(cells);
@@ -327,11 +327,11 @@ namespace nana
 			public:
 				using container_reference = STLContainer&;
 
-				
+
 				shared_container(container_reference cont, value_translator vtrans, cell_translator ctrans)
 					: container_(cont), translator_({ vtrans, ctrans })
 				{
-					
+
 				}
 			private:
 				void clear() override
@@ -806,7 +806,7 @@ namespace nana
 				drawer_lister_impl *drawer_lister_;
 			};//end class trigger
 
-			/// operate with absolute positions and contain only the position but maintain pointers to parts of the real items 
+			/// operate with absolute positions and contain only the position but maintain pointers to parts of the real items
 			/// item_proxy self, it references and iterators are not invalidated by sort()
 			class item_proxy
 				: public ::nana::widgets::detail::widget_iterator<std::input_iterator_tag, item_proxy>
@@ -866,7 +866,7 @@ namespace nana
 				/**
 				 * @param col The display position or absolute position.
 				 * @param disp_order Indicates whether the col is a display position or absolute position. If this parameter is true, the col is display position
-				 * @return absolute position if disp_order is false, display position otherwise. 
+				 * @return absolute position if disp_order is false, display position otherwise.
 				 */
 				size_type column_cast(size_type col, bool disp_order) const;
 
@@ -892,7 +892,7 @@ namespace nana
 							continue;
 						text(pos, std::move(el));
 					}
-					
+
 					return *this;
 				}
 
@@ -922,7 +922,7 @@ namespace nana
 					return *p;
 				}
 				template<typename T>
-				T & value() 
+				T & value()
 				{
 					auto * pany = _m_value();
 					if (nullptr == pany)
@@ -941,15 +941,8 @@ namespace nana
 				}
 
 				/// Behavior of Iterator's value_type
-#ifdef _nana_std_has_string_view
 				bool operator==(::std::string_view sv) const;
 				bool operator==(::std::wstring_view sv) const;
-#else
-				bool operator==(const char * s) const;
-				bool operator==(const wchar_t * s) const;
-				bool operator==(const ::std::string& s) const;
-				bool operator==(const ::std::wstring& s) const;
-#endif
 
 				/// Behavior of Iterator
 				item_proxy & operator=(const item_proxy&);
@@ -982,8 +975,8 @@ namespace nana
 				essence * _m_ess() const noexcept;
 			private:
 				std::vector<cell> _m_cells() const;
-				nana::any		* _m_value(bool alloc_if_empty);
-				const nana::any	* _m_value() const;
+				std::any		* _m_value(bool alloc_if_empty);
+				const std::any	* _m_value() const;
 			private:
 				essence * ess_;
 				category_t*	cat_{nullptr};
@@ -1105,7 +1098,7 @@ namespace nana
 				 * @return a display position or an absolute position that are depending on from_display_order.
 				 */
 				size_type index_cast(size_type from, bool from_display_order) const;
-				
+
 				/// this cat position
 				size_type position() const;
 
@@ -1151,12 +1144,12 @@ namespace nana
 				category_t*	cat_{nullptr};
 				size_type	pos_{0};  ///< Absolute position, not relative to display, and dont change during sort()
 			};
-		
+
 			struct export_options
 			{
-				std::string sep = ::std::string {"\t"}, 
+				std::string sep = ::std::string {"\t"},
 							 endl= ::std::string {"\n"};
-				bool only_selected_items{true}, 
+				bool only_selected_items{true},
 					 only_checked_items {false},
 					 only_visible_columns{true};
 
@@ -1237,33 +1230,33 @@ namespace nana
 	}//end namespace drawerbase
 
 /*! \class listbox
-\brief A rectangle containing a list of strings from which the user can select. 
-This widget contain a list of \a categories, with in turn contain a list of \a items. 
+\brief A rectangle containing a list of strings from which the user can select.
+This widget contain a list of \a categories, with in turn contain a list of \a items.
 A \a category is a text with can be \a selected, \a checked and \a expanded to show the \a items.
-An \a item is formed by \a column-fields, each corresponding to one of the \a headers. 
+An \a item is formed by \a column-fields, each corresponding to one of the \a headers.
 An \a item can be \a selected and \a checked.
-The user can \a drag the header to \a resize it or to \a reorganize it. 
+The user can \a drag the header to \a resize it or to \a reorganize it.
 By \a clicking on one header the list get \a reordered, first up, and then down alternatively.
 
 1. The resolver is used to resolute an object of the specified type into (or back from) a listbox item.
-3. nana::listbox creates the category 0 by default. 
-   This is an special category, because it is invisible, while the associated items are visible. 
+3. nana::listbox creates the category 0 by default.
+   This is an special category, because it is invisible, while the associated items are visible.
    The optional, user-created categories begin at index 1 and are visible.
    The member functions without the categ parameter operate the items that belong to category 0.
 4. A sort compare is used for sorting the items. It is a strict weak ordering comparer that must meet the requirement:
-		Irreflexivity (comp(x, x) returns false) 
-	and 
+		Irreflexivity (comp(x, x) returns false)
+	and
 		Antisymmetry(comp(a, b) != comp(b, a) returns true)
 	A simple example.
-		bool sort_compare( const std::string& s1, nana::any*, 
+		bool sort_compare( const std::string& s1, nana::any*,
 						   const std::string& s2, nana::any*, bool reverse)
 		{
 			return (reverse ? s1 > s2 : s1 < s2);
 		}
 		listbox.set_sort_compare(0, sort_compare);
-	The listbox supports attaching a customer's object for each item, therefore the items can be 
+	The listbox supports attaching a customer's object for each item, therefore the items can be
 	sorted by comparing these customer's object.
-		bool sort_compare( const std::string&, nana::any* o1, 
+		bool sort_compare( const std::string&, nana::any* o1,
 						   const std::string&, nana::any* o2, bool reverse)
 		{
 			if(o1 && o2) 	//some items may not attach a customer object.
@@ -1278,16 +1271,16 @@ By \a clicking on one header the list get \a reordered, first up, and then down 
 		auto cat = listbox.at(0);
 		cat.at(0).value(10); //10 is custom data.
 		cat.at(1).value(20); //20 is custom data.
-5. listbox is a widget_object, with template parameters drawerbase::listbox::trigger and drawerbase::listbox::scheme 
+5. listbox is a widget_object, with template parameters drawerbase::listbox::trigger and drawerbase::listbox::scheme
 among others.
 That means that listbox have a member trigger_ constructed first and accessible with get_drawer_trigger() and
-a member (unique pointer to) scheme_ accessible with scheme_type& scheme() created in the constructor 
+a member (unique pointer to) scheme_ accessible with scheme_type& scheme() created in the constructor
 with API::dev::make_scheme<Scheme>() which call API::detail::make_scheme(::nana::detail::scheme_factory<Scheme>())
 which call restrict::bedrock.make_scheme(static_cast<::nana::detail::scheme_factory_base&&>(factory));
 which call pi_data_->scheme.create(std::move(factory));
 which call factory.create(scheme_template(std::move(factory)));
 which call (new Scheme(static_cast<Scheme&>(other)));
-and which in create is set with: API::dev::set_scheme(handle_, scheme_.get()); which save the scheme pointer in 
+and which in create is set with: API::dev::set_scheme(handle_, scheme_.get()); which save the scheme pointer in
 the nana::detail::basic_window member pointer scheme
 \todo doc: actualize this example listbox.at(0)...
 \see nana::drawerbase::listbox::cat_proxy
@@ -1477,7 +1470,7 @@ the nana::detail::basic_window member pointer scheme
 							 index_pair row, bool reverse,
 							 std::function<bool(const std::string &cell1, size_type col1,
 												const std::string &cell2, size_type col2,
-												const nana::any *rowval,
+												const std::any *rowval,
 												bool reverse)> comp);
 
         void column_resizable(bool resizable);
@@ -1533,11 +1526,11 @@ the nana::detail::basic_window member pointer scheme
 
 		bool sortable() const;              ///< return whether the listbox is set to be sortable
 		void sortable(bool enable);         ///< set the listbox to be or not to be sortable
-		
+
 		///Sets a strict weak ordering comparer for a column
 		void set_sort_compare(	size_type col,
-								std::function<bool(const std::string&, nana::any*,
-								                   const std::string&, nana::any*, bool reverse)> strick_ordering);
+								std::function<bool(const std::string&, std::any*,
+								                   const std::string&, std::any*, bool reverse)> strick_ordering);
 
 		/// Sort the items using the specified column.
 		///
@@ -1619,7 +1612,7 @@ the nana::detail::basic_window member pointer scheme
 		unsigned suspension_width() const;
 	private:
 		drawerbase::listbox::essence & _m_ess() const;
-		nana::any* _m_anyobj(size_type cat, size_type index, bool allocate_if_empty) const override;
+		std::any* _m_anyobj(size_type cat, size_type index, bool allocate_if_empty) const override;
 		drawerbase::listbox::category_t* _m_assoc(std::shared_ptr<nana::detail::key_interface>, bool create_if_not_exists);
 		void _m_erase_key(nana::detail::key_interface*) noexcept;
 		std::shared_ptr<scroll_operation_interface> _m_scroll_operation() override;

@@ -1315,12 +1315,12 @@ namespace nana
 					return !(this->operator==(rhs));
 				}
 
-				nana::any& item_proxy::_m_value()
+				std::any& item_proxy::_m_value()
 				{
 					return node_->value.second.value;
 				}
 
-				const nana::any& item_proxy::_m_value() const
+				const std::any& item_proxy::_m_value() const
 				{
 					return node_->value.second.value;
 				}

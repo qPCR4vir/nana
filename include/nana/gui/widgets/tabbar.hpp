@@ -17,7 +17,7 @@
 
 #include "widget.hpp"
 #include <nana/pat/cloneable.hpp>
-#include <nana/any.hpp>
+#include <any>
 
 namespace nana
 {
@@ -216,12 +216,12 @@ namespace nana
 				~trigger();
 				void activate(std::size_t);
 				std::size_t activated() const;
-				nana::any& at(std::size_t) const;
-				nana::any& at_no_bound_check(std::size_t) const;
+				std::any& at(std::size_t) const;
+				std::any& at_no_bound_check(std::size_t) const;
 				const pat::cloneable<item_renderer> & ext_renderer() const;
 				void ext_renderer(const pat::cloneable<item_renderer>&);
 				void set_event_agent(event_agent_interface*);
-				void insert(std::size_t, native_string_type&&, nana::any&&);
+				void insert(std::size_t, native_string_type&&, std::any&&);
 				std::size_t length() const;
 				bool close_fly(bool);
 				window attach(std::size_t, window, bool drop_other);
@@ -468,8 +468,8 @@ namespace nana
 		void attach(std::size_t pos, window);
 		window attach(std::size_t pos) const;
 
-		void push_back(std::string text, ::nana::any par = {});
-		void push_front(std::string text, ::nana::any par = {});
+		void push_back(std::string text, ::std::any par = {});
+		void push_front(std::string text, ::std::any par = {});
 
 		std::size_t selected() const;
 		void erase(std::size_t pos, bool close_attached = true);

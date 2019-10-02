@@ -17,7 +17,7 @@
 #include "skeletons/textbase_export_interface.hpp"
 #include "skeletons/text_editor_part.hpp"
 
-#include <nana/optional.hpp>
+#include <optional>
 
 namespace nana
 {

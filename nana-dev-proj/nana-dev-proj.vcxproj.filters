@@ -1,0 +1,620 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="源文件\source">
+      <UniqueIdentifier>{974531f7-dde0-4068-a25a-8f33d2cf0d9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\source\audio">
+      <UniqueIdentifier>{83b77592-b45d-425a-9768-def765275c89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\source\audio\detail">
+      <UniqueIdentifier>{fff5eda8-d396-44ef-a2a9-cfd5cef4ab3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\source\detail">
+      <UniqueIdentifier>{c2def154-b44a-4a1c-8602-0e59f80d8563}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\source\detail\mswin">
+      <UniqueIdentifier>{c6bc9906-4ccf-4fcc-a173-af5ef69ace63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\source\filesystem">
+      <UniqueIdentifier>{dde2c858-deff-4716-b769-fd66fc3ea1f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\source\gui">
+      <UniqueIdentifier>{8f7a6f9d-1475-4e03-986e-0663144aed76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\source\gui\detail">
+      <UniqueIdentifier>{6b4def56-f653-4407-a7c8-61d3f2bb79d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\source\gui\widgets">
+      <UniqueIdentifier>{ebddff2f-b0d5-4152-88a7-d994f5fa4db1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\source\gui\widgets\skeletons">
+      <UniqueIdentifier>{c3ab0e30-1e69-4bb2-8068-e7559033e361}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\source\paint">
+      <UniqueIdentifier>{b9df1b7d-bf8f-4c6b-a681-4b71e09d82ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\source\paint\detail">
+      <UniqueIdentifier>{e1698160-de9d-4b80-9196-9a5ad16ebfe5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\source\system">
+      <UniqueIdentifier>{3a168a65-764a-4f2c-abfc-fa56e7ccee90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\source\threads">
+      <UniqueIdentifier>{38649996-a65a-474f-860b-4bd6050aaae7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\nana">
+      <UniqueIdentifier>{cbbb0598-5f6d-46c6-98d8-0deec35b9d51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\nana\gui">
+      <UniqueIdentifier>{3b85a243-d635-4bf9-856e-732523c48ab1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\nana\gui\widgets">
+      <UniqueIdentifier>{b79d4577-f678-4b81-9ca9-43fa8d647e58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\nana\filesystem">
+      <UniqueIdentifier>{fa6ab5f6-5f8a-4311-b93f-b95e398996ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\nana\gui\detail">
+      <UniqueIdentifier>{17df962f-6a63-4e68-944e-3503dbf947a9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\source\basic_types.cpp">
+      <Filter>源文件\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\charset.cpp">
+      <Filter>源文件\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\datetime.cpp">
+      <Filter>源文件\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\deploy.cpp">
+      <Filter>源文件\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\internationalization.cpp">
+      <Filter>源文件\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\stdc++.cpp">
+      <Filter>源文件\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\unicode_bidi.cpp">
+      <Filter>源文件\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\audio\player.cpp">
+      <Filter>源文件\source\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\audio\detail\audio_device.cpp">
+      <Filter>源文件\source\audio\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\audio\detail\audio_stream.cpp">
+      <Filter>源文件\source\audio\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\audio\detail\buffer_preparation.cpp">
+      <Filter>源文件\source\audio\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\detail\platform_abstraction.cpp">
+      <Filter>源文件\source\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\detail\platform_spec_posix.cpp">
+      <Filter>源文件\source\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\detail\platform_spec_windows.cpp">
+      <Filter>源文件\source\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\filesystem\filesystem.cpp">
+      <Filter>源文件\source\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\animation.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\basis.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\dragdrop.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\dragger.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\drawing.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\effects.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\element.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\filebox.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\layout_utility.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\msgbox.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\notifier.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\place.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\programming_interface.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\screen.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\state_cursor.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\timer.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\tooltip.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\wvl.cpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\detail\basic_window.cpp">
+      <Filter>源文件\source\gui\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\detail\bedrock_pi.cpp">
+      <Filter>源文件\source\gui\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\detail\bedrock_posix.cpp">
+      <Filter>源文件\source\gui\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\detail\bedrock_windows.cpp">
+      <Filter>源文件\source\gui\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\detail\color_schemes.cpp">
+      <Filter>源文件\source\gui\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\detail\drawer.cpp">
+      <Filter>源文件\source\gui\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\detail\element_store.cpp">
+      <Filter>源文件\source\gui\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\detail\events_operation.cpp">
+      <Filter>源文件\source\gui\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\detail\native_window_interface.cpp">
+      <Filter>源文件\source\gui\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\detail\window_layout.cpp">
+      <Filter>源文件\source\gui\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\detail\window_manager.cpp">
+      <Filter>源文件\source\gui\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\skeletons\content_view.cpp">
+      <Filter>源文件\source\gui\widgets\skeletons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\skeletons\text_editor.cpp">
+      <Filter>源文件\source\gui\widgets\skeletons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\button.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\categorize.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\checkbox.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\combox.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\date_chooser.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\float_listbox.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\form.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\group.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\label.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\listbox.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\menu.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\menubar.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\panel.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\picture.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\progress.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\scroll.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\slider.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\spinbox.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\tabbar.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\textbox.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\toolbar.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\treebox.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\widgets\widget.cpp">
+      <Filter>源文件\source\gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\paint\detail\image_process_provider.cpp">
+      <Filter>源文件\source\paint\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\paint\detail\native_paint_interface.cpp">
+      <Filter>源文件\source\paint\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\paint\graphics.cpp">
+      <Filter>源文件\source\paint</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\paint\image.cpp">
+      <Filter>源文件\source\paint</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\paint\image_process_selector.cpp">
+      <Filter>源文件\source\paint</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\paint\pixel_buffer.cpp">
+      <Filter>源文件\source\paint</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\paint\text_renderer.cpp">
+      <Filter>源文件\source\paint</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\system\dataexch.cpp">
+      <Filter>源文件\source\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\system\platform.cpp">
+      <Filter>源文件\source\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\system\shared_wrapper.cpp">
+      <Filter>源文件\source\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\threads\pool.cpp">
+      <Filter>源文件\source\threads</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\source\detail\platform_abstraction.hpp">
+      <Filter>源文件\source\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\detail\platform_abstraction_types.hpp">
+      <Filter>源文件\source\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\detail\platform_spec_selector.hpp">
+      <Filter>源文件\source\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\detail\mswin\platform_spec.hpp">
+      <Filter>源文件\source\detail\mswin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\place_parts.hpp">
+      <Filter>源文件\source\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\detail\basic_window.hpp">
+      <Filter>源文件\source\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\detail\bedrock_types.hpp">
+      <Filter>源文件\source\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\detail\dynamic_drawing_object.hpp">
+      <Filter>源文件\source\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\detail\effects_renderer.hpp">
+      <Filter>源文件\source\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\detail\inner_fwd_implement.hpp">
+      <Filter>源文件\source\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\detail\window_register.hpp">
+      <Filter>源文件\source\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\widgets\skeletons\content_view.hpp">
+      <Filter>源文件\source\gui\widgets\skeletons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\paint\detail\image_bmp.hpp">
+      <Filter>源文件\source\paint\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\paint\detail\image_ico.hpp">
+      <Filter>源文件\source\paint\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\paint\detail\image_ico_resource.hpp">
+      <Filter>源文件\source\paint\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\paint\detail\image_jpeg.hpp">
+      <Filter>源文件\source\paint\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\paint\detail\image_pixbuf.hpp">
+      <Filter>源文件\source\paint\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\paint\detail\image_png.hpp">
+      <Filter>源文件\source\paint\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\paint\detail\image_processor.hpp">
+      <Filter>源文件\source\paint\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\paint\image_accessor.hpp">
+      <Filter>源文件\source\paint</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\paint\truetype.hpp">
+      <Filter>源文件\source\paint</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\basic_types.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\c++defines.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\charset.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\concepts.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\config.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\datetime.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\deploy.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\fwd.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\internationalization.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\key_type.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\std_condition_variable.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\std_mutex.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\std_thread.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\stdc++.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\traits.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\unicode_bidi.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\verbose_preprocessor.hpp">
+      <Filter>头文件\nana</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\button.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\categorize.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\checkbox.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\combox.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\date_chooser.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\float_listbox.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\form.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\group.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\label.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\listbox.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\menu.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\menubar.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\panel.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\picture.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\progress.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\scroll.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\slider.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\spinbox.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\tabbar.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\textbox.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\toolbar.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\treebox.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\widgets\widget.hpp">
+      <Filter>头文件\nana\gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\filesystem\filesystem_ext.hpp">
+      <Filter>头文件\nana\filesystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\detail\bedrock.hpp">
+      <Filter>头文件\nana\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\detail\color_schemes.hpp">
+      <Filter>头文件\nana\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\detail\drawer.hpp">
+      <Filter>头文件\nana\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\detail\element_store.hpp">
+      <Filter>头文件\nana\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\detail\event_code.hpp">
+      <Filter>头文件\nana\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\detail\events_holder.hpp">
+      <Filter>头文件\nana\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\detail\events_operation.hpp">
+      <Filter>头文件\nana\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\detail\general_events.hpp">
+      <Filter>头文件\nana\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\detail\inner_fwd.hpp">
+      <Filter>头文件\nana\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\detail\internal_scope_guard.hpp">
+      <Filter>头文件\nana\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\detail\native_window_interface.hpp">
+      <Filter>头文件\nana\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\detail\widget_content_measurer_interface.hpp">
+      <Filter>头文件\nana\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\detail\widget_geometrics.hpp">
+      <Filter>头文件\nana\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\detail\widget_notifier_interface.hpp">
+      <Filter>头文件\nana\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\detail\window_layout.hpp">
+      <Filter>头文件\nana\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\detail\window_manager.hpp">
+      <Filter>头文件\nana\gui\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\animation.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\basis.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\compact.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\dragdrop.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\dragger.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\drawing.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\effects.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\element.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\filebox.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\layout_utility.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\msgbox.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\notifier.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\place.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\programming_interface.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\screen.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\state_cursor.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\timer.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nana\gui\tooltip.hpp">
+      <Filter>头文件\nana\gui</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\include\nana\pop_ignore_diagnostic">
+      <Filter>头文件\nana</Filter>
+    </None>
+    <None Include="..\include\nana\push_ignore_diagnostic">
+      <Filter>头文件\nana</Filter>
+    </None>
+  </ItemGroup>
+</Project>

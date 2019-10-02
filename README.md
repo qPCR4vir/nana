@@ -5,6 +5,7 @@
 
 [![Licence](https://img.shields.io/badge/license-BSL-blue.svg?style=flat)](LICENSE)
 
+**This branch is used for development of support C++20. The supported compiler: MinGW(GCC 9.2)**
 
 Nana is a C++ library designed to allow developers to easily create cross-platform GUI applications with modern C++11 style. Currently it can work on Linux(X11) and Windows. The [nana repository](https://github.com/cnjinhao/nana) contains the entire source of the library. You can browse the source code and submit your pull request for contributing.
 

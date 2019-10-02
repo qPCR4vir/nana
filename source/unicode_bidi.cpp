@@ -25,7 +25,7 @@ namespace nana
 
 		static unsigned char charmap_0x0000_0x00C0[192] = {
 			BN, BN, BN, BN, BN, BN, BN, BN, BN, S,  B,  S,  WS, B, BN, BN,
-			BN, BN, BN, BN, BN, BN, BN, BN, BN, BN, BN, BN, B,  B,  B,  S, 
+			BN, BN, BN, BN, BN, BN, BN, BN, BN, BN, BN, BN, B,  B,  B,  S,
 			WS, ON, ON, ET, ET, ET, ON, ON, ON, ON, ON, ES, CS, ES, CS, CS,
 			EN, EN, EN, EN, EN, EN, EN, EN, EN, EN, CS, ON, ON, ON, ON, ON,
 			ON, L,  L,  L,  L,  L,  L,  L,  L,  L,  L,  L,  L,  L,  L,  L,
@@ -257,7 +257,7 @@ namespace nana
 				if(ch <= 0x1A16) return L;	//N = 23
 				if(ch <= 0x1A18) return NSM;	//N = 2
 				if(ch <= 0x1A55) return L;	//N = 61
-				if(0x1A57 == ch) return L;	
+				if(0x1A57 == ch) return L;
 				if(ch <= 0x1A60) return NSM;	//N = 9
 				if(0x1A62 == ch) return NSM;
 				if(ch <= 0x1A64) return L;	//N = 2
@@ -626,12 +626,7 @@ namespace nana
 
 		void unicode_bidi::_m_push_entity(const char_type * begin, const char_type *end, unsigned level, bidi_char bidi_char_type)
 		{
-#ifdef _nana_std_has_emplace_return_type
 			auto & e = levels_.emplace_back();
-#else
-			levels_.emplace_back();
-			auto & e = levels_.back();
-#endif
 			e.begin = begin;
 			e.end = end;
 			e.level = level;
@@ -644,7 +639,7 @@ namespace nana
 			return levels_.begin();
 		}
 
-	
+
 		auto unicode_bidi::_m_eor(std::vector<entity>::iterator i) ->bidi_char
 		{
 			const auto end = levels_.end();
@@ -784,7 +779,7 @@ namespace nana
 			//The final check etpos out
 			for(; etpos != end; ++etpos)
 				etpos->bidi_char_type = bidi_char::ON;
-			
+
 			//W7. Search backward from each instance of a European number until the first strong type (R, L, or sor) is found.
 			//If an L is found, then change the type of the European number to L.
 
@@ -948,7 +943,7 @@ namespace nana
 		{
 			return static_cast<unicode_bidi::bidi_category>(static_cast<int>(bidi_char_type) & 0xF000);
 		}
-		
+
 		unicode_bidi::bidi_char unicode_bidi::_m_char_dir(char_type ch)
 		{
 			auto type = bidi_charmap::bidi_char_type(ch);

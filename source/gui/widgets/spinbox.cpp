@@ -82,7 +82,6 @@ namespace nana
 
 				bool check_value(const std::string& str) const override
 				{
-#ifdef __cpp_if_constexpr
 					auto i = str.c_str();
 					if ('+' == *i || '-' == *i)
 						++i;
@@ -110,58 +109,12 @@ namespace nana
 								return false;
 						}
 					}
-#else
-					if (str.empty())
-						return true;
-
-					auto const size = str.size();
-					std::size_t pos = 0;
-					if (str[0] == '+' || str[0] == '-')
-						pos = 1;
-
-					if (std::is_same<T, int>::value)
-					{
-						for (; pos < size; ++pos)
-						{
-							auto ch = str[pos];
-							if (ch < '0' || '9' < ch)
-								return false;
-						}
-					}
-					else
-					{
-						bool dot = false;
-						for (; pos < size; ++pos)
-						{
-							auto ch = str[pos];
-							if (('.' == ch) && (!dot))
-							{
-								dot = true;
-								continue;
-							}
-
-							if (ch < '0' || '9' < ch)
-								return false;
-						}
-					}
-#endif
 					return true;
 				}
 
 				void spin(bool increase) override
 				{
-					if (increase)
-					{
-						value_ += step_;
-						if (value_ > last_)
-							value_ = last_;
-					}
-					else
-					{
-						value_ -= step_;
-						if (value_ < begin_)
-							value_ = begin_;
-					}
+					value_ = std::clamp((increase ? value_ + step_ : value_ - step_), begin_, last_);
 				}
 			private:
 				T begin_;

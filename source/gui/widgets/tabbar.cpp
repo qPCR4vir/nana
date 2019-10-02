@@ -27,14 +27,14 @@ namespace nana
 				window relative{nullptr};
 				paint::image img;
 				native_string_type text;
-				any	value;
+				std::any	value;
 
 				::nana::color bgcolor;
 				::nana::color fgcolor;
 
 				item_t() = default;
-				
-				item_t(native_string_type&& text, any && value)
+
+				item_t(native_string_type&& text, std::any && value)
 					: text(std::move(text)), value(std::move(value))
 				{}
 			};
@@ -346,7 +346,7 @@ namespace nana
 				typedef std::list<item_t>::iterator iterator;
 				typedef std::list<item_t>::const_iterator const_iterator;
 
-				nana::any& at(std::size_t i)
+				std::any& at(std::size_t i)
 				{
 					if(i < list_.size())
 						return at_no_bound_check(i);
@@ -367,19 +367,19 @@ namespace nana
 					return i;
 				}
 
-				nana::any& at_no_bound_check(std::size_t pos)
+				std::any& at_no_bound_check(std::size_t pos)
 				{
 					return iterator_at(pos)->value;
 				}
 
-				const nana::any& at(std::size_t pos) const
+				const std::any& at(std::size_t pos) const
 				{
 					if(pos < list_.size())
 						return at_no_bound_check(pos);
 					throw std::out_of_range("invalid position of tabbar");
 				}
 
-				const nana::any& at_no_bound_check(std::size_t pos) const
+				const std::any& at_no_bound_check(std::size_t pos) const
 				{
 					return iterator_at(pos)->value;
 				}
@@ -420,7 +420,7 @@ namespace nana
 					evt_agent_ = evt;
 				}
 
-				void insert(std::size_t pos, native_string_type&& text, nana::any&& value)
+				void insert(std::size_t pos, native_string_type&& text, std::any&& value)
 				{
 					if (pos >= list_.size())
 						pos = list_.size();
@@ -501,7 +501,7 @@ namespace nana
 
 						return true;
 					}
-					
+
 					return false;
 				}
 
@@ -636,7 +636,7 @@ namespace nana
 								t.relative = nullptr;
 						}
 					}
-					
+
 					tab.relative = wd;
 					API::show_window(wd, basis_.active == pos);
 					return old;
@@ -759,7 +759,7 @@ namespace nana
 					if((pos == npos) || (pos >= list_.size()))
 					{
 						pos = list_.size();
-						
+
 						if(evt_agent_)
 							if(!evt_agent_->adding(pos))
 								return false;
@@ -1182,12 +1182,12 @@ namespace nana
 					return layouter_->active();
 				}
 
-				nana::any& trigger::at(std::size_t i) const
+				std::any& trigger::at(std::size_t i) const
 				{
 					return layouter_->at(i);
 				}
 
-				nana::any& trigger::at_no_bound_check(std::size_t i) const
+				std::any& trigger::at_no_bound_check(std::size_t i) const
 				{
 					return layouter_->at_no_bound_check(i);
 				}
@@ -1207,7 +1207,7 @@ namespace nana
 					layouter_->event_agent(evt);
 				}
 
-				void trigger::insert(std::size_t pos, native_string_type&& text, nana::any&& value)
+				void trigger::insert(std::size_t pos, native_string_type&& text, std::any&& value)
 				{
 					layouter_->insert(pos, std::move(text), std::move(value));
 				}
@@ -1344,11 +1344,11 @@ namespace nana
 				struct item
 				{
 					::std::string text;
-					::nana::any	value;
+					::std::any	value;
 					::std::pair<int, int> pos_ends;
 					::nana::window attached_window{ nullptr };
 
-					item(std::string t, ::nana::any v)
+					item(std::string t, ::std::any v)
 						: text(std::move(t)), value(std::move(v))
 					{}
 				};
@@ -1510,12 +1510,7 @@ namespace nana
 							}
 
 							graph.rectangle(r, true);
-#ifdef _nana_std_has_string_view
 							graph.bidi_string({ m.pos_ends.first + 5, 0 }, m.text);
-
-#else
-							graph.bidi_string({ m.pos_ends.first + 5, 0 }, m.text.data(), m.text.size());
-#endif
 
 							++pos;
 						}
@@ -1664,7 +1659,7 @@ namespace nana
 			throw std::out_of_range("invalid position of tabbar_lite");
 		}
 
-		void tabbar_lite::push_back(std::string text, ::nana::any any)
+		void tabbar_lite::push_back(std::string text, ::std::any any)
 		{
 			auto & items = get_drawer_trigger().get_model()->items();
 			internal_scope_guard lock;
@@ -1684,7 +1679,7 @@ namespace nana
 			API::refresh_window(handle());
 		}
 
-		void tabbar_lite::push_front(std::string text, ::nana::any any)
+		void tabbar_lite::push_front(std::string text, ::std::any any)
 		{
 			auto & items = get_drawer_trigger().get_model()->items();
 			internal_scope_guard lock;

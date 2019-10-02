@@ -34,44 +34,19 @@
  *	- STD_NUMERIC_CONVERSIONS_NOT_SUPPORTED  (MinGW with GCC < 4.8.1)
  *	- STD_NUMERIC_CONVERSIONS_NOT_SUPPORTED (MinGW with GCC < 4.8.1)
  *	- STD_TO_STRING_NOT_SUPPORTED (MinGW with GCC < 4.8)
- *	- STD_FILESYSTEM_NOT_SUPPORTED (GCC < 5.3) ....
  *	- CXX_NO_INLINE_NAMESPACE (Visual C++ < 2015)
  *
  *	There are two kinds of flags:
  *	* _nana_std_xxx indicates that nana provides a standard-like class for workaround of lack of C++ support.
  *  * _nana_std_has_xxx indicates that nana detects whether a C++ feature is supported. Nana doesn't provide a standard-like class for this missing feature.
  *
- *	- _nana_std_make_unique (__cpluscplus < 201402)
- *	- _nana_std_put_time (GCC < 5)
- *  - _nana_std_clamp (Visual C++ < 2017)
  */
 
 #ifndef NANA_CXX_DEFINES_INCLUDED
 #define NANA_CXX_DEFINES_INCLUDED
-#define STD_FILESYSTEM_NOT_SUPPORTED
 
 //C++ language
-#if defined(_MSC_VER)
-#	if (_MSC_VER < 1900)
-#		//About std.experimental.filesystem.
-#		//Through VC2013 has provided <filesystem>, but all the names are given in namespace std. It's hard to alias these names into std::experimental,
-#		//So Nana use nana.filesystem implement instead for VC2013
-#
-#		//Nana defines some macros for lack of support of keywords
-#		define _ALLOW_KEYWORD_MACROS
-#
-#		define CXX_NO_INLINE_NAMESPACE //no support of C++11 inline namespace until Visual C++ 2015
-#		define noexcept		//no support of noexcept until Visual C++ 2015
 
-#		define constexpr	//no support of constexpr until Visual C++ 2015 ? const ??
-#	else
-#		undef STD_FILESYSTEM_NOT_SUPPORTED
-#	endif
-#elif defined(__GNUC__) && not defined(__clang__)
-#	if (__GNUC__ == 4 && __GNUC_MINOR__ < 6)
-#		define noexcept		//no support of noexcept until GCC 4.6
-#	endif
-#endif
 
 // Set this to "UTF-32" at the command-line for big endian.
 #ifndef NANA_UNICODE
@@ -148,15 +123,6 @@
 		#endif
 	#endif
 
-
-#	if ((__GNUC__ < 5)   )
-#		define _nana_std_put_time
-#	endif
-
-#   if ((__GNUC__ > 5) || ((__GNUC__ == 5) && (__GNUC_MINOR__ >= 3 ) ) )
-#	    undef STD_FILESYSTEM_NOT_SUPPORTED
-#   endif
-
 	#if (__GNUC__ == 4)
 		#if ((__GNUC_MINOR__ < 8) || (__GNUC_MINOR__ == 8 && __GNUC_PATCHLEVEL__ < 1))
 			#define STD_THREAD_NOT_SUPPORTED
@@ -192,45 +158,6 @@
 #endif
 
 
-//Detects the feature std::make_unique
-//std::make_unique has been provided by Visual C++ 2013 and later
-#undef _nana_std_make_unique
-#if (defined(__clang__) && (__cplusplus < 201305L || (__cplusplus == 201305L && (__clang_major__ * 100 + __clang_minor__ < 304 )))) \
-	|| ((!defined(__clang__)) && defined(__GNUC__) && __cplusplus < 201300L)
-#	define _nana_std_make_unique
-#endif
-
-//Detects the feature std::clamp
-//Visual C++ 2017 with /std:c++latest provides the std::clamp
-#undef _nana_std_clamp
-#if (defined(_MSC_VER) && ((!defined(_MSVC_LANG)) || _MSVC_LANG < 201403L))	\
-	|| (defined(__clang__) && (__cplusplus < 201406L))						\
-	|| (defined(__GNUC__) && (!defined(__clang__)) && (__cplusplus < 201703))
-#	define _nana_std_clamp
-#endif
-
-
-#undef _nana_std_optional
-#if ((defined(_MSC_VER) && ((!defined(_MSVC_LANG)) || _MSVC_LANG < 201703))) ||	\
-	((!defined(_MSC_VER)) && ((__cplusplus < 201703L) || \
-		(defined(__clang__) && (__clang_major__ * 100 + __clang_minor__ < 400)) ||				\
-		(!defined(__clang__) && defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ < 701)))	\
-	)
-#	define _nana_std_optional
-#endif
-
-#undef _nana_std_has_string_view
-#undef _nana_std_has_emplace_return_type
-#if ((defined(_MSC_VER) && (_MSC_VER >= 1912) && defined(_MSVC_LANG) && _MSVC_LANG >= 201703)) ||				\
-	((__cplusplus >= 201703L) && \
-		(defined(__clang__) && (__clang_major__ * 100 + __clang_minor__ >= 400) ||		\
-		(!defined(__clang__) && defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 701))) \
-	)
-#	define _nana_std_has_string_view
-#	define _nana_std_has_emplace_return_type
-#endif
-
-
 #if defined(NANA_WINDOWS)
 	#ifndef _UNICODE
 		#define _UNICODE
@@ -243,15 +170,7 @@
 
 // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0061r0.html
 
-#if defined(__cpp_lib_experimental_filesystem) && (__cpp_lib_experimental_filesystem == 201406)
-#	undef STD_FILESYSTEM_NOT_SUPPORTED
-#endif
-
-
 #ifdef __has_include
-#  if __has_include(<filesystem>)
-#    undef STD_FILESYSTEM_NOT_SUPPORTED
-#  endif
 #  if __has_include(<mutex>)
 #    if !(defined(NANA_MINGW) && !defined(_GLIBCXX_HAS_GTHREADS))
 //See the comment above regarding MinGW's threading support
