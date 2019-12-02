@@ -22,14 +22,16 @@
 
 namespace nana
 {  
-       /// Can repeatedly call a piece of code.
+
+	class timer;
 
 	struct arg_elapse
 		: public event_arg
 	{
-		long long id;	//timer identifier;
+		timer*	sender; //indicates which timer emitted this notification
 	};
 
+	/// Can repeatedly call a piece of code.
 	class timer
 	{
 		struct implement;
@@ -46,7 +48,7 @@ namespace nana
 		template<typename Function>
 		void elapse(Function && fn)
 		{
-			elapse_.connect(std::forward<Function>(fn));
+			elapse_->connect(std::forward<Function>(fn));
 		}
 
 		void reset();
@@ -64,7 +66,7 @@ namespace nana
 	private:
 		unsigned _m_interval() const;
 	private:
-		nana::basic_event<arg_elapse> elapse_;
+		std::shared_ptr<nana::basic_event<arg_elapse>> elapse_;
 		implement * const impl_;
 	};
 }//end namespace nana
