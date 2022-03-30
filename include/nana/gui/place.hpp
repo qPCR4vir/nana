@@ -80,7 +80,7 @@ namespace nana
 		: ::nana::noncopyable
 	{
 		struct implement;
-
+		class division;
 
 		class field_interface
 		{
@@ -95,6 +95,7 @@ namespace nana
 			virtual field_interface& operator<<(std::string label) = 0;
 			virtual field_interface& operator<<(window) = 0;
 			virtual field_interface& fasten(window) = 0;
+			virtual field_interface& operator<<(division& child_division) = 0;
 			
 			template<typename Widget>
 			field_interface& operator<<(const agent<Widget>& ag)
@@ -106,6 +107,53 @@ namespace nana
 			virtual void _m_add_agent(const detail::place_agent&) = 0;
 		};
 	public:
+		/// This place division layout objects in the selected manner
+
+		/// this division layouts do not own anything. All layouts created or manipulated here will
+		/// be passed to the place and deleted every time you call place.div()
+		/// meaning - make sure you (re)create this layout after every call to place.div()
+		/// form f; 
+		/// place p(f);
+		/// button b1{f, "b1"}, b2{f, "b2"}, b3{f, "b3"};
+		/// p.div("all");
+		/// vertical_div vd{p, "vert_div"};
+		/// vd<<b1;
+		/// horizontal_div hd{p, "h_div"};
+		/// hd<<b2<<b3;
+		/// vd<<hd;
+		/// p["all"]<<vd;
+		class division : public field_interface
+		{
+		public:
+			division(place& p);
+			virtual field_interface& operator<<(const char* label) { *impl << label; };
+			virtual field_interface& operator<<(std::string label) { *impl << label; };
+			virtual field_interface& operator<<(window w) { *impl << w; };
+			virtual field_interface& fasten(window w) { impl->fasten(w); };
+			virtual field_interface& operator<<(division& child_division);
+			virtual ~division();
+
+		protected:
+			std::unique_ptr<field_interface> impl;
+		};
+
+		class vertical_div: public division
+		{
+		public:
+			vertical_div(place &p, std::string name);
+		};
+        class horizontal_div : public division
+		{
+		public:
+			horizontal_div(place& p, std::string name);
+		};
+		class grid_div : public division
+		{
+		public:
+			grid_div(place& p, std::string name);
+		};
+
+
 		class error :public std::invalid_argument
 		{
 		public:

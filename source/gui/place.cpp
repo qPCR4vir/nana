@@ -792,6 +792,16 @@ namespace nana
 			return *this;
 		}
 
+		field_interface& operator<<(place::division& child_division) override
+		{
+			
+			if (!child_division.impl->attached)
+				throw place::error("Division alrready added to another field", 
+					               *place_ptr_, 
+					               child_division.impl->attached->name);
+			return *this;
+		}
+
 		field_interface& fasten(window wd) override
 		{
 			_m_insert_widget(wd, true);
@@ -809,8 +819,7 @@ namespace nana
 		std::vector<std::unique_ptr<nana::widget>> widgets_;
 		std::vector<element_t>	elements;
 		std::vector<element_t>	fastened;
-	private:
-		place * place_ptr_;
+	    place * place_ptr_;
 	};//end class field_gather
 
 	class place::implement::field_dock
@@ -1168,8 +1177,21 @@ namespace nana
 		repeated_array fit_parameters; //it is ignored when fit is not fit_policy::horz or fit_policy::vert
 		::nana::direction dir{::nana::direction::west};
 		std::string name;
-		std::vector<std::unique_ptr<division>> children;
+		using children_divisions = std::vector<std::unique_ptr<place::implement::division>>;
+		children_divisions children;
+		void add_to_parent_children(children_divisions& p_children, children_divisions::value_type div)
+		{
+			if (!p_children.empty())
+			{
+				//Hides the splitter if its right leaf is undisplayed.
+				if ((p_children.back()->kind_of_division == division::kind::splitter) && !div->display)
+					p_children.back()->display = false;
 
+				p_children.back()->div_next = div.get();
+			}
+
+			p_children.emplace_back(std::move(div));
+		}
 		::nana::rectangle field_area;
 		number_t weight;
 		token    weigth_type=token::weight;
@@ -1525,7 +1547,7 @@ namespace nana
 	};
 
 	class place::implement::div_grid
-		: public division
+		: public place::implement::division
 	{
 	public:
 		div_grid(std::string&& name, place_parts::repeated_array&& arrange, std::vector<rectangle>&& collapses) noexcept
@@ -2673,6 +2695,43 @@ namespace nana
 		}
 	};
 
+	place::division::division(place& p)
+		: impl{ new place::implement::field_gather(&p) }
+	{
+	}
+	place::division::~division()
+	{
+	}
+	place::field_interface& place::division::operator<<(place::division& child_division)
+	{ 
+		auto fi = static_cast<place::implement::field_gather*>(child_division.impl.get());
+		if (!fi->attached)
+			throw place::error("Division layout alrready added to another field",
+				*(fi->place_ptr_));
+		auto this_fi = static_cast<place::implement::field_gather*>(impl.get());
+
+		return *this;
+	}
+
+
+	place::vertical_div::vertical_div(place& p, std::string name)
+		: division(p) 
+	{
+		static_cast<place::implement::field_gather*>(impl.get())->attached = new place::implement::div_arrange(true, std::move(name), {});
+	}
+
+	place::horizontal_div::horizontal_div(place& p, std::string name)
+		: division(p)
+	{
+		static_cast<place::implement::field_gather*>(impl.get())->attached = new place::implement::div_arrange(false, std::move(name), {});
+	}
+
+	place::grid_div::grid_div(place& p, std::string name)
+		: division(p)
+	{
+		static_cast<place::implement::field_gather*>(impl.get())->attached = new place::implement::div_grid(std::move(name), {}, {});
+	}
+
 	place::implement::~implement()
 	{
 		api::umake_event(event_destroy_handle);
@@ -2820,16 +2879,7 @@ namespace nana
 				case token::div_start:
 				{
 					auto div = scan_div(tknizer, false, ignore_duplicate);
-					if (!children.empty())
-					{
-						//Hides the splitter if its right leaf is undisplayed.
-						if ((children.back()->kind_of_division == division::kind::splitter) && !div->display)
-							children.back()->display = false;
-
-						children.back()->div_next = div.get();
-					}
-
-					children.emplace_back(std::move(div));
+					div->add_to_parent_children(children, std::move(div)); 
 				}
 				break;
 				case token::switchable:
