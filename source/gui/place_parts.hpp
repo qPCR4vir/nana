@@ -12,12 +12,15 @@
 #ifndef NANA_GUI_PLACE_PARTS_HPP
 #define NANA_GUI_PLACE_PARTS_HPP
 
+#include <stdexcept>
+#include <deque>
+
 #include <nana/gui/widgets/form.hpp>
 #include <nana/gui/widgets/tabbar.hpp>
 #include <nana/gui/element.hpp>
 #include <nana/paint/text_renderer.hpp>
-#include <stdexcept>
-#include <deque>
+
+#include "../detail/platform_abstraction.hpp"
 
 namespace nana
 {
@@ -478,15 +481,16 @@ namespace nana
 
 		struct display_metrics
 		{
-			std::size_t dpi;
+			double dpi;
 			double font_px{ 0 };
 
 			display_metrics(window wd) :
-				dpi(api::window_dpi(wd))
+				dpi(platform_abstraction::dpi_scale(wd))
 			{
+                // if (dpi < 96) dpi = 96;  // for now   ------------  use platform_abstraction!!!
 				auto font_info = api::typeface(wd).info();
-				if (font_info)
-					font_px = font_info->size_pt * dpi / 72;
+                if (font_info)
+                    font_px = font_info->size_pt * dpi; //         / 72;
 			}
 		};
 
@@ -548,7 +552,7 @@ namespace nana
 					switch (unit_)
 					{
 					case units::medium:
-						return val * dm.dpi / 96;
+						return val * dm.dpi;  // / 96;
 					case units::px:
 						return val;
 					case units::em:
@@ -562,9 +566,9 @@ namespace nana
 					case units::medium:
 						return val;
 					case units::px:
-						return val * 96 / dm.dpi;
+						return val / dm.dpi;  // * 96;
 					case units::em:
-						return val * dm.font_px * 96 / dm.dpi;
+						return val * dm.font_px / dm.dpi;  // * 96;
 					}
 				}
 				return 0;

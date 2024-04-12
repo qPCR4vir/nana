@@ -1903,9 +1903,9 @@ namespace nana{
 #ifdef NANA_WINDOWS
 			if (!::IsWindow(reinterpret_cast<HWND>(wd)))
 				return 0;
-
+			// #undef min
 			auto& dpi_fn = windows_dpi_function();
-			if (dpi_fn.good())
+			if (dpi_fn.good())  // std::min(96u, 
 				return dpi_fn.GetDpiForWindow(reinterpret_cast<HWND>(wd));
 #endif
 			static_cast<void>(wd);	//eliminate the unused warning

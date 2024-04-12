@@ -918,7 +918,7 @@ namespace nana
 			if(0 == fi.size_pt)
 				fi.size_pt = platform_abstraction::font_default_pt();
 
-			return fi.size_pt * dpi / 72;
+			return fi.size_pt * dpi / 96 ;  //  / 72;
 #endif
 		}
 
@@ -1158,8 +1158,16 @@ namespace nana
 	{
 		platform_abstraction::revertible_mutex mutex;
 		std::size_t		dpi{ 0 };
+        double dpi_scale { 1.0 }, 
+			   ref_dpi { 96.0};  // 96 DPI is the reference DPI - magic number set only once - constexpr ?
 		std::shared_ptr<font_interface> font;
 		font_service font_svc;
+		void _set_dpi(std::size_t new_dpi) 
+		{ 
+			dpi = new_dpi; 
+			dpi_scale = static_cast<double>(dpi) / ref_dpi; 
+			if (dpi_scale < 1.0) dpi_scale = 1.0;
+		}
 	};
 
 	namespace
@@ -1341,7 +1349,7 @@ namespace nana
 
 	void platform_abstraction::set_current_dpi(std::size_t dpi)
 	{
-		platform_storage().dpi = dpi;
+            platform_storage()._set_dpi(dpi);
 	}
 
 	std::size_t platform_abstraction::current_dpi()
@@ -1349,53 +1357,68 @@ namespace nana
 		return platform_storage().dpi;
 	}
 
+	double platform_abstraction::dpi_scale()
+    {
+        return platform_storage().dpi_scale;
+    }
+
+    double platform_abstraction::dpi_scale(window wd)
+    {
+        double dpi_scale = static_cast<double>(api::window_dpi(wd)) / platform_storage().ref_dpi;
+        if (dpi_scale < 1.0)
+            dpi_scale = 1.0;
+        return dpi_scale;
+    }
+
 	int platform_abstraction::dpi_scale(int size)
 	{
-		double dpiScale = static_cast<double>(current_dpi() / 96.0);
+		// double dpiScale = static_cast<double>(current_dpi() / 96.0);
 
-		return static_cast<int>(size * dpiScale);
+		return static_cast<int>(size * dpi_scale());
 	}
 
 	nana::size platform_abstraction::dpi_scale(nana::size size)
 	{
-		double dpiScale = static_cast<double>(current_dpi() / 96.0);
+		// double dpiScale = static_cast<double>(current_dpi() / 96.0);
 
-		return { static_cast<size::value_type>(size.width * dpiScale), static_cast<size::value_type>(size.height * dpiScale) };
+		return { static_cast<size::value_type>(size.width * dpi_scale()), static_cast<size::value_type>(size.height * dpi_scale()) };
 	}
 
 	nana::point platform_abstraction::dpi_scale(nana::point point)
 	{
-		double dpiScale = static_cast<double>(current_dpi() / 96.0);
+		// double dpiScale = static_cast<double>(current_dpi() / 96.0);
 
-		return { static_cast<nana::point::value_type>(point.x * dpiScale), static_cast<nana::point::value_type>(point.y * dpiScale) };
+		return { static_cast<nana::point::value_type>(point.x * dpi_scale()), static_cast<nana::point::value_type>(point.y * dpi_scale()) };
 	}
 
 	int platform_abstraction::dpi_scale(window wd, int scalar)
 	{
-		double dpiScale = static_cast<double>(api::window_dpi(wd) / 96.0);
+		// double dpiScale = static_cast<double>(api::window_dpi(wd) / 96.0);
 
-		return static_cast<int>(scalar * dpiScale);
+		return static_cast<int>(scalar * dpi_scale(wd));
 	}
 
 	unsigned int platform_abstraction::dpi_scale(window wd, unsigned int scalar)
 	{
-		double dpiScale = static_cast<double>(api::window_dpi(wd) / 96.0);
+		// double dpiScale = static_cast<double>(api::window_dpi(wd) / 96.0);
 
-		return static_cast<unsigned int>(scalar * dpiScale);
+		return static_cast<unsigned int>(scalar * dpi_scale(wd));
 	}
 
 	nana::size platform_abstraction::dpi_scale(window wd, nana::size size)
 	{
-		double dpiScale = static_cast<double>(api::window_dpi(wd) / 96.0);
+		// double dpiScale = static_cast<double>(api::window_dpi(wd) / 96.0);
 
-		return { static_cast<size::value_type>(size.width * dpiScale), static_cast<size::value_type>(size.height * dpiScale) };
+		return { static_cast<size::value_type>(size.width * dpi_scale(wd)), 
+			     static_cast<size::value_type>(size.height * dpi_scale(wd)) };
 	}
 
 	nana::point platform_abstraction::dpi_scale(window wd, nana::point point)
 	{
-		double dpiScale = static_cast<double>(api::window_dpi(wd) / 96.0);
+		// double dpiScale = static_cast<double>(api::window_dpi(wd) / 96.0);
 
-		return { static_cast<nana::point::value_type>(point.x * dpiScale), static_cast<nana::point::value_type>(point.y * dpiScale) };
+		return { static_cast<nana::point::value_type>(point.x * dpi_scale(wd)), 
+			     static_cast<nana::point::value_type>(point.y * dpi_scale(wd)) };
 	}
 
 	std::shared_ptr<platform_abstraction::font> platform_abstraction::open_font(const font_info& fi, std::size_t dpi, const path_type& ttf)

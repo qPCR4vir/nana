@@ -499,20 +499,22 @@ namespace nana
 
 			btn_ok_.create(*this);
 			btn_ok_.i18n(i18n_eval("NANA_BUTTON_OK"));
-			btn_ok_.events().click.connect_unignorable([this]{
+			btn_ok_.events().click.connect_unignorable([this]
+				{
 
-				if (verifier_ && !verifier_(handle()))
-					return;
+					if (verifier_ && !verifier_(handle()))
+						return;
 
-				close();
-				valid_input_ = true;
-			});
+					close();
+					valid_input_ = true;
+				});
 
 			btn_cancel_.create(*this);
 			btn_cancel_.i18n(i18n_eval("NANA_BUTTON_CANCEL"));
-			btn_cancel_.events().click.connect_unignorable([this]{
-				close();
-			});
+			btn_cancel_.events().click.connect_unignorable([this]
+				{
+					close();
+				});
 
 			unsigned height = 20 + description_size.height + 10 + 38;
 			std::stringstream ss_content;

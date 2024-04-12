@@ -1,16 +1,16 @@
 /*
  *	Platform Abstraction
  *	Nana C++ Library(http://www.nanapro.org)
- *	Copyright(C) 2017-2022 Jinhao(cnjinhao@hotmail.com)
+ *	Copyright(C) 2017-2024 Jinhao(cnjinhao@hotmail.com)
  *
  *	Distributed under the Boost Software License, Version 1.0.
  *	(See accompanying file LICENSE_1_0.txt or copy at
  *	http://www.boost.org/LICENSE_1_0.txt)
  *
- *	@file: nana/detail/platform_spec.hpp
+ *	@file nana/detail/platform_spec.hpp
  *
  *	The platform_abstraction provides some functions and types for the abstract
- *	system platform.
+ *	system platform. Not part of the public API.
  */
 #ifndef NANA_DETAIL_PLATFORM_ABSTRACTION_HEADER_INCLUDED
 #define NANA_DETAIL_PLATFORM_ABSTRACTION_HEADER_INCLUDED
@@ -23,6 +23,7 @@
 
 namespace nana
 {
+	/// class with no member variables and 'real' constructor, only static functions including initialize/shutdown
 	class platform_abstraction
 	{
 	public:
@@ -51,7 +52,9 @@ namespace nana
 
 		using path_type = ::std::filesystem::path;
 
+		/// will create/hold a platform_runtime with revertible_mutex, dpi, font_interface and font_service data
 		static void initialize();
+
 		/// Shutdown before destruction of platform_spec 
 		static void shutdown();
 
@@ -63,6 +66,9 @@ namespace nana
 
 		static void set_current_dpi(std::size_t dpi);
 		static std::size_t current_dpi();
+
+		static double dpi_scale();
+        static double dpi_scale(window wd);
 
 		static int dpi_scale(int scalar);
 		static nana::size dpi_scale(nana::size size);

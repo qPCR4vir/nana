@@ -1,15 +1,23 @@
 /*
 *	A text editor implementation
 *	Nana C++ Library(http://www.nanapro.org)
-*	Copyright(C) 2003-2022 Jinhao(cnjinhao@hotmail.com)
+*	Copyright(C) 2003-2024 Jinhao(cnjinhao@hotmail.com)
 *
 *	Distributed under the Boost Software License, Version 1.0.
 *	(See accompanying file LICENSE_1_0.txt or copy at
 *	http://www.boost.org/LICENSE_1_0.txt)
 *
-*	@file: nana/gui/widgets/skeletons/text_editor.cpp
+*	@file nana/gui/widgets/skeletons/text_editor.cpp
 *	@contributors: Ariel Vina-Rodriguez, Oleg Smolsky
 */
+
+#include <deque>
+#include <numeric>
+#include <cwctype>
+#include <cstring>
+#include <algorithm>
+#include <map>
+
 #include <nana/gui/widgets/skeletons/text_editor.hpp>
 #include <nana/gui/widgets/skeletons/textbase_export_interface.hpp>
 #include <nana/gui/element.hpp>
@@ -18,12 +26,7 @@
 #include <nana/gui/widgets/widget.hpp>
 #include "content_view.hpp"
 
-#include <deque>
-#include <numeric>
-#include <cwctype>
-#include <cstring>
-#include <algorithm>
-#include <map>
+#include "../../../detail/platform_abstraction.hpp"
 
 namespace nana::widgets::skeletons
 {
@@ -2758,7 +2761,7 @@ namespace nana::widgets::skeletons
 		{
 			const int editor_top = text_area_.area.y - text_area_.padding_top;
 
-			double scale = 96.0 / api::window_dpi(window_);
+			double scale = ::nana::platform_abstraction::dpi_scale(window_); //          96.0 / api::window_dpi(window_);
 			//Shrink the tip string on top-left of the text.
 			const double top_space_px = (text_top - editor_top - static_cast<int>(scheme_->tip_string_floating_distance_px)) * scale;
 

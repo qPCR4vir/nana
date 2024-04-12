@@ -19,6 +19,8 @@
 #include <nana/gui/widgets/skeletons/textbase_export_interface.hpp>
 #include <nana/gui/detail/widget_content_measurer_interface.hpp>
 
+#include "../../detail/platform_abstraction.hpp"
+
 #include <iterator>
 #include <algorithm>
 
@@ -527,9 +529,9 @@ namespace nana
 
 			size_t _m_button_size()
 			{
-				double dpiScale = api::window_dpi(widget_->handle()) / 96.0;
+				// double dpiScale = api::window_dpi(widget_->handle()) / 96.0;
 
-				return static_cast<size_t>(scheme_ptr_->button_size * dpiScale);
+				return static_cast<size_t>(scheme_ptr_->button_size * platform_abstraction::dpi_scale(widget_->handle()));
 			}
 
 			void _m_draw_push_button(bool enabled)

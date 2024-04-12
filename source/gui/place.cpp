@@ -980,7 +980,7 @@ namespace nana
 				{
 					//avoid deviation in dpi scaling.
 					if (96 != dm.dpi)
-						this->weight.assign(static_cast<int>(fv * 96 / dm.dpi) + 1);
+						this->weight.assign(static_cast<int>(fv / dm.dpi) + 1);  //  * 96
 					else
 						this->weight.assign(static_cast<int>(fv));
 
