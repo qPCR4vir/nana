@@ -767,7 +767,10 @@ namespace nana
 			{
 				dpi = platform_abstraction::current_dpi();
 				if( 0 == dpi)
-					dpi = detail::native_interface::system_dpi();
+				{	
+					platform_abstraction::set_current_dpi( detail::native_interface::system_dpi());
+                    dpi = platform_abstraction::current_dpi();
+				}
 			}
 
 			if (!ttf.empty())
@@ -869,6 +872,7 @@ namespace nana
 		// Returns the DPI-dependent font size, in pixels
 		static font_height_type _m_set_default_values(font_info& fi, std::size_t dpi)
 		{
+            dpi = platform_abstraction::cap_dpi(dpi);
 #ifdef NANA_WINDOWS
 			std::wstring wfont_family = nana::detail::to_nstring(fi.family);
 			//Make sure the length of font family less than LF_FACESIZE which is defined by Windows
@@ -877,7 +881,7 @@ namespace nana
 
 			//Translate pt to px
 			auto hDC = ::GetDC(nullptr);
-			auto font_height = -static_cast<LONG>(fi.size_pt * dpi / 72);
+			auto font_height = -static_cast<LONG>(fi.size_pt * dpi / platform_abstraction::ref_dpi());
 
 			if (wfont_family.empty() || (0 == font_height))
 			{
@@ -906,9 +910,12 @@ namespace nana
 
 				if (0 == font_height)
 				{
-					auto correspond_dpi = detail::native_interface::system_dpi();
-					fi.size_pt = static_cast<double>(std::abs(metrics.lfMessageFont.lfHeight) * 72 / correspond_dpi);
-					font_height = -static_cast<LONG>(fi.size_pt * dpi / 72);
+					if (0 == platform_abstraction::current_dpi()) 
+					{
+						platform_abstraction::set_current_dpi(detail::native_interface::system_dpi());
+					}
+                    fi.size_pt = static_cast<double>(std::abs(metrics.lfMessageFont.lfHeight) / platform_abstraction::dpi_scale());
+					font_height = -static_cast<LONG>(fi.size_pt * dpi / platform_abstraction::ref_dpi());
 				}
 			}
 
@@ -918,7 +925,7 @@ namespace nana
 			if(0 == fi.size_pt)
 				fi.size_pt = platform_abstraction::font_default_pt();
 
-			return fi.size_pt * dpi / 96 ;  //  / 72;
+			return fi.size_pt * dpi / platform_abstraction::ref_dpi(); //  / 96;
 #endif
 		}
 
@@ -932,7 +939,7 @@ namespace nana
 
 			//Translate pt to px
 			auto hDC = ::GetDC(nullptr);
-			auto font_height = -static_cast<LONG>(fi.size_pt * dpi / 72);
+			auto font_height = -static_cast<LONG>(fi.size_pt * dpi / platform_abstraction::ref_dpi());
 			::ReleaseDC(nullptr, hDC);
 
 			::LOGFONT lf{};
@@ -956,8 +963,8 @@ namespace nana
 				font_family = "*";
 
 			//Calculate the DPI-dependent font size
-			auto dpi_size_pt = (fi.size_pt ? fi.size_pt : platform_abstraction::font_default_pt()) * dpi / 96;
-			auto font_height = dpi_size_pt / 72;
+			auto dpi_size_pt = (fi.size_pt ? fi.size_pt : platform_abstraction::font_default_pt()) * dpi / platform_abstraction::ref_dpi();
+			auto font_height = dpi_size_pt / 96;
 			
 			std::string pat_str = '-' + std::to_string(dpi_size_pt);
 			if (fi.style.weight < 400)
@@ -1312,7 +1319,7 @@ namespace nana
 		::SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof metrics, &metrics, 0);
 
 		auto desktop = ::GetDC(nullptr);
-		auto pt = std::abs(metrics.lfMessageFont.lfHeight) * 72.0 / ::GetDeviceCaps(desktop, LOGPIXELSY);
+                auto pt = std::abs(metrics.lfMessageFont.lfHeight) * platform_abstraction::ref_dpi() / ::GetDeviceCaps(desktop, LOGPIXELSY);
 		::ReleaseDC(nullptr, desktop);
 		return pt;
 #else
@@ -1356,6 +1363,23 @@ namespace nana
 	{
 		return platform_storage().dpi;
 	}
+
+    double platform_abstraction::ref_dpi()
+    {
+        return platform_storage().ref_dpi;
+    }
+
+	std::size_t platform_abstraction::cap_dpi(std::size_t dpi)
+    {
+		#undef min
+        return std::min(dpi, static_cast<std::size_t>(platform_storage().ref_dpi));
+	}
+
+    std::size_t platform_abstraction::current_dpi(window wd)
+    {
+		#undef min
+        return std::min(api::window_dpi(wd), static_cast<std::size_t>(platform_storage().ref_dpi));
+    }
 
 	double platform_abstraction::dpi_scale()
     {

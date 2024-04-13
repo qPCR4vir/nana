@@ -1505,8 +1505,12 @@ namespace api
 		if (is_window(wd))
 		{
 			auto dpi = platform_abstraction::current_dpi();
-			if(0 == dpi)
-				dpi = interface_type::window_dpi(wd->root);
+			if(0 == dpi) 
+			{
+               dpi = interface_type::window_dpi(wd->root);
+               dpi = platform_abstraction::cap_dpi(dpi);
+            }
+
 			typeface(wd, paint::font{fi, dpi});
 		}
 	}

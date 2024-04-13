@@ -66,6 +66,9 @@ namespace nana
 
 		static void set_current_dpi(std::size_t dpi);
 		static std::size_t current_dpi();
+        static std::size_t current_dpi(window wd);
+		static std::size_t cap_dpi(std::size_t dpi);
+        static double ref_dpi();
 
 		static double dpi_scale();
         static double dpi_scale(window wd);

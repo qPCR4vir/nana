@@ -24,6 +24,7 @@
 #include "effects_renderer.hpp"
 #include "window_register.hpp"
 #include "inner_fwd_implement.hpp"
+#include "../../detail/platform_abstraction.hpp"
 
 #include <stdexcept>
 #include <algorithm>
@@ -1377,7 +1378,7 @@ namespace detail
 
 			auto info = wd->drawer.graphics.typeface().info();
 
-			nana::paint::font ft{ info.value(), native_interface::window_dpi(wd->root) };
+			nana::paint::font ft { info.value(), platform_abstraction::cap_dpi(native_interface::window_dpi(wd->root)) };
 
 			wd->drawer.graphics.typeface(ft);
 

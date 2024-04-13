@@ -979,7 +979,7 @@ namespace nana
 				if (1 == set_weight)
 				{
 					//avoid deviation in dpi scaling.
-					if (96 != dm.dpi)
+					if (1.0 != dm.dpi)
 						this->weight.assign(static_cast<int>(fv / dm.dpi) + 1);  //  * 96
 					else
 						this->weight.assign(static_cast<int>(fv));
