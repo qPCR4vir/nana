@@ -1521,10 +1521,7 @@ namespace api
 		internal_scope_guard lock;
 		if (is_window(wd))
 		{
-			auto dpi = platform_abstraction::current_dpi();
-			if(0 == dpi)
-				dpi = interface_type::window_dpi(wd->root);
-			typeface(wd, paint::font{fi, dpi});
+			typeface(wd, paint::font{fi});
 		}
 	}
 

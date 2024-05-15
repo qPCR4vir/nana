@@ -39,26 +39,21 @@ namespace nana
 			font(drawable_type);
 			font(const font&);
 
-			/// \todo: generalize dpi to v2 awareness
-
 			/// creates a font object.
 			/// @param info Specifies the font family, size and styles.
-			/// @param dpi Specifies the DPI for scaling the font, 0 indicates the system DPI.
-			font(const font_info& info, int dpi = 0);
+			font(const font_info& info);
 
 			/// creates a font object.
 			/// @param name The font family.
 			/// @param size_pt The font size.
 			/// @param fs The font style.
-			/// @param dpi Specifies the DPI for scaling the font, 0 indicates the system DPI.
-			font(const ::std::string& name, double size_pt, const font_style& fs = {}, int dpi = 0);
+			font(const ::std::string& name, double size_pt, const font_style& fs = {});
 
 			/// creates a font object with a truetype font file.
 			/// @param size_pt The font size.
 			/// @param truetype The path to a truetype font file
 			/// @param fs The font style.
-			/// @param dpi Specifies the DPI for scaling the font, 0 indicates the system DPI.
-			font(double size_pt, const path_type& truetype, const font_style& fs = {}, int dpi = 0);
+			font(double size_pt, const path_type& truetype, const font_style& fs = {});
 
 			~font();
 			bool empty() const;
@@ -71,7 +66,7 @@ namespace nana
 			* @param fixed Indicates whether to return a fixed font size. If this parameter is false, the method may return zero for default system font size. If the parameter is true, the method returns a fixed size of default font size if the font size that assigned by constructor is zero.
 			* @return The font size, in point.
 			*/
-			double size(bool fixed = false, int dpi = 0) const;
+			double size(bool fixed = false) const;
 
 			bool bold() const;
 			unsigned weight() const;
@@ -105,7 +100,7 @@ namespace nana
 		{
 		public:
 			graphics();
-			graphics(const ::nana::size& sz, int dpi );//= 96                 ///< size in pixel
+			graphics(const ::nana::size& sz);                 ///< size in pixel
 			graphics(const graphics&);      ///< the resource is not copyed, the two graphics objects refer to the *SAME* resource
 			graphics& operator=(const graphics&);
 
@@ -130,8 +125,6 @@ namespace nana
 			 */
 			void make(const ::nana::size& sz);
 			void resize(const ::nana::size&);
-			void set_dpi(int dpi);
-			int  get_dpi() const;
 			void typeface(const font&);			///< Selects a specified font type into the graphics object.  \todo: dpi?
 			font typeface() const;
 

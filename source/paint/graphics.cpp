@@ -125,31 +125,31 @@ namespace paint
 		}
 
 		/// \todo: generalize dpi to v2 awareness
-		font::font(const font_info& fi, int dpi):
+		font::font(const font_info& fi):
 			impl_(new impl_type)
 		{
-			impl_->real_font = platform_abstraction::open_font(fi, (dpi ? dpi : platform_abstraction::current_dpi()), {});
+			impl_->real_font = platform_abstraction::open_font(fi, {});
 		}
 
 		/// \todo: generalize dpi to v2 awareness
-		font::font(const std::string& font_family, double size_pt, const font_style& fs, int dpi):
+		font::font(const std::string& font_family, double size_pt, const font_style& fs):
 			impl_(new impl_type)
 		{
 			font_info fi;
 			fi.family = font_family;
 			fi.size_pt = size_pt;
 			fi.style = fs;
-			impl_->real_font = platform_abstraction::open_font(fi, (dpi ? dpi : platform_abstraction::current_dpi()), {});
+			impl_->real_font = platform_abstraction::open_font(fi, {});
 		}
 
 		/// \todo: generalize dpi to v2 awareness
-		font::font(double size_pt, const path_type& ttf, const font_style& fs, int dpi) :
+		font::font(double size_pt, const path_type& ttf, const font_style& fs) :
 			impl_(new impl_type)
 		{
 			font_info fi;
 			fi.size_pt = size_pt;
 			fi.style = fs;
-			impl_->real_font = platform_abstraction::open_font(fi, (dpi ? dpi : platform_abstraction::current_dpi()), ttf);
+			impl_->real_font = platform_abstraction::open_font(fi, ttf);
 		}
 
 		font::~font()
@@ -177,15 +177,12 @@ namespace paint
 			return impl_->real_font->font_info().family;
 		}
 
-		double font::size(bool fixed, int dpi) const
+		double font::size(bool fixed) const
 		{
 			double size_pt = (empty() ? 0.0 : impl_->real_font->font_info().size_pt);
 
 			if (fixed && (0.0 == size_pt))
 				return platform_abstraction::font_default_pt();
-
-			if (!dpi) dpi = platform_abstraction::current_dpi();
-            size_pt = size_pt * 96.0 / dpi;
 
 			return size_pt;
 		}
@@ -272,32 +269,15 @@ namespace paint
 			::nana::size	size;  ///< system-side size, dpi-scaled
 			pixel_buffer	pxbuf;
 			bool            changed{ false };
-			int             dpi  { 96   };
-			float           scale{ 1.0f };  /// \todo:
 		};
 
-		void graphics::set_dpi(int dpi)
-        {
-            if (dpi == impl_->dpi) return;
-			auto sz = platform_abstraction::unscale_dpi(impl_->size, impl_->dpi);
-			impl_->dpi = dpi;
-        	auto info = typeface().info();
-			nana::paint::font ft{ info.value(), dpi };
-			typeface(ft);
-			make(sz);
-        }
-		int graphics::get_dpi() const
-        {
-            return impl_->dpi;
-        }
 		graphics::graphics()
 			: impl_(new implementation)
 		{}
 
-		graphics::graphics(const nana::size& sz, int dpi)
+		graphics::graphics(const nana::size& sz)
 			: impl_(new implementation)
 		{
-			impl_->dpi = dpi;
 			make(sz);
 		}
 
@@ -376,9 +356,8 @@ namespace paint
 				impl_.swap(other.impl_);
 		}
 
-		void graphics::make(const ::nana::size& sz_)
+		void graphics::make(const ::nana::size& sz)
 		{
-			auto sz = platform_abstraction::dpi_scale(sz_, impl_->dpi);
 			if (impl_->handle == nullptr || impl_->size != sz)
 			{
 				if (sz.empty())
@@ -534,12 +513,12 @@ namespace paint
 		size graphics::text_extent_size(std::string_view text) const
 		{
 			throw_not_utf8(text);
-			return platform_abstraction::unscale_dpi(detail::text_extent_size(impl_->handle, text.data(), text.length()), impl_->dpi) ;
+			return detail::text_extent_size(impl_->handle, text.data(), text.length());
 		}
 
 		size graphics::text_extent_size(std::wstring_view text) const
 		{
-			return platform_abstraction::unscale_dpi(detail::text_extent_size(impl_->handle, text.data(), text.length()), impl_->dpi) ;
+			return detail::text_extent_size(impl_->handle, text.data(), text.length()) ;
 		}
 
 #ifdef __cpp_char8_t
@@ -574,7 +553,7 @@ namespace paint
 #elif defined(NANA_X11)
 			sz = text_extent_size(text.substr(begin, end - begin));
 #endif
-			return platform_abstraction::unscale_dpi(sz, impl_->dpi) ;
+			return sz ;
 		}
 
 		std::unique_ptr<unsigned[]> graphics::glyph_pixels(std::wstring_view text) const   ///\todo: return vector?
@@ -593,13 +572,11 @@ namespace paint
 
 				pxbuf[0] = (text[0] == '\t' ? tab_pixels : dx[0]);
 				// unscale_dpi
-				pxbuf[0] = platform_abstraction::unscale_dpi(pxbuf[0], impl_->dpi);
 
 				for (std::size_t i = 1; i < text.size(); ++i)
 				{
 					pxbuf[i] = (text[i] == '\t' ? tab_pixels : dx[i] - dx[i - 1]);
 					// unscale_dpi
-					pxbuf[i] = platform_abstraction::unscale_dpi(pxbuf[i], impl_->dpi);
 				}
 				delete[] dx;
 #elif defined(NANA_X11) && defined(NANA_USE_XFT)
@@ -629,7 +606,7 @@ namespace paint
 						sz.height = t.height;
 				}
 			}
-			return platform_abstraction::unscale_dpi(sz, impl_->dpi) ;
+			return sz ;
 		}
 #ifdef __cpp_char8_t
 		::nana::size graphics::bidi_extent_size(std::u8string_view text) const
@@ -647,11 +624,8 @@ namespace paint
 				::GetTextMetrics(impl_->handle->context, &tm);
 				// uscale_dpi before
 				ascent = static_cast<unsigned>(tm.tmAscent);   
-				ascent  = platform_abstraction::unscale_dpi(ascent, impl_->dpi) ; 
 				descent = static_cast<unsigned>(tm.tmDescent); 
-				descent = platform_abstraction::unscale_dpi(descent, impl_->dpi) ; 
 				internal_leading = static_cast<unsigned>(tm.tmInternalLeading);  
-				internal_leading = platform_abstraction::unscale_dpi(internal_leading, impl_->dpi) ; 
 				return true;
 #elif defined(NANA_X11)
 				if(impl_->handle->font)
@@ -688,7 +662,7 @@ namespace paint
 		void graphics::line_begin(int x, int y)
 		{
 			if(!impl_->handle)	return;
-			auto p = platform_abstraction::dpi_scale(point(x,y), impl_->dpi);
+			auto p = point(x,y);
 
 #if defined(NANA_WINDOWS)
 			::MoveToEx(impl_->handle->context, p.x, p.y, 0);
@@ -710,7 +684,7 @@ namespace paint
 		{
 			if(impl_->handle)
 			{
-				auto r_dst = platform_abstraction::dpi_scale(r_dst_, impl_->dpi);  
+				auto r_dst = platform_abstraction::dpi_scale(r_dst_,  nana::detail::native_interface::window_dpi(src));   /// \todo: https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-stretchblt
 
 #if defined(NANA_WINDOWS)
 				HDC dc = ::GetDC(reinterpret_cast<HWND>(src));
@@ -729,7 +703,7 @@ namespace paint
 		{
 			if(impl_->handle)
 			{
-				auto r_dst = platform_abstraction::dpi_scale(r_dst_, impl_->dpi);  /// todo: use platform_abstraction
+				auto r_dst = platform_abstraction::dpi_scale(r_dst_, nana::detail::native_interface::window_dpi(src));  /// todo: use platform_abstraction
 #if defined(NANA_WINDOWS)
 				
 				HDC dc = ::GetDC(reinterpret_cast<HWND>(src));
@@ -744,11 +718,10 @@ namespace paint
 			}
 		}
 
-		void graphics::bitblt(const nana::rectangle& r_dst_, const graphics& src)
+		void graphics::bitblt(const nana::rectangle& r_dst, const graphics& src)
 		{
 			if(impl_->handle && src.impl_->handle)
 			{
-                auto r_dst = platform_abstraction::dpi_scale(r_dst_, impl_->dpi); 
 #if defined(NANA_WINDOWS)
 				::BitBlt(impl_->handle->context, r_dst.x, r_dst.y, r_dst.width, r_dst.height, src.impl_->handle->context, 0, 0, SRCCOPY);
 #elif defined(NANA_X11)
@@ -760,11 +733,10 @@ namespace paint
 			}
 		}
 
-		void graphics::bitblt(const nana::rectangle& r_dst_, const graphics& src, const nana::point& p_src)
+		void graphics::bitblt(const nana::rectangle& r_dst, const graphics& src, const nana::point& p_src)
 		{
 			if(impl_->handle && src.impl_->handle)
 			{
-				 auto r_dst = platform_abstraction::dpi_scale(r_dst_, impl_->dpi); 
 #if defined(NANA_WINDOWS)
 				::BitBlt(impl_->handle->context, r_dst.x, r_dst.y, r_dst.width, r_dst.height, src.impl_->handle->context, p_src.x, p_src.y, SRCCOPY);
 #elif defined(NANA_X11)
@@ -996,16 +968,16 @@ namespace paint
 		}
 
 		unsigned graphics::width() const{
-			return platform_abstraction::unscale_dpi(impl_->size.width, impl_->dpi);
+			return impl_->size.width;
 		}
 
 		unsigned graphics::height() const{
-			return platform_abstraction::unscale_dpi(impl_->size.height, impl_->dpi);
+			return impl_->size.height;
 		}
 
 		nana::size graphics::size() const
 		{
-			return platform_abstraction::unscale_dpi(impl_->size, impl_->dpi);
+			return impl_->size;
 		}
 
 		void graphics::setsta()
@@ -1209,11 +1181,9 @@ namespace paint
 		}
 #endif
 
-		void graphics::line(const nana::point& pos1_, const nana::point& pos2_)
+		void graphics::line(const nana::point& pos1, const nana::point& pos2)
 		{
 			if (!impl_->handle)	return;
-			auto pos1 = platform_abstraction::dpi_scale(pos1_, impl_->dpi);
-			auto pos2 = platform_abstraction::dpi_scale(pos2_, impl_->dpi);
 #if defined(NANA_WINDOWS)
 			if (pos1 != pos2)
 			{
@@ -1246,10 +1216,9 @@ namespace paint
 			line_to(pos);
 		}
 
-		void graphics::line_to(const point& pos_)
+		void graphics::line_to(const point& pos)
 		{
 			if (!impl_->handle)	return;
-			auto pos = platform_abstraction::dpi_scale(pos_, impl_->dpi);
 #if defined(NANA_WINDOWS)
 			auto prv_pen = ::SelectObject(impl_->handle->context, ::CreatePen(PS_SOLID, 1, impl_->handle->bgcolor_native));
 

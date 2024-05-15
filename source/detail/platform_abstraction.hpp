@@ -108,7 +108,7 @@ namespace nana
 
 
 		/// Open the font, if ttf is specified, it ignores the font family name of font_info and creates the font using truetype file.
-		static std::shared_ptr<font> open_font(const font_info&, int dpi, const path_type& ttf);
+		static std::shared_ptr<font> open_font(const font_info&, const path_type& ttf);
 		static void font_resource(bool try_add, const path_type& ttf);
 
 		static unsigned screen_dpi(bool x_requested);

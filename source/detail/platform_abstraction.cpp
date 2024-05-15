@@ -761,14 +761,8 @@ namespace nana
 			}
 		}
 
-		std::shared_ptr<font_interface> open_font(font_info fi, int dpi, const path_type& ttf)
+		std::shared_ptr<font_interface> open_font(font_info fi, const path_type& ttf)
 		{
-			if (0 == dpi)
-			{
-				dpi = platform_abstraction::current_dpi();
-				if( 0 == dpi)
-					dpi = detail::native_interface::system_dpi();
-			}
 
 			if (!ttf.empty())
 			{
@@ -781,7 +775,7 @@ namespace nana
 				fi.family = truetype.font_family();
 			}
 
-			auto const font_height = _m_set_default_values(fi, dpi);
+			auto const font_height = _m_set_default_values(fi);
 
 			std::shared_ptr<font_interface> font;
 
@@ -803,7 +797,7 @@ namespace nana
 			{
 				// The font is not matched, create a new font
 
-				font = _m_create(fi, dpi, ttf);
+				font = _m_create(fi, ttf);
 
 				if (font)
 					fontbase_.push_back(font);
@@ -867,7 +861,7 @@ namespace nana
 		}
 
 		/// Returns the DPI-dependent font size, in pixels \todo: ??
-		static font_height_type _m_set_default_values(font_info& fi, std::size_t dpi)
+		static font_height_type _m_set_default_values(font_info& fi)
 		{
 #ifdef NANA_WINDOWS
 			std::wstring wfont_family = nana::detail::to_nstring(fi.family);
@@ -877,7 +871,7 @@ namespace nana
 
 			//Translate pt to px
 			auto hDC = ::GetDC(nullptr);
-			auto font_height = -static_cast<LONG>(fi.size_pt * dpi / 72);
+			auto font_height = -static_cast<LONG>(fi.size_pt * 96.0 / 72);
 
 			if (wfont_family.empty() || (0 == font_height))
 			{
@@ -906,9 +900,8 @@ namespace nana
 
 				if (0 == font_height)
 				{
-					auto correspond_dpi = detail::native_interface::system_dpi(); /// \todo OK
-					fi.size_pt = static_cast<double>(std::abs(metrics.lfMessageFont.lfHeight) * 72 / correspond_dpi);
-					font_height = -static_cast<LONG>(fi.size_pt * dpi / 72);
+					fi.size_pt = static_cast<double>(std::abs(metrics.lfMessageFont.lfHeight) * 72 / 96.0);
+					font_height = -static_cast<LONG>(fi.size_pt * 96. / 72);
 				}
 			}
 
@@ -922,7 +915,7 @@ namespace nana
 #endif
 		}
 
-		std::shared_ptr<font_interface> _m_create(const font_info& fi, std::size_t dpi, const path_type& ttf)
+		std::shared_ptr<font_interface> _m_create(const font_info& fi, const path_type& ttf)
 		{
 			using native_font_type = platform_abstraction::font::native_font_type;
 
@@ -932,7 +925,7 @@ namespace nana
 
 			//Translate pt to px
 			auto hDC = ::GetDC(nullptr);  /// \todo OK??
-			auto font_height = -static_cast<LONG>(fi.size_pt * dpi / 72);
+			auto font_height = -static_cast<LONG>(fi.size_pt * 96.0 / 72);
 			::ReleaseDC(nullptr, hDC);
 
 			::LOGFONT lf{};
@@ -1335,7 +1328,7 @@ namespace nana
 		}
 
 		if (!r.font)
-			r.font = r.font_svc.open_font({}, current_dpi(), {});
+			r.font = r.font_svc.open_font({}, {});
 
 		return r.font;
 	}
@@ -1394,10 +1387,10 @@ namespace nana
 		return { static_cast<nana::point::value_type>(point.x * dpiScale), static_cast<nana::point::value_type>(point.y * dpiScale) };
 	}
 
-	std::shared_ptr<platform_abstraction::font> platform_abstraction::open_font(const font_info& fi, int dpi, const path_type& ttf)
+	std::shared_ptr<platform_abstraction::font> platform_abstraction::open_font(const font_info& fi, const path_type& ttf)
 	{
 		nana::internal_scope_guard lock;
-		return platform_storage().font_svc.open_font(fi, dpi, ttf);
+		return platform_storage().font_svc.open_font(fi, ttf);
 	}
 
 	/// dpi scaling for int

@@ -2015,7 +2015,7 @@ namespace nana::widgets::skeletons
 		//Draw background
 		auto area = editor_area();
 
-		paint::graphics canvas{graph_.size(), graph_.get_dpi()};
+		paint::graphics canvas{graph_.size()};
 
 		if (!api::dev::copy_transparent_background(window_, canvas))
 		{
@@ -2758,7 +2758,7 @@ namespace nana::widgets::skeletons
 		{
 			const int editor_top = text_area_.area.y - text_area_.padding_top;
 
-			double scale = 96.0 / api::window_dpi(window_);
+			double scale = 1; //96.0 / api::window_dpi(window_);
 			//Shrink the tip string on top-left of the text.
 			const double top_space_px = (text_top - editor_top - static_cast<int>(scheme_->tip_string_floating_distance_px)) * scale;
 
@@ -3587,7 +3587,7 @@ namespace nana::widgets::skeletons
 
 
 			//Draw as selected, and copy the selected part to the graph.
-			paint::graphics graph(size( glyph_selected, line_px_ ), this->graph_.get_dpi());
+			paint::graphics graph(size( glyph_selected, line_px_ ));
 			graph.typeface(this->graph_.typeface());
 			graph.rectangle(true, selection_color(false, has_focused));
 

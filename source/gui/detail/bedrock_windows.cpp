@@ -585,7 +585,7 @@ namespace detail
 		{
 			arg.pos.x = static_cast<int>(pmdec.mouse.x);  /// \todo: is system-side dpi to user-side ok here?
 			arg.pos.y = static_cast<int>(pmdec.mouse.y);
-			platform_abstraction::untransform_dpi(arg.pos, wd->dpi);
+			platform_abstraction::untransform_dpi(arg.pos, api::window_dpi(wd));
 			arg.pos -= wd->pos_root;
 
 			arg.alt = (::GetKeyState(VK_MENU) < 0);
@@ -610,7 +610,7 @@ namespace detail
 
 		arg.pos.x = static_cast<int>(point.x);  /// \todo: is system-side dpi to user-side ok here?
 		arg.pos.y = static_cast<int>(point.y);
-		platform_abstraction::untransform_dpi(arg.pos, wd->dpi);
+		platform_abstraction::untransform_dpi(arg.pos, api::window_dpi(wd));
 		arg.pos -= wd->pos_root;
 
 		arg.left_button = pmdec.mouse.button.left;
@@ -943,12 +943,12 @@ namespace detail
 			{
 				bool take_over = false;
 				auto mmi = reinterpret_cast<MINMAXINFO*>(lParam); ///\todo : system-side dpi ok?
-
+				int dpi = api::window_dpi(msgwnd);
 				if (!msgwnd->min_track_size.empty())
 				{
 					///\todo : user-side dpi to system-side ok?
-					mmi->ptMinTrackSize.x = static_cast<LONG>(platform_abstraction::dpi_scale(msgwnd->min_track_size.width  + msgwnd->extra_width , msgwnd->dpi));
-					mmi->ptMinTrackSize.y = static_cast<LONG>(platform_abstraction::dpi_scale(msgwnd->min_track_size.height + msgwnd->extra_height, msgwnd->dpi));
+					mmi->ptMinTrackSize.x = static_cast<LONG>(platform_abstraction::dpi_scale(msgwnd->min_track_size.width  + msgwnd->extra_width , dpi));
+					mmi->ptMinTrackSize.y = static_cast<LONG>(platform_abstraction::dpi_scale(msgwnd->min_track_size.height + msgwnd->extra_height, dpi));
 					take_over = true;
 				}
 
@@ -956,8 +956,8 @@ namespace detail
 				{
 					if (msgwnd->max_track_size.width && msgwnd->max_track_size.height)
 					{
-						mmi->ptMaxTrackSize.x = static_cast<LONG>(platform_abstraction::dpi_scale(msgwnd->max_track_size.width  + msgwnd->extra_width , msgwnd->dpi));
-						mmi->ptMaxTrackSize.y = static_cast<LONG>(platform_abstraction::dpi_scale(msgwnd->max_track_size.height + msgwnd->extra_height, msgwnd->dpi));
+						mmi->ptMaxTrackSize.x = static_cast<LONG>(platform_abstraction::dpi_scale(msgwnd->max_track_size.width  + msgwnd->extra_width , dpi));
+						mmi->ptMaxTrackSize.y = static_cast<LONG>(platform_abstraction::dpi_scale(msgwnd->max_track_size.height + msgwnd->extra_height, dpi));
 
 						if (mmi->ptMaxSize.x > mmi->ptMaxTrackSize.x)	mmi->ptMaxSize.x = mmi->ptMaxTrackSize.x;
 						if (mmi->ptMaxSize.y > mmi->ptMaxTrackSize.y)	mmi->ptMaxSize.y = mmi->ptMaxTrackSize.y;
@@ -1330,7 +1330,7 @@ namespace detail
 			case WM_SIZING:
 				{
 					::RECT* r = reinterpret_cast<RECT*>(lParam);				///\todo: system-side dpi ok?
-					*r = unscale_dpi_(*r, msgwnd->dpi);							///\todo: to user-side dpi ok?)
+					*r = unscale_dpi_(*r, api::window_dpi(msgwnd));							///\todo: to user-side dpi ok?)
 					unsigned width  = static_cast<unsigned>(r->right  - r->left) - msgwnd->extra_width;
 					unsigned height = static_cast<unsigned>(r->bottom - r->top ) - msgwnd->extra_height;
 
@@ -1404,10 +1404,10 @@ namespace detail
 					if (arg.width != width || arg.height != height)
 					{
 						adjust_sizing(msgwnd, r, static_cast<int>(wParam), arg.width, arg.height);
-						*r = scale_to_dpi_(*r, msgwnd->dpi);	///\todo: back to system-side dpi ok?
+						*r = scale_to_dpi_(*r, api::window_dpi(msgwnd));	///\todo: back to system-side dpi ok?
 						return TRUE;
 					}
-					*r = scale_to_dpi_(*r, msgwnd->dpi);	///\todo: back to system-side dpi ok?
+					*r = scale_to_dpi_(*r, api::window_dpi(msgwnd));	///\todo: back to system-side dpi ok?
 				}
 				break;
 			case WM_SIZE:

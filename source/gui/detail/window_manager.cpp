@@ -147,7 +147,7 @@ namespace nana
 
 		root_misc::root_misc(basic_window * wd, const size& sz)
 			: window(wd),
-			root_graph(sz, wd->dpi)
+			root_graph(sz)
 		{
 			condition.ignore_tab = false;
 			condition.pressed = nullptr;
@@ -367,7 +367,6 @@ namespace detail
 			if (result.native_handle)
 			{
 				auto wd = new basic_window(owner, widget_notifier_interface::get_notifier(wdg), (category::root_tag**)nullptr);
-				wd->dpi = result.dpi;
 				if (nested)
 				{
 					wd->owner = nullptr;
@@ -476,7 +475,6 @@ namespace detail
 				update_area.y += parent->pos_owner.y;
 				parent = parent->parent;
 			}
-			update_area = unscale_dpi(update_area, wd->dpi);
 			update(parent, false, false, &update_area); // system-side
 		}
 
@@ -1371,22 +1369,6 @@ namespace detail
 			}
 		}
 
-		/// \todo: generalize dpi to v2 awareness - updates the window elements when DPI is changed.
-		void window_manager::update_dpi(basic_window* wd)
-		{
-			internal_scope_guard lock;
-			if (!available(wd))
-				return;
-
-			wd->dpi = native_interface::window_dpi(wd->root);
-			wd->drawer.graphics.set_dpi(wd->dpi);
-
-			for (auto child : wd->children)
-			{
-				update_dpi(child);
-			}
-		}
-
 		bool check_tree(basic_window* wd, basic_window* const cond)
 		{
 			if (wd == cond)	return true;
@@ -1524,7 +1506,6 @@ namespace detail
 			{
 				wd->parent = for_new;
 				wd->root = for_new->root;
-				wd->dpi = for_new->dpi;
 				wd->root_graph = for_new->root_graph;
 				wd->root_widget = for_new->root_widget;
 
@@ -1548,7 +1529,6 @@ namespace detail
 						else
 						{
 							child->root = wd->root;
-							child->dpi = wd->dpi;
 							child->root_graph = wd->root_graph;
 							child->root_widget = wd->root_widget;
 							set_pos_root(child, delta_pos);
