@@ -867,7 +867,6 @@ namespace detail
 						              ", size = " << r->right - r->left << ", " << r->bottom - r->top << '\n';
 				}
 				platform_abstraction::set_current_dpi(detail::native_interface::system_dpi());
-				wd_manager.update_dpi(msgwnd);  /// \todo: pass dpi = dpi_x to update_dpi  ??
 				::SetWindowPos(root_window,
 					NULL,
 					r->left,
